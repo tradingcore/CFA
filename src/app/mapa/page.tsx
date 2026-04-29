@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useLevel } from "@/contexts/level-context";
-import { getWeeklyAccuracy } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+import { getWeeklyQuizStats } from "@/lib/firestore";
 import { PerformanceRadarChart } from "@/components/mapa/radar-chart";
 import { TopicList } from "@/components/mapa/topic-list";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +11,20 @@ import { Map } from "lucide-react";
 
 export default function MapaPage() {
   const { level } = useLevel();
-  const weeklyAccuracy = getWeeklyAccuracy(level);
+  const { user } = useAuth();
+  const [weeklyAccuracy, setWeeklyAccuracy] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      getWeeklyQuizStats(user.uid).then((stats) => {
+        setWeeklyAccuracy(
+          stats.questionsAnswered > 0
+            ? Math.round((stats.correctAnswers / stats.questionsAnswered) * 100)
+            : 0
+        );
+      }).catch(console.error);
+    }
+  }, [user]);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">

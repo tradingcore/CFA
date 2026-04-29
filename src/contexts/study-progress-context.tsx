@@ -2,15 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { getTopicsForLevel, CFALevel } from "@/lib/cfa-topics";
-
-interface LOSEntry {
-  studied: boolean;
-  date: string;
-}
-
-interface StudyProgressState {
-  [losKey: string]: LOSEntry;
-}
+import { useAuth } from "@/contexts/auth-context";
+import { getStudyProgress, saveStudyProgress, StudyProgressData } from "@/lib/firestore";
 
 interface StudyProgressContextType {
   toggleLOS: (moduleId: string, losIndex: number) => void;
@@ -20,67 +13,71 @@ interface StudyProgressContextType {
   getTopicProgress: (topicId: string, level: CFALevel) => { studied: number; total: number };
 }
 
-const STORAGE_KEY = "cfa-study-progress";
-
-function loadState(): StudyProgressState {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveState(state: StudyProgressState) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
 function losKey(moduleId: string, losIndex: number): string {
   return `${moduleId}:${losIndex}`;
 }
 
 const StudyProgressContext = createContext<StudyProgressContextType | undefined>(undefined);
 
-/**
- * Provider that persists LOS study progress in localStorage.
- * Each LOS is identified by moduleId:losIndex and stores studied flag + date.
- * @param children - React children
- * @returns Study progress context provider
- */
 export function StudyProgressProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StudyProgressState>({});
-  const [mounted, setMounted] = useState(false);
+  const { user, profile } = useAuth();
+  const [state, setState] = useState<StudyProgressData>({});
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setState(loadState());
-    setMounted(true);
-  }, []);
+    if (!user || !profile) {
+      setState({});
+      setLoaded(false);
+      return;
+    }
 
-  useEffect(() => {
-    if (mounted) saveState(state);
-  }, [state, mounted]);
+    getStudyProgress(user.uid, profile.cfaLevel)
+      .then((data) => {
+        setState(data);
+        setLoaded(true);
+      })
+      .catch((err) => {
+        console.error("Failed to load study progress:", err);
+        setState({});
+        setLoaded(true);
+      });
+  }, [user, profile?.cfaLevel]);
 
-  const toggleLOS = useCallback((moduleId: string, losIndex: number) => {
-    setState((prev) => {
-      const key = losKey(moduleId, losIndex);
-      const existing = prev[key];
-      if (existing?.studied) {
-        const next = { ...prev };
-        delete next[key];
+  const persistState = useCallback(
+    (newState: StudyProgressData) => {
+      if (!user || !profile) return;
+      saveStudyProgress(user.uid, profile.cfaLevel, newState).catch(console.error);
+    },
+    [user, profile]
+  );
+
+  const toggleLOS = useCallback(
+    (moduleId: string, losIndex: number) => {
+      setState((prev) => {
+        const key = losKey(moduleId, losIndex);
+        const existing = prev[key];
+        let next: StudyProgressData;
+
+        if (existing) {
+          next = { ...prev };
+          delete next[key];
+        } else {
+          next = {
+            ...prev,
+            [key]: { date: new Date().toISOString().split("T")[0] },
+          };
+        }
+
+        persistState(next);
         return next;
-      }
-      return {
-        ...prev,
-        [key]: { studied: true, date: new Date().toISOString().split("T")[0] },
-      };
-    });
-  }, []);
+      });
+    },
+    [persistState]
+  );
 
   const isLOSStudied = useCallback(
     (moduleId: string, losIndex: number) => {
-      return state[losKey(moduleId, losIndex)]?.studied ?? false;
+      return !!state[losKey(moduleId, losIndex)];
     },
     [state]
   );
@@ -96,7 +93,7 @@ export function StudyProgressProvider({ children }: { children: ReactNode }) {
     (moduleId: string, totalLOS: number) => {
       let studied = 0;
       for (let i = 0; i < totalLOS; i++) {
-        if (state[losKey(moduleId, i)]?.studied) studied++;
+        if (state[losKey(moduleId, i)]) studied++;
       }
       return { studied, total: totalLOS };
     },
@@ -113,7 +110,7 @@ export function StudyProgressProvider({ children }: { children: ReactNode }) {
       for (const mod of topic.modules) {
         total += mod.los.length;
         for (let i = 0; i < mod.los.length; i++) {
-          if (state[losKey(mod.id, i)]?.studied) studied++;
+          if (state[losKey(mod.id, i)]) studied++;
         }
       }
       return { studied, total };
@@ -130,11 +127,6 @@ export function StudyProgressProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * Hook to access study progress tracking functions.
- * @returns Study progress context
- * @throws Error if used outside StudyProgressProvider
- */
 export function useStudyProgress() {
   const ctx = useContext(StudyProgressContext);
   if (!ctx) throw new Error("useStudyProgress must be used within StudyProgressProvider");

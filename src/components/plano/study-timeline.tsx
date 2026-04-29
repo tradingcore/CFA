@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { mockStudyPlan, StudyBlock } from "@/lib/mock-data";
+import { StudyPlanDoc } from "@/lib/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { BookOpen, PenTool, RefreshCw, CheckCircle2, Circle } from "lucide-react";
+
+type Block = StudyPlanDoc["blocks"][number];
 
 const typeConfig = {
   reading: { label: "Leitura", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-500/10" },
@@ -14,37 +15,38 @@ const typeConfig = {
 };
 
 interface StudyTimelineProps {
-  onCompletionChange?: (completedCount: number) => void;
+  blocks: Block[];
+  onBlockToggle?: (blockId: string, newBlocks: Block[]) => void;
 }
 
-/**
- * Displays daily study blocks grouped by date as a timeline with toggleable completion.
- * @param onCompletionChange - Callback fired when a block's completion status changes
- * @returns Timeline card component
- */
-export function StudyTimeline({ onCompletionChange }: StudyTimelineProps) {
-  const [blocks, setBlocks] = useState<StudyBlock[]>(() =>
-    mockStudyPlan.map((b) => ({ ...b }))
-  );
-
+export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
   const toggleCompletion = (blockId: string) => {
-    setBlocks((prev) => {
-      const next = prev.map((b) =>
-        b.id === blockId ? { ...b, completed: !b.completed } : b
-      );
-      onCompletionChange?.(next.filter((b) => b.completed).length);
-      return next;
-    });
+    const newBlocks = blocks.map((b) =>
+      b.id === blockId ? { ...b, completed: !b.completed } : b
+    );
+    onBlockToggle?.(blockId, newBlocks);
   };
 
-  const groupedByDate = blocks.reduce<Record<string, StudyBlock[]>>(
-    (acc, block) => {
-      if (!acc[block.date]) acc[block.date] = [];
-      acc[block.date].push(block);
-      return acc;
-    },
-    {}
-  );
+  if (blocks.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Plano da Semana</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground py-8 text-center">
+            Nenhum plano gerado ainda. Clique em &quot;Gerar Plano com IA&quot; para começar!
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const groupedByDate = blocks.reduce<Record<string, Block[]>>((acc, block) => {
+    if (!acc[block.date]) acc[block.date] = [];
+    acc[block.date].push(block);
+    return acc;
+  }, {});
 
   const dates = Object.keys(groupedByDate).sort();
   const todayStr = new Date().toISOString().split("T")[0];
@@ -67,14 +69,10 @@ export function StudyTimeline({ onCompletionChange }: StudyTimelineProps) {
           return (
             <div key={date} className="flex gap-4">
               <div className="flex flex-col items-center">
-                <div
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold",
-                    isToday
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
+                <div className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold",
+                  isToday ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                )}>
                   {new Date(date + "T12:00:00").getDate()}
                 </div>
                 <div className="w-px flex-1 bg-border" />
@@ -89,15 +87,9 @@ export function StudyTimeline({ onCompletionChange }: StudyTimelineProps) {
                 </div>
 
                 {dayBlocks.map((block) => {
-                  const config = typeConfig[block.type];
+                  const config = typeConfig[block.type] || typeConfig.reading;
                   return (
-                    <div
-                      key={block.id}
-                      className={cn(
-                        "flex items-center gap-3 rounded-lg border border-border p-3 transition-all",
-                        block.completed && "bg-muted/30"
-                      )}
-                    >
+                    <div key={block.id} className={cn("flex items-center gap-3 rounded-lg border border-border p-3 transition-all", block.completed && "bg-muted/30")}>
                       <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", config.bg)}>
                         <config.icon className={cn("h-4 w-4", config.color)} />
                       </div>
@@ -107,12 +99,12 @@ export function StudyTimeline({ onCompletionChange }: StudyTimelineProps) {
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {config.label} · {block.durationMinutes}min
+                          {block.description ? ` · ${block.description}` : ""}
                         </p>
                       </div>
                       <button
                         onClick={() => toggleCompletion(block.id)}
                         className="rounded-full p-1 transition-colors hover:bg-accent"
-                        aria-label={block.completed ? "Desmarcar como concluído" : "Marcar como concluído"}
                       >
                         {block.completed ? (
                           <CheckCircle2 className="h-6 w-6 text-emerald-500" />

@@ -1,28 +1,44 @@
 "use client";
 
 import { useLevel } from "@/contexts/level-context";
+import { useAuth } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { CFALevel } from "@/lib/cfa-topics";
-import { Moon, Sun, TrendingUp, ChevronDown, User, Menu } from "lucide-react";
+import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const levels: CFALevel[] = ["I", "II", "III"];
 
 export function Header() {
   const { level, setLevel } = useLevel();
+  const { user, profile, signOut } = useAuth();
   const { setMobileOpen } = useSidebar();
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  const displayName = user?.displayName || profile?.displayName || "";
+  const photoURL = user?.photoURL || profile?.photoURL || "";
+  const initials = displayName
+    ? displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
+    : "U";
+
+  const handleLogout = async () => {
+    await signOut();
+    router.replace("/login");
+  };
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-card/80 px-4 backdrop-blur-md sm:px-6">
@@ -35,7 +51,7 @@ export function Header() {
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <TrendingUp className="h-5 w-5 text-primary-foreground" />
           </div>
@@ -47,7 +63,7 @@ export function Header() {
               CFA Prep
             </span>
           </div>
-        </div>
+        </Link>
       </div>
 
       <DropdownMenu>
@@ -77,26 +93,34 @@ export function Header() {
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary transition-colors hover:bg-accent"
             aria-label="Toggle theme"
           >
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
         )}
 
         <DropdownMenu>
           <DropdownMenuTrigger className="rounded-full outline-none ring-ring focus-visible:ring-2">
             <Avatar className="border-2 border-primary/20">
+              {photoURL ? (
+                <AvatarImage src={photoURL} alt={displayName} />
+              ) : null}
               <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
-                <User className="h-4 w-4" />
+                {initials}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Meu Perfil</DropdownMenuItem>
-            <DropdownMenuItem>Configurações</DropdownMenuItem>
-            <DropdownMenuItem>Sair</DropdownMenuItem>
+            <div className="px-3 py-2 border-b border-border">
+              <p className="text-sm font-medium">{displayName}</p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
+            </div>
+            <DropdownMenuItem onClick={() => router.push("/perfil")}>
+              <Settings className="mr-2 h-4 w-4" />
+              Meu Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLevel } from "@/contexts/level-context";
-import { mockTopicScores } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+import { getTopicScores } from "@/lib/firestore";
 import { getTopicsForLevel } from "@/lib/cfa-topics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,12 +25,30 @@ function getScoreBadge(score: number) {
 
 export function TopicList() {
   const { level } = useLevel();
-  const scores = mockTopicScores[level];
+  const { user } = useAuth();
   const topics = getTopicsForLevel(level);
+  const [scores, setScores] = useState<{ topicId: string; topicName: string; score: number; questionsAnswered: number; totalQuestions: number }[]>([]);
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
 
-  const sortedScores = [...scores].sort((a, b) => a.score - b.score);
+  useEffect(() => {
+    if (user) {
+      getTopicScores(user.uid, level).then(setScores).catch(console.error);
+    }
+  }, [user, level]);
+
+  const topicScores = topics.map((t) => {
+    const s = scores.find((sc) => sc.topicId === t.id);
+    return {
+      topicId: t.id,
+      topicName: t.shortName,
+      score: s?.score || 0,
+      questionsAnswered: s?.questionsAnswered || 0,
+      totalQuestions: s?.totalQuestions || 0,
+    };
+  });
+
+  const sortedScores = [...topicScores].sort((a, b) => a.score - b.score);
 
   return (
     <Card>
@@ -46,10 +65,7 @@ export function TopicList() {
             <div key={topicScore.topicId}>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    setExpandedTopic(isExpanded ? null : topicScore.topicId);
-                    setExpandedModule(null);
-                  }}
+                  onClick={() => { setExpandedTopic(isExpanded ? null : topicScore.topicId); setExpandedModule(null); }}
                   className="flex flex-1 items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent/50"
                 >
                   <div className="flex h-7 w-7 items-center justify-center">
@@ -61,8 +77,7 @@ export function TopicList() {
                       <div className="flex items-center gap-2">
                         <span className={cn("font-mono text-sm tabular-nums font-bold", badge.textColor)}>{topicScore.score}%</span>
                         <Badge variant={badge.variant} className="gap-1 text-[10px]">
-                          <badge.icon className="h-3 w-3" />
-                          {badge.label}
+                          <badge.icon className="h-3 w-3" /> {badge.label}
                         </Badge>
                       </div>
                     </div>
@@ -71,12 +86,7 @@ export function TopicList() {
                     </div>
                   </div>
                 </button>
-
-                <Link
-                  href={`/simulado?topic=${topicScore.topicId}`}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-primary/5 text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-                  title="Praticar este tópico"
-                >
+                <Link href={`/simulado?topic=${topicScore.topicId}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-primary/5 text-primary transition-colors hover:bg-primary hover:text-primary-foreground" title="Praticar">
                   <Play className="h-4 w-4" />
                 </Link>
               </div>
@@ -85,27 +95,16 @@ export function TopicList() {
                 <div className="ml-12 mt-1 flex flex-col gap-1 border-l-2 border-border pl-4 pb-2">
                   {topicData.modules.map((mod) => {
                     const isModExpanded = expandedModule === mod.id;
-                    const hasLos = mod.los && mod.los.length > 0;
-
                     return (
                       <div key={mod.id}>
                         <button
-                          onClick={() => hasLos && setExpandedModule(isModExpanded ? null : mod.id)}
-                          className={cn(
-                            "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors",
-                            hasLos ? "hover:bg-accent/50 cursor-pointer" : "cursor-default",
-                            isModExpanded && "bg-accent/30"
-                          )}
+                          onClick={() => setExpandedModule(isModExpanded ? null : mod.id)}
+                          className={cn("flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent/50", isModExpanded && "bg-accent/30")}
                         >
-                          {hasLos ? (
-                            isModExpanded ? <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
-                          ) : (
-                            <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
-                          )}
+                          {isModExpanded ? <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />}
                           <span className="text-muted-foreground">{mod.name}</span>
                         </button>
-
-                        {isModExpanded && hasLos && (
+                        {isModExpanded && (
                           <div className="ml-5 mt-0.5 mb-1 flex flex-col gap-0.5 border-l border-dashed border-border pl-3">
                             {mod.los.map((los, i) => (
                               <p key={i} className="text-[10px] leading-relaxed text-muted-foreground/80">
@@ -118,7 +117,7 @@ export function TopicList() {
                     );
                   })}
                   <p className="mt-1 text-[10px] text-muted-foreground">
-                    {topicScore.questionsAnswered} de {topicScore.totalQuestions} questões respondidas
+                    {topicScore.questionsAnswered} questões respondidas
                     {topicData.weightRange ? ` (peso: ${topicData.weightRange})` : ""}
                   </p>
                 </div>

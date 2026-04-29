@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MockQuestion } from "@/lib/mock-data";
-import { X, Send, Sparkles, MessageCircle } from "lucide-react";
+import type { GeneratedQuestion } from "@/lib/api";
+import { apiExplainQuestion } from "@/lib/api";
+import { X, Send, Sparkles, MessageCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface QuizChatProps {
-  question: MockQuestion;
+  question: GeneratedQuestion;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -17,13 +18,6 @@ interface ChatMsg {
   content: string;
 }
 
-const CONTEXTUAL_RESPONSES = [
-  "Essa questão testa um conceito fundamental. Pense no que cada alternativa implica e elimine as que contradizem os princípios básicos.",
-  "Dica: releia o enunciado com cuidado. Palavras como 'MOST likely', 'LEAST likely' e 'BEST described' são cruciais para a resposta correta.",
-  "Tente associar essa questão com os LOS do módulo correspondente. O CFA cobra exatamente o que está nos Learning Outcome Statements.",
-  "Uma boa estratégia é eliminar primeiro as alternativas claramente incorretas. Geralmente uma das três opções pode ser descartada rapidamente.",
-  "Pense em como esse conceito se aplica na prática. O CFA valoriza a compreensão aplicada, não apenas memorização.",
-];
 
 /**
  * Contextual chat panel for training mode, providing discussion about the current question.
@@ -53,16 +47,28 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
     const userMsg: ChatMsg = { id: `u-${Date.now()}`, role: "user", content: input.trim() };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setLoading(true);
 
-    setTimeout(() => {
-      const resp = CONTEXTUAL_RESPONSES[Math.floor(Math.random() * CONTEXTUAL_RESPONSES.length)];
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: resp }]);
-    }, 600);
+    try {
+      const { explanation } = await apiExplainQuestion({
+        question: question.question,
+        options: question.options,
+        selectedIndex: 0,
+        correctIndex: question.correctIndex,
+      });
+      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: explanation }]);
+    } catch {
+      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: "Desculpe, não consegui gerar uma explicação. Tente novamente." }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;

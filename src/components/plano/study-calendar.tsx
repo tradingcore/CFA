@@ -1,16 +1,18 @@
 "use client";
 
-import { mockStudyPlan } from "@/lib/mock-data";
+import { StudyPlanDoc } from "@/lib/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
-/**
- * Visual calendar showing study days colored by completion status.
- * @returns Calendar card component
- */
-export function StudyCalendar() {
+type Block = StudyPlanDoc["blocks"][number];
+
+interface StudyCalendarProps {
+  blocks: Block[];
+}
+
+export function StudyCalendar({ blocks }: StudyCalendarProps) {
   const [monthOffset, setMonthOffset] = useState(0);
 
   const today = new Date();
@@ -22,7 +24,7 @@ export function StudyCalendar() {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const studyDates = new Map<string, { completed: number; total: number }>();
-  mockStudyPlan.forEach((block) => {
+  blocks.forEach((block) => {
     const existing = studyDates.get(block.date) || { completed: 0, total: 0 };
     studyDates.set(block.date, {
       completed: existing.completed + (block.completed ? 1 : 0),
@@ -42,13 +44,8 @@ export function StudyCalendar() {
     return "pending";
   };
 
-  const isToday = (day: number) => {
-    return (
-      day === today.getDate() &&
-      month === today.getMonth() &&
-      year === today.getFullYear()
-    );
-  };
+  const isToday = (day: number) =>
+    day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
   return (
     <Card>
@@ -56,22 +53,13 @@ export function StudyCalendar() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-base capitalize">{monthName}</CardTitle>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setMonthOffset((p) => p - 1)}
-              className="rounded-lg p-1.5 hover:bg-accent"
-            >
+            <button onClick={() => setMonthOffset((p) => p - 1)} className="rounded-lg p-1.5 hover:bg-accent">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <button
-              onClick={() => setMonthOffset(0)}
-              className="rounded-lg px-2 py-1 text-xs hover:bg-accent"
-            >
+            <button onClick={() => setMonthOffset(0)} className="rounded-lg px-2 py-1 text-xs hover:bg-accent">
               Hoje
             </button>
-            <button
-              onClick={() => setMonthOffset((p) => p + 1)}
-              className="rounded-lg p-1.5 hover:bg-accent"
-            >
+            <button onClick={() => setMonthOffset((p) => p + 1)} className="rounded-lg p-1.5 hover:bg-accent">
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -80,38 +68,26 @@ export function StudyCalendar() {
       <CardContent>
         <div className="grid grid-cols-7 gap-1">
           {weekDays.map((d) => (
-            <div key={d} className="py-1 text-center text-[10px] font-medium text-muted-foreground">
-              {d}
-            </div>
+            <div key={d} className="py-1 text-center text-[10px] font-medium text-muted-foreground">{d}</div>
           ))}
-
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} />
-          ))}
-
+          {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
             const status = getDayStatus(day);
-            const todayFlag = isToday(day);
-
             return (
-              <div
-                key={day}
-                className={cn(
-                  "flex h-9 w-full items-center justify-center rounded-lg text-xs font-medium transition-colors",
-                  status === "completed" && "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
-                  status === "partial" && "bg-amber-500/20 text-amber-600 dark:text-amber-400",
-                  status === "pending" && "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-                  status === "none" && "text-muted-foreground",
-                  todayFlag && "ring-2 ring-primary font-bold"
-                )}
-              >
+              <div key={day} className={cn(
+                "flex h-9 w-full items-center justify-center rounded-lg text-xs font-medium transition-colors",
+                status === "completed" && "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
+                status === "partial" && "bg-amber-500/20 text-amber-600 dark:text-amber-400",
+                status === "pending" && "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+                status === "none" && "text-muted-foreground",
+                isToday(day) && "ring-2 ring-primary font-bold"
+              )}>
                 {day}
               </div>
             );
           })}
         </div>
-
         <div className="mt-4 flex items-center justify-center gap-4">
           {[
             { label: "Concluído", color: "bg-emerald-500/20" },

@@ -1,20 +1,47 @@
 "use client";
 
-import { mockSimuladoHistory } from "@/lib/mock-data";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { getQuizHistory, QuizResult } from "@/lib/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileQuestion, TrendingUp, TrendingDown } from "lucide-react";
 
 export function RecentActivity() {
+  const { user } = useAuth();
+  const [history, setHistory] = useState<QuizResult[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      getQuizHistory(user.uid, 5).then(setHistory).catch(console.error);
+    }
+  }, [user]);
+
+  if (history.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Atividade Recente</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            Nenhum simulado realizado ainda. Comece um simulado para ver seu histórico aqui!
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Atividade Recente</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        {mockSimuladoHistory.map((sim, index) => {
-          const prevScore = mockSimuladoHistory[index + 1]?.score;
+        {history.map((sim, index) => {
+          const prevScore = history[index + 1]?.score;
           const trend = prevScore ? sim.score - prevScore : 0;
+          const timeMinutes = Math.round(sim.timeSpentSeconds / 60);
 
           return (
             <div
@@ -26,13 +53,12 @@ export function RecentActivity() {
                   <FileQuestion className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Simulado</p>
+                  <p className="text-sm font-medium">
+                    Simulado {sim.mode === "official" ? "Oficial" : "Treino"} · Level {sim.level}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(sim.date).toLocaleDateString("pt-BR", {
-                      day: "2-digit",
-                      month: "short",
-                    })}{" "}
-                    · {sim.totalQuestions} questões · {sim.timeSpentMinutes}min
+                    {new Date(sim.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                    {" · "}{sim.totalQuestions} questões · {timeMinutes}min
                   </p>
                 </div>
               </div>
@@ -41,8 +67,7 @@ export function RecentActivity() {
                 {trend !== 0 && (
                   <div className={`flex items-center gap-0.5 text-xs font-medium ${trend > 0 ? "text-emerald-500" : "text-rose-500"}`}>
                     {trend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {trend > 0 ? "+" : ""}
-                    {trend}%
+                    {trend > 0 ? "+" : ""}{trend}%
                   </div>
                 )}
                 <Badge

@@ -1,13 +1,21 @@
 "use client";
 
-import { useLevel } from "@/contexts/level-context";
-import { mockWeeklyStats } from "@/lib/mock-data";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { getWeeklyQuizStats } from "@/lib/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, CheckCircle2 } from "lucide-react";
 
 export function QuickStats() {
-  const { level } = useLevel();
-  const stats = mockWeeklyStats[level];
+  const { user } = useAuth();
+  const [stats, setStats] = useState({ questionsAnswered: 0, correctAnswers: 0, simuladosCompleted: 0 });
+
+  useEffect(() => {
+    if (user) {
+      getWeeklyQuizStats(user.uid).then(setStats).catch(console.error);
+    }
+  }, [user]);
+
   const accuracy = stats.questionsAnswered > 0
     ? Math.round((stats.correctAnswers / stats.questionsAnswered) * 100)
     : 0;

@@ -1,7 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { CFALevel } from "@/lib/cfa-topics";
+import { useAuth } from "@/contexts/auth-context";
+import { updateUserProfile } from "@/lib/firestore";
 
 interface LevelContextType {
   level: CFALevel;
@@ -10,13 +12,22 @@ interface LevelContextType {
 
 const LevelContext = createContext<LevelContextType | undefined>(undefined);
 
-/**
- * Provider that manages the currently selected CFA level across the app.
- * @param children - React children to wrap
- * @returns Context provider component
- */
 export function LevelProvider({ children }: { children: ReactNode }) {
-  const [level, setLevel] = useState<CFALevel>("I");
+  const { user, profile } = useAuth();
+  const [level, setLevelState] = useState<CFALevel>("I");
+
+  useEffect(() => {
+    if (profile?.cfaLevel) {
+      setLevelState(profile.cfaLevel);
+    }
+  }, [profile?.cfaLevel]);
+
+  const setLevel = (newLevel: CFALevel) => {
+    setLevelState(newLevel);
+    if (user) {
+      updateUserProfile(user.uid, { cfaLevel: newLevel }).catch(console.error);
+    }
+  };
 
   return (
     <LevelContext.Provider value={{ level, setLevel }}>
@@ -25,11 +36,6 @@ export function LevelProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * Hook to access the current CFA level and setter.
- * @returns { level, setLevel } from context
- * @throws Error if used outside of LevelProvider
- */
 export function useLevel() {
   const context = useContext(LevelContext);
   if (!context) throw new Error("useLevel must be used within LevelProvider");

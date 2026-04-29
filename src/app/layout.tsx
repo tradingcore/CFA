@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { AuthProvider } from "@/contexts/auth-context";
 import { LevelProvider } from "@/contexts/level-context";
 import { SidebarProvider } from "@/contexts/sidebar-context";
 import { StudyProgressProvider } from "@/contexts/study-progress-context";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -37,23 +39,27 @@ export default function RootLayout({
     >
       <body className="h-full">
         <ThemeProvider>
-          <TooltipProvider>
-            <LevelProvider>
-              <StudyProgressProvider>
-                <SidebarProvider>
-                  <div className="flex h-full flex-col">
-                    <Header />
-                    <div className="flex flex-1 overflow-hidden">
-                      <Sidebar />
-                      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-                        {children}
-                      </main>
-                    </div>
-                  </div>
-                </SidebarProvider>
-              </StudyProgressProvider>
-            </LevelProvider>
-          </TooltipProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <LevelProvider>
+                <StudyProgressProvider>
+                  <SidebarProvider>
+                    <ProtectedRoute>
+                      <div className="flex h-full flex-col">
+                        <Header />
+                        <div className="flex flex-1 overflow-hidden">
+                          <Sidebar />
+                          <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+                            {children}
+                          </main>
+                        </div>
+                      </div>
+                    </ProtectedRoute>
+                  </SidebarProvider>
+                </StudyProgressProvider>
+              </LevelProvider>
+            </TooltipProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

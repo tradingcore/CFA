@@ -12,14 +12,17 @@ import {
   PanelLeftClose,
   PanelLeft,
   X,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/contexts/sidebar-context";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -33,6 +36,13 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
+  const { user, profile } = useAuth();
+
+  const displayName = user?.displayName || profile?.displayName || "";
+  const photoURL = user?.photoURL || profile?.photoURL || "";
+  const initials = displayName
+    ? displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
+    : "U";
 
   const sidebarContent = (
     <>
@@ -86,7 +96,25 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* User + collapse */}
       <div className="border-t border-border p-3 hidden md:block">
+        {!collapsed && (
+          <Link
+            href="/perfil"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 mb-2 transition-colors hover:bg-sidebar-accent"
+          >
+            <Avatar className="h-7 w-7">
+              {photoURL ? <AvatarImage src={photoURL} alt={displayName} /> : null}
+              <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate">{displayName}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
+            </div>
+          </Link>
+        )}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="flex w-full items-center justify-center rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
@@ -107,7 +135,6 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 md:hidden"
@@ -115,7 +142,6 @@ export function Sidebar() {
         />
       )}
 
-      {/* Mobile sidebar */}
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 flex h-full w-[260px] flex-col border-r border-border bg-sidebar transition-transform duration-300 md:hidden",
@@ -134,7 +160,6 @@ export function Sidebar() {
         {sidebarContent}
       </aside>
 
-      {/* Desktop sidebar */}
       <aside
         className={cn(
           "sticky top-16 hidden h-[calc(100vh-4rem)] flex-col border-r border-border bg-sidebar transition-all duration-300 md:flex",

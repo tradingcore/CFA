@@ -1,20 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { MockQuestion } from "@/lib/mock-data";
+import type { GeneratedQuestion } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle, ChevronDown, ChevronRight, Filter, Trophy, Clock, Target, RotateCcw } from "lucide-react";
 
 interface QuizReviewProps {
-  questions: MockQuestion[];
+  questions: GeneratedQuestion[];
   answers: (number | null)[];
   totalTimeSeconds: number;
   onRestart: () => void;
 }
 
-const optionLetters = ["A", "B", "C"];
+const optionLetters = ["A", "B", "C", "D"];
 
 /**
  * Post-quiz review screen showing all questions with user answers vs correct answers.

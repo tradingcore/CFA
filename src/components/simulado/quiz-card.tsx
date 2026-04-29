@@ -1,12 +1,12 @@
 "use client";
 
-import { MockQuestion } from "@/lib/mock-data";
+import type { GeneratedQuestion } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 interface QuizCardProps {
-  question: MockQuestion;
+  question: GeneratedQuestion;
   selectedIndex: number | null;
   showAnswer: boolean;
   onSelect: (index: number) => void;
