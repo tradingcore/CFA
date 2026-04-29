@@ -1,0 +1,61 @@
+"use client";
+
+import { mockSimuladoHistory } from "@/lib/mock-data";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { FileQuestion, TrendingUp, TrendingDown } from "lucide-react";
+
+export function RecentActivity() {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">Atividade Recente</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        {mockSimuladoHistory.map((sim, index) => {
+          const prevScore = mockSimuladoHistory[index + 1]?.score;
+          const trend = prevScore ? sim.score - prevScore : 0;
+
+          return (
+            <div
+              key={sim.id}
+              className="flex items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-accent/50"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <FileQuestion className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Simulado</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(sim.date).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "short",
+                    })}{" "}
+                    · {sim.totalQuestions} questões · {sim.timeSpentMinutes}min
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {trend !== 0 && (
+                  <div className={`flex items-center gap-0.5 text-xs font-medium ${trend > 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                    {trend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    {trend > 0 ? "+" : ""}
+                    {trend}%
+                  </div>
+                )}
+                <Badge
+                  variant={sim.score >= 70 ? "default" : sim.score >= 50 ? "secondary" : "destructive"}
+                  className="font-mono tabular-nums"
+                >
+                  {sim.score}%
+                </Badge>
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
