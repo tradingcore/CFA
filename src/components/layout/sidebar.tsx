@@ -25,12 +25,32 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/simulado", label: "Mock Exam", icon: FileQuestion },
-  { href: "/mapa", label: "Performance Map", icon: Map },
-  { href: "/estudo", label: "Study Progress", icon: GraduationCap },
-  { href: "/plano", label: "Study Plan", icon: CalendarDays },
-  { href: "/chat", label: "Chat", icon: MessageCircle },
+  {
+    group: "Home",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    group: "Practice",
+    items: [
+      { href: "/simulado", label: "Mock Exam", icon: FileQuestion },
+      { href: "/mapa", label: "Performance Map", icon: Map },
+    ],
+  },
+  {
+    group: "Study",
+    items: [
+      { href: "/estudo", label: "Study Progress", icon: GraduationCap },
+      { href: "/plano", label: "Study Plan", icon: CalendarDays },
+    ],
+  },
+  {
+    group: "Tutor",
+    items: [
+      { href: "/chat", label: "Chat", icon: MessageCircle },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -47,7 +67,14 @@ export function Sidebar() {
   const sidebarContent = (
     <>
       <nav className="flex flex-1 flex-col gap-1 p-3">
-        {navItems.map((item) => {
+        {navItems.map((group) => (
+          <div key={group.group} className="flex flex-col gap-1">
+            {(!collapsed || mobileOpen) && (
+              <p className="px-3 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground first:pt-0">
+                {group.group}
+              </p>
+            )}
+            {group.items.map((item) => {
           const isActive =
             item.href === "/dashboard"
               ? pathname === "/dashboard"
@@ -93,7 +120,9 @@ export function Sidebar() {
           }
 
           return <div key={item.href}>{linkElement}</div>;
-        })}
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* User + collapse */}

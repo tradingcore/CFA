@@ -31,7 +31,8 @@ export default function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
+  const didAutoLoadSession = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -44,9 +45,24 @@ export default function ChatPage() {
   }, [messages, scrollToBottom]);
 
   useEffect(() => {
-    if (user) {
-      getChatSessions(user.uid).then(setSessions).catch(console.error);
+    if (!user) {
+      didAutoLoadSession.current = false;
+      setSessions([]);
+      setCurrentSessionId(null);
+      setMessages([WELCOME_MESSAGE]);
+      return;
     }
+
+    getChatSessions(user.uid, 50)
+      .then((loadedSessions) => {
+        setSessions(loadedSessions);
+        if (!didAutoLoadSession.current && loadedSessions[0]) {
+          didAutoLoadSession.current = true;
+          setCurrentSessionId(loadedSessions[0].id || null);
+          setMessages(loadedSessions[0].messages);
+        }
+      })
+      .catch(console.error);
   }, [user]);
 
   const saveCurrentSession = async (msgs: ChatMessage[]) => {
@@ -66,7 +82,7 @@ export default function ChatPage() {
     const id = await saveChatSession(user.uid, session);
     setCurrentSessionId(id);
 
-    const updated = await getChatSessions(user.uid);
+    const updated = await getChatSessions(user.uid, 50);
     setSessions(updated);
   };
 
@@ -129,7 +145,6 @@ export default function ChatPage() {
   const handleNewChat = () => {
     setMessages([WELCOME_MESSAGE]);
     setCurrentSessionId(null);
-    setShowSidebar(false);
   };
 
   const handleLoadSession = async (sessionId: string) => {
@@ -139,7 +154,6 @@ export default function ChatPage() {
       setMessages(session.messages);
       setCurrentSessionId(sessionId);
     }
-    setShowSidebar(false);
   };
 
   const handleDeleteSession = async (sessionId: string) => {
@@ -155,9 +169,9 @@ export default function ChatPage() {
     <div className="mx-auto flex h-full w-full max-w-7xl">
       {/* Sessions sidebar */}
       {showSidebar && (
-        <div className="w-64 shrink-0 border-r border-border bg-card overflow-y-auto">
+        <div className="w-52 shrink-0 overflow-y-auto border-r border-border bg-card">
           <div className="flex items-center justify-between border-b border-border p-3">
-            <span className="text-sm font-semibold">Conversations</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Chats</span>
             <button onClick={() => setShowSidebar(false)} className="rounded p-1 hover:bg-accent">
               <X className="h-4 w-4" />
             </button>
@@ -165,7 +179,7 @@ export default function ChatPage() {
           <div className="p-2">
             <button
               onClick={handleNewChat}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-primary hover:bg-primary/10"
             >
               <Plus className="h-4 w-4" /> New conversation
             </button>
@@ -176,11 +190,14 @@ export default function ChatPage() {
                 <button
                   onClick={() => handleLoadSession(s.id!)}
                   className={cn(
-                    "flex-1 truncate rounded-lg px-3 py-2 text-left text-xs transition-colors",
+                    "flex-1 truncate rounded-lg px-2 py-2 text-left text-xs transition-colors",
                     currentSessionId === s.id ? "bg-primary/10 text-primary font-medium" : "hover:bg-accent"
                   )}
                 >
-                  {s.title}
+                  <span className="block truncate">{s.title}</span>
+                  <span className="mt-0.5 block text-[10px] font-normal text-muted-foreground">
+                    {new Date(s.updatedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                  </span>
                 </button>
                 <button
                   onClick={() => handleDeleteSession(s.id!)}

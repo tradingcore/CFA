@@ -2,12 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import type { GeneratedQuestion } from "@/lib/api";
-import { apiExplainQuestion } from "@/lib/api";
+import { apiChat } from "@/lib/api";
+import { useLevel } from "@/contexts/level-context";
+import { MarkdownMessage } from "@/components/chat/markdown-message";
 import { X, Send, Sparkles, MessageCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface QuizChatProps {
   question: GeneratedQuestion;
+  selectedIndex: number | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -26,7 +29,8 @@ interface ChatMsg {
  * @param onClose - Callback to close the panel
  * @returns Chat panel component
  */
-export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
+export function QuizChat({ question, selectedIndex, isOpen, onClose }: QuizChatProps) {
+  const { level } = useLevel();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
@@ -57,13 +61,18 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
     setLoading(true);
 
     try {
-      const { explanation } = await apiExplainQuestion({
-        question: question.question,
-        options: question.options,
-        selectedIndex: 0,
-        correctIndex: question.correctIndex,
+      const optionLines = question.options.map((option, index) => `${String.fromCharCode(65 + index)}. ${option}`).join("\n");
+      const selectedContext = selectedIndex != null
+        ? `The student selected ${String.fromCharCode(65 + selectedIndex)}. The correct answer is ${String.fromCharCode(65 + question.correctIndex)}.`
+        : `The student has not selected an answer yet. Do not reveal the correct answer unless explicitly asked.`;
+      const history = messages.map((message) => ({ role: message.role, content: message.content }));
+      const { response } = await apiChat({
+        message: input.trim(),
+        history,
+        level,
+        topicContext: `Current CFA practice question:\n${question.question}\n\nOptions:\n${optionLines}\n\n${selectedContext}`,
       });
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: explanation }]);
+      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: response }]);
     } catch {
       setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: "Sorry, I couldn't generate an explanation. Please try again." }]);
     } finally {
@@ -74,7 +83,7 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="flex h-full w-80 flex-col border-l border-border bg-card">
+    <div className="flex h-[calc(100vh-7rem)] w-full flex-col rounded-2xl border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-4 w-4 text-primary" />
@@ -96,10 +105,10 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
           {messages.map((m) => (
             <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
               <div className={cn(
-                "max-w-[90%] rounded-xl px-3 py-2 text-xs leading-relaxed",
+                "max-w-[92%] rounded-xl px-3 py-2 text-xs leading-relaxed",
                 m.role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-secondary rounded-bl-sm"
               )}>
-                {m.content}
+                {m.role === "assistant" ? <MarkdownMessage content={m.content} /> : m.content}
               </div>
             </div>
           ))}
@@ -114,8 +123,8 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
           placeholder="Ask a question..."
           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-xs outline-none ring-ring focus:ring-2"
         />
-        <button type="submit" disabled={!input.trim()} className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-30">
-          <Send className="h-3 w-3" />
+        <button type="submit" disabled={!input.trim() || loading} className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-30">
+          {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
         </button>
       </form>
     </div>

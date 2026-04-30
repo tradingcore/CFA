@@ -6,6 +6,22 @@ interface MarkdownMessageProps {
   className?: string;
 }
 
+function simplifyLatex(formula: string): string {
+  return formula
+    .replace(/\\text\{([^{}]+)\}/g, "$1")
+    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, "($1) / ($2)")
+    .replace(/\^\{([^{}]+)\}/g, "^($1)")
+    .replace(/_\{([^{}]+)\}/g, "_($1)")
+    .replace(/\\left|\\right/g, "")
+    .replace(/\\times/g, "×")
+    .replace(/\\cdot/g, "·")
+    .replace(/\\%/g, "%")
+    .replace(/\\,/g, " ")
+    .replace(/\\/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function renderInline(text: string): ReactNode[] {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\$[^$\n]+\$)/g).filter(Boolean);
 
@@ -29,7 +45,7 @@ function renderInline(text: string): ReactNode[] {
     if (part.startsWith("$") && part.endsWith("$")) {
       return (
         <span key={index} className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[0.92em] text-primary">
-          {part.slice(1, -1)}
+          {simplifyLatex(part.slice(1, -1))}
         </span>
       );
     }
@@ -39,11 +55,12 @@ function renderInline(text: string): ReactNode[] {
 }
 
 function renderFormula(formula: string, key: string) {
+  const cleaned = simplifyLatex(formula);
   return (
     <div key={key} className="my-3 overflow-x-auto rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
-      <code className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-primary">
-        {formula.trim()}
-      </code>
+      <div className="whitespace-pre-wrap text-center font-mono text-base leading-relaxed text-primary">
+        {cleaned}
+      </div>
     </div>
   );
 }

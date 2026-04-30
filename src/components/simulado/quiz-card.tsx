@@ -24,7 +24,7 @@ const optionLetters = ["A", "B", "C", "D"];
  */
 export function QuizCard({ question, selectedIndex, showAnswer, onSelect }: QuizCardProps) {
   return (
-    <Card className="w-full max-w-2xl border-0 shadow-lg">
+    <Card className="w-full border-0 shadow-lg">
       <CardContent className="flex flex-col gap-6 p-6 sm:p-8">
         <p className="text-lg font-medium leading-relaxed">{question.question}</p>
 

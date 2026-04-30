@@ -22,6 +22,7 @@ interface SimuladoConfigProps {
   mode: SimuladoMode;
   onSetMode: (m: SimuladoMode) => void;
   onStart: () => void;
+  onStartOfficialFull: () => void;
   availableQuestionCount: number;
 }
 
@@ -39,6 +40,7 @@ export function SimuladoConfig({
   mode,
   onSetMode,
   onStart,
+  onStartOfficialFull,
   availableQuestionCount,
 }: SimuladoConfigProps) {
   const { level } = useLevel();
@@ -87,6 +89,26 @@ export function SimuladoConfig({
           </span>
         </button>
       </div>
+
+      {mode === "official" && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold">Full official exam preset</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Starts immediately with all topics, {examFormat.totalQuestions} questions, and a{" "}
+                {examFormat.sessions} × {examFormat.minutesPerSession}min timer structure.
+              </p>
+            </div>
+            <button
+              onClick={onStartOfficialFull}
+              className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Start Full Official Exam
+            </button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quantity */}
       <Card>

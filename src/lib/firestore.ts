@@ -67,6 +67,10 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
 export interface QuizAnswer {
   questionId: string;
   topicId: string;
+  moduleId?: string;
+  question?: string;
+  options?: string[];
+  explanation?: string;
   selectedIndex: number;
   correctIndex: number;
   correct: boolean;

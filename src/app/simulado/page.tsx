@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, Suspense } from "react";
+import { useState, useCallback, Suspense } from "react";
 import { useLevel } from "@/contexts/level-context";
 import { useAuth } from "@/contexts/auth-context";
 import { getTopicsForLevel } from "@/lib/cfa-topics";
@@ -12,12 +12,14 @@ import { QuizTimer } from "@/components/simulado/quiz-timer";
 import { QuizReview } from "@/components/simulado/quiz-review";
 import { QuizChat } from "@/components/simulado/quiz-chat";
 import { SimuladoConfig } from "@/components/simulado/simulado-config";
+import { MockHistory } from "@/components/simulado/mock-history";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, ArrowLeft, MessageCircle, Send, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 type QuizState = "config" | "loading" | "running" | "finished";
+type ConfigTab = "start" | "history";
 
 function SimuladoInner() {
   const { level } = useLevel();
@@ -29,6 +31,7 @@ function SimuladoInner() {
   const preselectedTopic = searchParams.get("topic");
 
   const [state, setState] = useState<QuizState>("config");
+  const [configTab, setConfigTab] = useState<ConfigTab>("start");
   const [mode, setMode] = useState<SimuladoMode>("training");
   const [selectedTopics, setSelectedTopics] = useState<Set<string>>(() => {
     if (preselectedTopic && topics.some((t) => t.id === preselectedTopic)) {
@@ -109,24 +112,37 @@ function SimuladoInner() {
     }
   };
 
-  const handleStart = async () => {
-    if (selectedTopics.size === 0) return;
+  const handleStart = async (overrides?: {
+    mode?: SimuladoMode;
+    questionCount?: number;
+    selectedTopics?: Set<string>;
+    selectedModules?: Set<string>;
+  }) => {
+    const activeQuestionCount = overrides?.questionCount ?? questionCount;
+    const activeSelectedTopics = overrides?.selectedTopics ?? selectedTopics;
+    const activeSelectedModules = overrides?.selectedModules ?? selectedModules;
+
+    if (activeSelectedTopics.size === 0) return;
+    if (overrides?.mode) setMode(overrides.mode);
+    if (overrides?.questionCount) setQuestionCount(overrides.questionCount);
+    if (overrides?.selectedTopics) setSelectedTopics(overrides.selectedTopics);
+    if (overrides?.selectedModules) setSelectedModules(overrides.selectedModules);
     setState("loading");
     setLoadingError("");
 
     try {
-      const selectedTopicsList = topics.filter(t => selectedTopics.has(t.id));
-      const questionsPerTopic = Math.max(1, Math.ceil(questionCount / selectedTopicsList.length));
+      const selectedTopicsList = topics.filter(t => activeSelectedTopics.has(t.id));
+      const questionsPerTopic = Math.max(1, Math.ceil(activeQuestionCount / selectedTopicsList.length));
 
       const allGenerated: GeneratedQuestion[] = [];
 
       for (const topic of selectedTopicsList) {
-        const selectedMods = topic.modules.filter(m => selectedModules.has(m.id));
+        const selectedMods = topic.modules.filter(m => activeSelectedModules.has(m.id));
         const losDescriptions = selectedMods.flatMap(m => m.los);
 
         if (losDescriptions.length === 0) continue;
 
-        const remaining = questionCount - allGenerated.length;
+        const remaining = activeQuestionCount - allGenerated.length;
         if (remaining <= 0) break;
 
         const count = Math.min(questionsPerTopic, remaining);
@@ -148,9 +164,9 @@ function SimuladoInner() {
         return;
       }
 
-      setQuestions(allGenerated.slice(0, questionCount));
+      setQuestions(allGenerated.slice(0, activeQuestionCount));
       setCurrentIndex(0);
-      setAnswers(new Array(Math.min(allGenerated.length, questionCount)).fill(null));
+      setAnswers(new Array(Math.min(allGenerated.length, activeQuestionCount)).fill(null));
       setShowAnswer(false);
       setTimeSpent(0);
       setChatOpen(false);
@@ -160,6 +176,18 @@ function SimuladoInner() {
       setLoadingError("Error generating questions. Check your connection and try again.");
       setState("config");
     }
+  };
+
+  const handleStartOfficialFull = () => {
+    const allTopicIds = new Set(topics.map((t) => t.id));
+    const allModuleIds = new Set<string>();
+    topics.forEach((topic) => topic.modules.forEach((module) => allModuleIds.add(module.id)));
+    handleStart({
+      mode: "official",
+      questionCount: examFormat.totalQuestions,
+      selectedTopics: allTopicIds,
+      selectedModules: allModuleIds,
+    });
   };
 
   const handleSelect = (index: number) => {
@@ -221,6 +249,10 @@ function SimuladoInner() {
       answers: questions.map((q, i) => ({
         questionId: q.id,
         topicId: q.topicId,
+        moduleId: q.moduleId,
+        question: q.question,
+        options: q.options,
+        explanation: q.explanation,
         selectedIndex: answers[i] ?? -1,
         correctIndex: q.correctIndex,
         correct: answers[i] === q.correctIndex,
@@ -267,6 +299,33 @@ function SimuladoInner() {
             {loadingError}
           </div>
         )}
+        <div className="mx-auto mb-5 flex max-w-5xl gap-2 rounded-xl border border-border bg-card p-1">
+          <button
+            onClick={() => setConfigTab("start")}
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              configTab === "start" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"
+            }`}
+          >
+            Start Mock
+          </button>
+          <button
+            onClick={() => setConfigTab("history")}
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              configTab === "history" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"
+            }`}
+          >
+            History
+          </button>
+        </div>
+        {configTab === "history" ? (
+          user ? (
+            <MockHistory uid={user.uid} />
+          ) : (
+            <div className="mx-auto max-w-2xl rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+              Sign in to see your mock exam history.
+            </div>
+          )
+        ) : (
         <SimuladoConfig
           selectedTopics={selectedTopics}
           selectedModules={selectedModules}
@@ -278,8 +337,10 @@ function SimuladoInner() {
           mode={mode}
           onSetMode={setMode}
           onStart={handleStart}
+          onStartOfficialFull={handleStartOfficialFull}
           availableQuestionCount={questionCount}
         />
+        )}
       </>
     );
   }
@@ -310,26 +371,50 @@ function SimuladoInner() {
   // --- RUNNING: OFFICIAL ---
   if (mode === "official") {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary" className="font-mono tabular-nums">
-            {currentIndex + 1} / {questions.length}
-          </Badge>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-mono tabular-nums">
-              {answeredCount} answered
-            </Badge>
-            <QuizTimer
-              isRunning
-              mode="countdown"
-              initialSeconds={countdownSeconds}
-              onTimeUp={handleTimeUp}
-              onTimeUpdate={handleTimeUpdate}
-            />
+      <div className="mx-auto flex max-w-6xl flex-col gap-4">
+        <div className="sticky top-0 z-20 rounded-2xl border border-border bg-background/95 p-3 backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="font-mono tabular-nums">
+                {currentIndex + 1} / {questions.length}
+              </Badge>
+              <Badge variant="outline" className="font-mono tabular-nums">
+                {answeredCount} answered
+              </Badge>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <QuizTimer
+                isRunning
+                mode="countdown"
+                initialSeconds={countdownSeconds}
+                onTimeUp={handleTimeUp}
+                onTimeUpdate={handleTimeUpdate}
+              />
+              <button
+                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+                disabled={currentIndex === 0}
+                className="flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm font-medium disabled:opacity-30 hover:bg-accent"
+              >
+                <ArrowLeft className="h-4 w-4" /> Previous
+              </button>
+              {currentIndex < questions.length - 1 ? (
+                <button
+                  onClick={() => setCurrentIndex(currentIndex + 1)}
+                  className="flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent"
+                >
+                  Next <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : null}
+              <button
+                onClick={handleSubmitOfficial}
+                className="flex items-center gap-1 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+              >
+                <Send className="h-4 w-4" /> Submit
+              </button>
+            </div>
           </div>
+          <Progress value={progressPercent} className="mt-3 h-2" />
         </div>
-
-        <Progress value={progressPercent} className="h-2" />
 
         <div className="flex flex-wrap gap-1.5">
           {questions.map((_, i) => (
@@ -390,28 +475,45 @@ function SimuladoInner() {
 
   // --- RUNNING: TRAINING ---
   return (
-    <div className="flex gap-0">
-      <div className={`mx-auto flex max-w-2xl flex-1 flex-col items-center gap-4 ${chatOpen ? "mr-0" : ""}`}>
-        <div className="flex w-full items-center justify-between">
-          <Badge variant="secondary" className="font-mono tabular-nums">
-            {currentIndex + 1} / {questions.length}
-          </Badge>
-          <div className="flex items-center gap-2">
-            <QuizTimer isRunning mode="countup" onTimeUpdate={handleTimeUpdate} />
-            <button
-              onClick={() => setChatOpen(!chatOpen)}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
-                chatOpen ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"
-              }`}
-              title="Discuss question"
-            >
-              <MessageCircle className="h-4 w-4" />
-            </button>
+    <div className={`mx-auto grid w-full max-w-7xl gap-5 ${chatOpen ? "lg:grid-cols-[minmax(0,1fr)_460px]" : "lg:grid-cols-[minmax(0,820px)] lg:justify-center"}`}>
+      <div className="flex min-w-0 flex-col items-center gap-4">
+        <div className="sticky top-0 z-20 w-full rounded-2xl border border-border bg-background/95 p-3 backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Badge variant="secondary" className="font-mono tabular-nums">
+              {currentIndex + 1} / {questions.length}
+            </Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <QuizTimer isRunning mode="countup" onTimeUpdate={handleTimeUpdate} />
+              <button
+                onClick={() => setChatOpen(!chatOpen)}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  chatOpen ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"
+                }`}
+                title="Discuss question"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Discuss
+              </button>
+              {!showAnswer ? (
+                <button
+                  onClick={handleConfirmTraining}
+                  disabled={answers[currentIndex] === null}
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-40"
+                >
+                  Confirm
+                </button>
+              ) : (
+                <button
+                  onClick={handleNextTraining}
+                  className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                >
+                  {currentIndex < questions.length - 1 ? "Next Question" : "View Results"}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="w-full">
-          <Progress value={((currentIndex + (showAnswer ? 1 : 0)) / questions.length) * 100} className="h-2" />
+          <Progress value={((currentIndex + (showAnswer ? 1 : 0)) / questions.length) * 100} className="mt-3 h-2" />
         </div>
 
         {currentQuestion && (
@@ -445,7 +547,12 @@ function SimuladoInner() {
       </div>
 
       {chatOpen && currentQuestion && (
-        <QuizChat question={currentQuestion} isOpen={chatOpen} onClose={() => setChatOpen(false)} />
+        <QuizChat
+          question={currentQuestion}
+          selectedIndex={answers[currentIndex]}
+          isOpen={chatOpen}
+          onClose={() => setChatOpen(false)}
+        />
       )}
     </div>
   );
