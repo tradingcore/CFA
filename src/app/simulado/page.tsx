@@ -166,6 +166,7 @@ function SimuladoInner() {
             id: q.id,
             topicId: q.topicId,
             ...(q.moduleId ? { moduleId: q.moduleId } : {}),
+            ...(q.losId ? { losId: q.losId } : {}),
             question: q.question,
             options: q.options,
             correctIndex: q.correctIndex,
@@ -292,7 +293,12 @@ function SimuladoInner() {
 
       for (const topic of selectedTopicsList) {
         const selectedMods = topic.modules.filter(m => activeSelectedModules.has(m.id));
-        const losDescriptions = selectedMods.flatMap(m => m.los);
+        const losDescriptions = selectedMods.flatMap((mod) =>
+          mod.los.map((description, index) => ({
+            id: `${mod.id}:${index}`,
+            description,
+          }))
+        );
 
         if (losDescriptions.length === 0) continue;
 
@@ -309,7 +315,15 @@ function SimuladoInner() {
           count,
         });
 
-        allGenerated.push(...generated);
+        const enriched = generated.map((question) => {
+          const moduleId = question.losId ? question.losId.split(":")[0] : question.moduleId;
+          return {
+            ...question,
+            moduleId,
+          };
+        });
+
+        allGenerated.push(...enriched);
       }
 
       if (allGenerated.length === 0) {
@@ -419,6 +433,7 @@ function SimuladoInner() {
           questionId: q.id,
           topicId: q.topicId,
           ...(q.moduleId ? { moduleId: q.moduleId } : {}),
+          ...(q.losId ? { losId: q.losId } : {}),
           question: q.question || "",
           options: q.options || [],
           explanation: q.explanation || "",
@@ -491,6 +506,7 @@ function SimuladoInner() {
           id: q.id,
           topicId: q.topicId,
           moduleId: q.moduleId,
+          losId: (q as { losId?: string }).losId,
           question: q.question,
           options: q.options,
           correctIndex: q.correctIndex,

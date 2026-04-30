@@ -20,6 +20,11 @@ import {
   StudyDay,
   WeeklyStudyAvailabilityOverride,
 } from "./study-availability";
+import {
+  applyAttempt,
+  emptyLosStat,
+  LosStatsByLos,
+} from "./mastery";
 
 // ─── User Profile ───────────────────────────────────────────────────────────
 
@@ -36,6 +41,7 @@ export interface UserProfile {
   onboardingCompleted: boolean;
   studyStreak: number;
   lastStudyDate: string;
+  losStatsBuiltAt?: Partial<Record<CFALevel, string>>;
 }
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
@@ -73,6 +79,7 @@ export interface QuizAnswer {
   questionId: string;
   topicId: string;
   moduleId?: string;
+  losId?: string;
   question?: string;
   options?: string[];
   explanation?: string;
@@ -103,11 +110,147 @@ export async function saveQuizResult(uid: string, result: QuizResult): Promise<s
   try {
     const ref = await addDoc(collection(db, "users", uid, "quizResults"), payload);
     await updateStudyStreak(uid);
+    try {
+      await applyQuizToLosStats(uid, result.level, result.answers);
+    } catch (statsErr) {
+      console.error("applyQuizToLosStats failed", statsErr);
+    }
     return ref.id;
   } catch (err) {
     console.error("saveQuizResult failed", err);
     throw err;
   }
+}
+
+// ─── LOS Mastery Stats ──────────────────────────────────────────────────────
+
+export async function getLosStats(uid: string, level: CFALevel): Promise<LosStatsByLos> {
+  try {
+    const snap = await getDoc(doc(db, "users", uid, "losStats", level));
+    if (!snap.exists()) return {};
+    const data = snap.data();
+    return (data?.stats ?? {}) as LosStatsByLos;
+  } catch (err) {
+    console.error("getLosStats failed", err);
+    return {};
+  }
+}
+
+export async function saveLosStats(
+  uid: string,
+  level: CFALevel,
+  stats: LosStatsByLos
+): Promise<void> {
+  try {
+    await setDoc(doc(db, "users", uid, "losStats", level), {
+      stats,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("saveLosStats failed", err);
+    throw err;
+  }
+}
+
+export async function applyQuizToLosStats(
+  uid: string,
+  level: CFALevel,
+  answers: QuizAnswer[]
+): Promise<void> {
+  const taggedAnswers = answers.filter((answer) => Boolean(answer.losId));
+  if (taggedAnswers.length === 0) return;
+  const current = await getLosStats(uid, level);
+  const now = new Date();
+  for (const answer of taggedAnswers) {
+    const losId = answer.losId as string;
+    const stat = current[losId] ?? emptyLosStat();
+    current[losId] = applyAttempt(stat, answer.correct, now);
+  }
+  await saveLosStats(uid, level, current);
+}
+
+// ─── Weekly Snapshots ───────────────────────────────────────────────────────
+
+export interface WeeklySnapshotTopic {
+  topicId: string;
+  shortName: string;
+  accuracy: number;
+  sampleSize: number;
+  weight: number;
+}
+
+export interface WeeklySnapshotDoc {
+  id?: string;
+  weekKey: string;
+  level: CFALevel;
+  createdAt: string;
+  readinessPct: number;
+  totalSampleSize: number;
+  evidenceCoverage: number;
+  topics: WeeklySnapshotTopic[];
+}
+
+export function getIsoWeekKey(date = new Date()): string {
+  const target = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNumber = (target.getUTCDay() + 6) % 7;
+  target.setUTCDate(target.getUTCDate() - dayNumber + 3);
+  const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+  const week = 1 + Math.round(((target.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+  return `${target.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+
+export async function saveWeeklySnapshot(
+  uid: string,
+  level: CFALevel,
+  snapshot: Omit<WeeklySnapshotDoc, "id">
+): Promise<void> {
+  const docId = `${level}-${snapshot.weekKey}`;
+  await setDoc(doc(db, "users", uid, "weeklySnapshots", docId), snapshot);
+}
+
+export async function getRecentWeeklySnapshots(
+  uid: string,
+  level: CFALevel,
+  weeks = 4
+): Promise<WeeklySnapshotDoc[]> {
+  try {
+    const q = query(
+      collection(db, "users", uid, "weeklySnapshots"),
+      where("level", "==", level)
+    );
+    const snap = await getDocs(q);
+    return snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() as WeeklySnapshotDoc) }))
+      .sort((a, b) => b.weekKey.localeCompare(a.weekKey))
+      .slice(0, weeks);
+  } catch (err) {
+    console.error("getRecentWeeklySnapshots failed", err);
+    return [];
+  }
+}
+
+export async function backfillLosStats(uid: string, level: CFALevel): Promise<number> {
+  const q = query(
+    collection(db, "users", uid, "quizResults"),
+    where("level", "==", level)
+  );
+  const snap = await getDocs(q);
+  const stats: LosStatsByLos = {};
+  let attempts = 0;
+  const orderedDocs = snap.docs
+    .map((d) => d.data() as QuizResult)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  for (const result of orderedDocs) {
+    const at = new Date(result.date);
+    for (const answer of result.answers || []) {
+      if (!answer.losId) continue;
+      const stat = stats[answer.losId] ?? emptyLosStat();
+      stats[answer.losId] = applyAttempt(stat, answer.correct, at);
+      attempts += 1;
+    }
+  }
+  await saveLosStats(uid, level, stats);
+  return attempts;
 }
 
 export async function getQuizHistory(uid: string, limitCount = 20): Promise<QuizResult[]> {
@@ -192,6 +335,7 @@ export interface ActiveMockQuestion {
   id: string;
   topicId: string;
   moduleId?: string;
+  losId?: string;
   question: string;
   options: string[];
   correctIndex: number;
@@ -263,22 +407,31 @@ export async function saveStudyProgress(uid: string, level: CFALevel, losStudied
 
 // ─── Study Plans ────────────────────────────────────────────────────────────
 
+export type StudyBlockType = "reading" | "practice" | "review" | "mock";
+
+export interface StudyPlanBlockDoc {
+  id: string;
+  topicId: string;
+  topicName: string;
+  moduleId?: string;
+  moduleName?: string;
+  losIds?: string[];
+  date: string;
+  durationMinutes: number;
+  type: StudyBlockType;
+  completed: boolean;
+  description?: string;
+}
+
 export interface StudyPlanDoc {
   id?: string;
-  blocks: {
-    id: string;
-    topicId: string;
-    topicName: string;
-    date: string;
-    durationMinutes: number;
-    type: "reading" | "practice" | "review";
-    completed: boolean;
-    description?: string;
-  }[];
+  blocks: StudyPlanBlockDoc[];
   createdAt: string;
   level: CFALevel;
   studyDays?: StudyDay[];
   weeklyHoursGoal?: number;
+  userGoals?: string;
+  periodDays?: number;
 }
 
 export async function saveStudyPlan(uid: string, plan: StudyPlanDoc): Promise<string> {

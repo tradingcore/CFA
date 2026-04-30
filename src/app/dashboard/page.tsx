@@ -5,6 +5,7 @@ import { ProgressRing } from "@/components/dashboard/progress-ring";
 import { QuickStats } from "@/components/dashboard/quick-stats";
 import { NextStudy } from "@/components/dashboard/next-study";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
+import { WeeklySnapshot } from "@/components/dashboard/weekly-snapshot";
 
 export default function DashboardPage() {
   return (
@@ -15,6 +16,7 @@ export default function DashboardPage() {
         <ProgressRing />
         <NextStudy />
       </div>
+      <WeeklySnapshot />
       <RecentActivity />
     </div>
   );

@@ -15,7 +15,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   X,
-  User,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/contexts/sidebar-context";
@@ -53,6 +53,12 @@ const navItems = [
     group: "Tutor",
     items: [
       { href: "/chat", label: "Chat", icon: MessageCircle },
+    ],
+  },
+  {
+    group: "Resources",
+    items: [
+      { href: "/help", label: "How it works", icon: HelpCircle },
     ],
   },
 ];

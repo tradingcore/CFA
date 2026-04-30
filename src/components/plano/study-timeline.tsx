@@ -1,10 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { StudyPlanDoc } from "@/lib/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { BookOpen, PenTool, RefreshCw, CheckCircle2, Circle } from "lucide-react";
+import {
+  BookOpen,
+  PenTool,
+  RefreshCw,
+  CheckCircle2,
+  Circle,
+  Trophy,
+  ArrowUpRight,
+} from "lucide-react";
 
 type Block = StudyPlanDoc["blocks"][number];
 
@@ -12,6 +21,7 @@ const typeConfig = {
   reading: { label: "Reading", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-500/10" },
   practice: { label: "Practice", icon: PenTool, color: "text-emerald-500", bg: "bg-emerald-500/10" },
   review: { label: "Review", icon: RefreshCw, color: "text-amber-500", bg: "bg-amber-500/10" },
+  mock: { label: "Mock", icon: Trophy, color: "text-violet-500", bg: "bg-violet-500/10" },
 };
 
 interface StudyTimelineProps {
@@ -88,19 +98,50 @@ export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
 
                 {dayBlocks.map((block) => {
                   const config = typeConfig[block.type] || typeConfig.reading;
+                  const losCount = block.losIds?.length ?? 0;
+                  const practiceLink = block.type === "mock"
+                    ? `/simulado?official=true`
+                    : `/simulado?topic=${block.topicId}${block.moduleId ? `&module=${block.moduleId}` : ""}`;
+                  const studyLink = `/estudo${block.moduleId ? `#${block.moduleId}` : ""}`;
                   return (
-                    <div key={block.id} className={cn("flex items-center gap-3 rounded-lg border border-border p-3 transition-all", block.completed && "bg-muted/30")}>
-                      <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", config.bg)}>
+                    <div key={block.id} className={cn("flex items-start gap-3 rounded-lg border border-border p-3 transition-all", block.completed && "bg-muted/30")}>
+                      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", config.bg)}>
                         <config.icon className={cn("h-4 w-4", config.color)} />
                       </div>
-                      <div className="flex-1">
-                        <p className={cn("text-sm font-medium", block.completed && "line-through text-muted-foreground")}>
-                          {block.topicName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className={cn("text-sm font-medium", block.completed && "line-through text-muted-foreground")}>
+                            {block.moduleName ? block.moduleName : block.topicName}
+                          </p>
+                          {block.moduleName && (
+                            <span className="text-[10px] text-muted-foreground">{block.topicName}</span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
                           {config.label} · {block.durationMinutes}min
-                          {block.description ? ` · ${block.description}` : ""}
+                          {losCount > 0 ? ` · ${losCount} LOS targeted` : ""}
                         </p>
+                        {block.description && (
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground/85">
+                            {block.description}
+                          </p>
+                        )}
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          <Link
+                            href={studyLink}
+                            className="inline-flex items-center gap-1 rounded border border-border px-2 py-0.5 text-[10px] font-medium hover:border-primary hover:text-primary"
+                          >
+                            <BookOpen className="h-3 w-3" />
+                            Open module
+                          </Link>
+                          <Link
+                            href={practiceLink}
+                            className="inline-flex items-center gap-1 rounded border border-border px-2 py-0.5 text-[10px] font-medium hover:border-primary hover:text-primary"
+                          >
+                            <ArrowUpRight className="h-3 w-3" />
+                            {block.type === "mock" ? "Start mock" : "Practice"}
+                          </Link>
+                        </div>
                       </div>
                       <button
                         onClick={() => toggleCompletion(block.id)}

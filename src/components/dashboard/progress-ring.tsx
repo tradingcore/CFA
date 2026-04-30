@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { getWeeklyQuizStats } from "@/lib/firestore";
+import { useLevelReadiness } from "@/lib/use-readiness";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CircularProgressProps {
@@ -28,10 +29,27 @@ function CircularProgress({ value, size = 120, strokeWidth = 10, label, sublabel
     <div className="flex flex-col items-center gap-2">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
-          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="currentColor" strokeWidth={strokeWidth} className="text-muted/40" />
-          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="currentColor" strokeWidth={strokeWidth}
-            strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
-            className={`${getColor(value)} transition-all duration-1000 ease-out`} />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            className="text-muted/40"
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            className={`${getColor(value)} transition-all duration-1000 ease-out`}
+          />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-bold font-mono tabular-nums">{value}%</span>
@@ -46,8 +64,9 @@ function CircularProgress({ value, size = 120, strokeWidth = 10, label, sublabel
 }
 
 export function ProgressRing() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState({ questionsAnswered: 0, correctAnswers: 0, simuladosCompleted: 0 });
+  const { readiness } = useLevelReadiness();
 
   useEffect(() => {
     if (user) {
@@ -55,20 +74,31 @@ export function ProgressRing() {
     }
   }, [user]);
 
-  const weeklyTarget = (profile?.weeklyHoursGoal || 15) * 4;
-  const progress = Math.min(100, Math.round((stats.questionsAnswered / weeklyTarget) * 100));
   const accuracy = stats.questionsAnswered > 0
     ? Math.round((stats.correctAnswers / stats.questionsAnswered) * 100)
     : 0;
 
+  const evidenceCoverage = Math.round(readiness.evidenceCoverage * 100);
+
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Weekly Progress</CardTitle>
+        <CardTitle className="text-base">Exam readiness</CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Weighted by official CFA topic weights. Evidence coverage shows how much of the curriculum has data.
+        </p>
       </CardHeader>
       <CardContent className="flex items-center justify-around pb-6">
-        <CircularProgress value={progress} label="Weekly Goal" sublabel="questions answered" />
-        <CircularProgress value={accuracy} label="Weekly Accuracy" sublabel="this week's rate" />
+        <CircularProgress
+          value={readiness.readinessPct}
+          label="Readiness"
+          sublabel={`${readiness.totalSampleSize} attempts · ${evidenceCoverage}% covered`}
+        />
+        <CircularProgress
+          value={accuracy}
+          label="Weekly accuracy"
+          sublabel={`${stats.questionsAnswered} questions · ${stats.simuladosCompleted} mocks`}
+        />
       </CardContent>
     </Card>
   );

@@ -4,15 +4,15 @@ import { useState, useEffect } from "react";
 import { useLevel } from "@/contexts/level-context";
 import { useAuth } from "@/contexts/auth-context";
 import { getTopicsForLevel } from "@/lib/cfa-topics";
-import { apiGenerateStudyPlan } from "@/lib/api";
+import { apiGenerateStudyPlan, StudyPlanLosSnapshot } from "@/lib/api";
 import {
   getLatestStudyPlan,
   saveStudyPlan,
   updateStudyPlanBlock,
-  getTopicScores,
   updateUserProfile,
   StudyPlanDoc,
 } from "@/lib/firestore";
+import { useLevelReadiness } from "@/lib/use-readiness";
 import { StudyDaysSelector } from "@/components/study/study-days-selector";
 import {
   getWeekStartDate,
@@ -22,18 +22,32 @@ import {
 import { StudyCalendar } from "@/components/plano/study-calendar";
 import { StudyTimeline } from "@/components/plano/study-timeline";
 import { GoalTracker } from "@/components/plano/goal-tracker";
+import { PlanGoalsCard, PlanGoals } from "@/components/plano/plan-goals";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarDays, Sparkles, Loader2 } from "lucide-react";
+
+const DEFAULT_GOALS: PlanGoals = {
+  userGoals: "",
+  periodDays: 14,
+  targetModuleIds: [],
+  prioritizeWeakTopics: true,
+  includeWeeklyMock: true,
+};
 
 export default function PlanoPage() {
   const { level } = useLevel();
   const { user, profile } = useAuth();
+  const { readiness, stats } = useLevelReadiness();
+  const topics = getTopicsForLevel(level);
+
   const [plan, setPlan] = useState<StudyPlanDoc | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [completedBlocks, setCompletedBlocks] = useState(0);
   const [weeklyHours, setWeeklyHours] = useState(profile?.weeklyHoursGoal || 15);
   const [studyDays, setStudyDays] = useState<StudyDay[]>(normalizeStudyDays(profile?.studyDays));
+  const [planGoals, setPlanGoals] = useState<PlanGoals>(DEFAULT_GOALS);
+  const [generationError, setGenerationError] = useState<string>("");
 
   const weekStart = getWeekStartDate();
 
@@ -45,6 +59,11 @@ export default function PlanoPage() {
           setPlan(p);
           if (p) {
             setCompletedBlocks(p.blocks.filter((b) => b.completed).length);
+            setPlanGoals((current) => ({
+              ...current,
+              userGoals: p.userGoals ?? current.userGoals,
+              periodDays: ((p.periodDays as 7 | 14 | 30) ?? current.periodDays),
+            }));
           }
         })
         .catch(console.error)
@@ -75,21 +94,64 @@ export default function PlanoPage() {
   const handleGenerate = async () => {
     if (!user || !profile) return;
     setGenerating(true);
+    setGenerationError("");
 
     try {
-      const topics = getTopicsForLevel(level);
-      const scores = await getTopicScores(user.uid, level);
-      const weakTopics = scores
-        .filter((s) => s.score < 70)
-        .map((s) => ({ topicId: s.topicId, topicName: s.topicName, score: s.score }));
+      const weakTopics = readiness.byTopic
+        .filter((topic) => topic.sampleSize >= 5 && topic.accuracy < 0.7)
+        .map((topic) => ({
+          topicId: topic.topicId,
+          topicName: topic.fullName,
+          score: Math.round(topic.accuracy * 100),
+          sampleSize: topic.sampleSize,
+        }));
+
+      const losSnapshot: StudyPlanLosSnapshot[] = [];
+      readiness.byTopic.forEach((topic) => {
+        topic.modules.forEach((module) => {
+          module.losMasteries.forEach((lm) => {
+            if (lm.mastery.state === "needs_review" || (lm.mastery.sampleSize >= 3 && lm.mastery.accuracy < 0.6)) {
+              losSnapshot.push({
+                losId: lm.losId,
+                topicId: topic.topicId,
+                moduleId: module.moduleId,
+                state: lm.mastery.state,
+                accuracy: lm.mastery.accuracy,
+                sampleSize: lm.mastery.sampleSize,
+                isDue: lm.mastery.isDue,
+              });
+            }
+          });
+        });
+      });
+
+      const topicsList = topics.map((topic) => ({
+        topicId: topic.id,
+        topicName: topic.name,
+        weightRange: topic.weightRange,
+        modules: topic.modules.map((module) => ({
+          id: module.id,
+          name: module.name,
+          los: module.los.map((description, index) => ({
+            id: `${module.id}:${index}`,
+            description,
+          })),
+        })),
+      }));
 
       const { blocks } = await apiGenerateStudyPlan({
         level,
         examDate: profile.examDate,
         weeklyHours,
         studyDays,
+        periodDays: planGoals.periodDays,
+        userGoals: planGoals.userGoals,
+        targetModuleIds: planGoals.targetModuleIds,
+        prioritizeWeakTopics: planGoals.prioritizeWeakTopics,
+        includeWeeklyMock: planGoals.includeWeeklyMock,
         weakTopics,
-        topicsList: topics.map((t) => ({ topicId: t.id, topicName: t.name, weightRange: t.weightRange })),
+        topicsList,
+        losSnapshot: losSnapshot.slice(0, 30),
       });
 
       const newPlan: StudyPlanDoc = {
@@ -97,9 +159,12 @@ export default function PlanoPage() {
           id: b.id,
           topicId: b.topicId,
           topicName: b.topicName,
+          ...(b.moduleId ? { moduleId: b.moduleId } : {}),
+          ...(b.moduleName ? { moduleName: b.moduleName } : {}),
+          ...(b.losIds && b.losIds.length > 0 ? { losIds: b.losIds } : {}),
           date: b.date,
           durationMinutes: b.durationMinutes,
-          type: b.type as "reading" | "practice" | "review",
+          type: b.type,
           completed: false,
           description: b.description,
         })),
@@ -107,6 +172,8 @@ export default function PlanoPage() {
         level,
         studyDays,
         weeklyHoursGoal: weeklyHours,
+        userGoals: planGoals.userGoals,
+        periodDays: planGoals.periodDays,
       };
 
       const planId = await saveStudyPlan(user.uid, newPlan);
@@ -114,6 +181,7 @@ export default function PlanoPage() {
       setCompletedBlocks(0);
     } catch (err) {
       console.error("Study plan generation error:", err);
+      setGenerationError(err instanceof Error ? err.message : "Could not generate plan");
     } finally {
       setGenerating(false);
     }
@@ -130,6 +198,8 @@ export default function PlanoPage() {
     }
   };
 
+  const dueLos = stats ? Object.values(stats).filter((s) => s.nextDueAt && new Date(s.nextDueAt) < new Date()).length : 0;
+
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -140,7 +210,7 @@ export default function PlanoPage() {
           <div>
             <h1 className="text-xl font-bold">Study Plan</h1>
             <p className="text-sm text-muted-foreground">
-              CFA Level {level} — Organize your preparation
+              CFA Level {level} — Personalize your prep with goals, target modules and adaptive review
             </p>
           </div>
         </div>
@@ -156,52 +226,59 @@ export default function PlanoPage() {
       </div>
 
       <Card className="border-dashed border-primary/30 bg-primary/5">
-        <CardContent className="flex items-center gap-3 p-4">
+        <CardContent className="flex flex-wrap items-center gap-3 p-4 text-sm">
           <Sparkles className="h-5 w-5 shrink-0 text-primary" />
-          <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">Tip:</span> Click
-            &quot;Generate Plan with AI&quot; to create a personalized plan based on your mock exam
-            performance and the areas that need more attention.
+          <p className="flex-1 text-muted-foreground">
+            Readiness <span className="font-semibold text-foreground">{readiness.readinessPct}%</span>
+            {" · "}
+            {readiness.totalSampleSize} attempts on this level
+            {dueLos > 0 ? ` · ${dueLos} LOS due for review` : ""}.
           </p>
+          {generationError && (
+            <p className="text-xs text-destructive">{generationError}</p>
+          )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="space-y-4 p-4">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold">Availability this week</p>
-              <p className="text-xs text-muted-foreground">
-                Adjust this week without changing your default profile schedule.
-              </p>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <PlanGoalsCard topics={topics} value={planGoals} onChange={setPlanGoals} />
+        <Card>
+          <CardContent className="space-y-4 p-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold">Availability this week</p>
+                <p className="text-xs text-muted-foreground">
+                  Adjust this week without changing your default profile schedule.
+                </p>
+              </div>
+              <button
+                onClick={handleSaveAvailability}
+                disabled={studyDays.length === 0}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-40"
+              >
+                Save week override
+              </button>
             </div>
-            <button
-              onClick={handleSaveAvailability}
-              disabled={studyDays.length === 0}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-40"
-            >
-              Save week override
-            </button>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Weekly hours: {weeklyHours}h</label>
-            <input
-              type="range"
-              min={5}
-              max={40}
-              value={weeklyHours}
-              onChange={(e) => setWeeklyHours(Number(e.target.value))}
-              className="w-full accent-primary"
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Weekly hours: {weeklyHours}h</label>
+              <input
+                type="range"
+                min={5}
+                max={40}
+                value={weeklyHours}
+                onChange={(e) => setWeeklyHours(Number(e.target.value))}
+                className="w-full accent-primary"
+              />
+            </div>
+            <StudyDaysSelector
+              selectedDays={studyDays}
+              weeklyHours={weeklyHours}
+              onChange={setStudyDays}
+              compact
             />
-          </div>
-          <StudyDaysSelector
-            selectedDays={studyDays}
-            weeklyHours={weeklyHours}
-            onChange={setStudyDays}
-            compact
-          />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">

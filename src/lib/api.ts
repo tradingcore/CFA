@@ -2,21 +2,40 @@ export interface GeneratedQuestion {
   id: string;
   topicId: string;
   moduleId?: string;
+  losId?: string;
   question: string;
   options: string[];
   correctIndex: number;
   explanation: string;
 }
 
+export interface QuestionLosInput {
+  id: string;
+  description: string;
+}
+
 export interface StudyPlanBlock {
   id: string;
   topicId: string;
   topicName: string;
+  moduleId?: string;
+  moduleName?: string;
+  losIds?: string[];
   date: string;
   durationMinutes: number;
-  type: "reading" | "practice" | "review";
+  type: "reading" | "practice" | "review" | "mock";
   completed: boolean;
   description: string;
+}
+
+export interface StudyPlanLosSnapshot {
+  losId: string;
+  topicId: string;
+  moduleId: string;
+  state: string;
+  accuracy: number;
+  sampleSize: number;
+  isDue: boolean;
 }
 
 export interface ChatAttachmentPayload {
@@ -58,7 +77,7 @@ export async function apiGenerateQuestions(params: {
   topicName: string;
   moduleId?: string;
   moduleName?: string;
-  losDescriptions: string[];
+  losDescriptions: QuestionLosInput[];
   count: number;
   difficulty?: string;
 }): Promise<{ questions: GeneratedQuestion[] }> {
@@ -70,8 +89,20 @@ export async function apiGenerateStudyPlan(params: {
   examDate: string;
   weeklyHours: number;
   studyDays: string[];
-  weakTopics: { topicId: string; topicName: string; score: number }[];
-  topicsList: { topicId: string; topicName: string; weightRange: string }[];
+  periodDays: number;
+  userGoals?: string;
+  targetModuleIds?: string[];
+  targetLosIds?: string[];
+  prioritizeWeakTopics?: boolean;
+  includeWeeklyMock?: boolean;
+  weakTopics: { topicId: string; topicName: string; score: number; sampleSize: number }[];
+  topicsList: {
+    topicId: string;
+    topicName: string;
+    weightRange: string;
+    modules: { id: string; name: string; los: { id: string; description: string }[] }[];
+  }[];
+  losSnapshot?: StudyPlanLosSnapshot[];
 }): Promise<{ blocks: StudyPlanBlock[] }> {
   return apiFetch("/api/generate-study-plan", params);
 }
