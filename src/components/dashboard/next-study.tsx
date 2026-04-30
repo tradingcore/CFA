@@ -21,25 +21,25 @@ function StateBadgeWithExplanation({ state }: { state: LosState }) {
           {getStateLabel(state)}
         </Badge>
       </TooltipTrigger>
-      <TooltipContent className="max-w-sm">
-        <div className="space-y-2 text-left text-xs leading-relaxed">
+      <TooltipContent className="max-w-[280px]">
+        <div className="flex flex-col gap-2 text-left">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-background/70">
-              Rule
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-background/60">
+              {getStateLabel(state)}
             </p>
-            <p>{explanation.rule}</p>
+            <p className="text-xs leading-snug">{explanation.rule}</p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-background/70">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-background/60">
               Example
             </p>
-            <p>{explanation.example}</p>
+            <p className="text-xs leading-snug">{explanation.example}</p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-background/60">
               What to do
             </p>
-            <p>{explanation.action}</p>
+            <p className="text-xs leading-snug">{explanation.action}</p>
           </div>
         </div>
       </TooltipContent>
@@ -70,25 +70,16 @@ export function NextStudy() {
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           Recommended focus
           <InfoHint
-            width="lg"
             content={
               <>
-                <HintBlock title="What it is">
-                  The 3 topics that, if you study them next, will give you the biggest jump in
-                  exam readiness. Combines accuracy, exam weight and how long since you last
-                  practiced.
-                </HintBlock>
-                <HintBlock title="Why these 3 and not others">
-                  • Topics you score low on AND have high exam weight are most urgent.<br />
-                  • Topics you have not touched in 2+ weeks bubble up so they do not decay.<br />
-                  • Topics with no data appear so you can build a baseline.
+                <HintBlock>
+                  The 3 topics that, if studied next, give the biggest jump in readiness.
+                  Combines accuracy, exam weight and how long since you last practiced.
                 </HintBlock>
                 <HintBlock title="Examples">
-                  • <b>50% on Ethics (~15% of exam)</b> beats <b>50% on Alt. Investments
-                  (~7%)</b> — fixing Ethics moves the needle ~2x more.<br />
-                  • <b>Equity at 70%, last seen 4 weeks ago</b> shows up even though it is not
-                  weak — without practice it will start dropping.<br />
-                  • <b>Derivatives, no data</b> appears so you do at least 1 practice set.
+                  • 50% on Ethics (15% of exam) beats 50% on Alt. Investments (7%).<br />
+                  • Strong topic not seen in 4 weeks → bubbles up before it decays.<br />
+                  • Topic with no data → appears so you build a baseline.
                 </HintBlock>
               </>
             }

@@ -106,25 +106,14 @@ export function WeeklySnapshot() {
           <CalendarRange className="h-4 w-4 text-primary" />
           This week
           <InfoHint
-            width="lg"
             content={
               <>
-                <HintBlock title="What it is">
-                  Where you stand now vs. where you stood last week, plus the topics that improved
-                  the most and the ones that slipped.
+                <HintBlock>
+                  Where you stand now vs. last week, plus topics that improved or slipped.
                 </HintBlock>
-                <HintBlock title="How to read the points delta">
-                  • <b>+3 to +5 pts</b> — healthy weekly progress<br />
-                  • <b>0 pts</b> — flat. Normal in pure-reading weeks<br />
-                  • <b>-1 to -5 pts</b> — usually a recent mock surfaced gaps<br />
-                  • <b>-5 pts or worse</b> — a topic you knew well decayed, or you took a tough
-                  unfamiliar mock
-                </HintBlock>
-                <HintBlock title="Examples">
-                  • <b>+4 pts</b> → solid practice week with mostly right answers.<br />
-                  • <b>0 pts after 10h studied</b> → you read but did not test yourself.<br />
-                  • <b>-3 pts after a mock</b> → the mock revealed weak spots. This is good news —
-                  now you know what to fix.
+                <HintBlock title="Reading the delta">
+                  +3 to +5 pts healthy · 0 pts flat (only reading) · negative usually means a
+                  recent mock surfaced gaps (good — you now know what to fix)
                 </HintBlock>
               </>
             }
@@ -140,20 +129,15 @@ export function WeeklySnapshot() {
             <div className="flex items-center gap-1">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Readiness</p>
               <InfoHint
-                width="lg"
                 content={
                   <>
-                    <HintBlock title="What it is">
-                      An estimate of how the real CFA exam would go for you today, 0%–100%.
-                    </HintBlock>
+                    <HintBlock>Estimate of how the real exam would go for you today, 0%–100%.</HintBlock>
                     <HintBlock title="Reference">
-                      • <b>≥80%</b> — comfortable<br />
-                      • <b>65–75%</b> — pass zone<br />
-                      • <b>&lt;50%</b> — far from ready
+                      ≥80% comfortable · 65–75% pass zone · &lt;50% far from ready
                     </HintBlock>
-                    <HintBlock title="Read with Coverage" tone="warn">
-                      Only counts topics you have practiced. Look at the Coverage on the dashboard
-                      Readiness card to know if this number really represents you.
+                    <HintBlock title="Note">
+                      Only counts topics you have practiced. Check Coverage on the Readiness card
+                      to know if it represents you.
                     </HintBlock>
                   </>
                 }

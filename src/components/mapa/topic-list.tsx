@@ -24,24 +24,24 @@ import { HintBlock, InfoHint } from "@/components/ui/info-hint";
 function StateExplanationBody({ state }: { state: LosState }) {
   const explanation = getStateExplanation(state);
   return (
-    <div className="space-y-2 text-left text-xs leading-relaxed">
+    <div className="flex flex-col gap-2 text-left">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-background/70">
-          {getStateLabel(state)} — rule
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-background/60">
+          {getStateLabel(state)}
         </p>
-        <p>{explanation.rule}</p>
+        <p className="text-xs leading-snug">{explanation.rule}</p>
       </div>
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-background/70">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-background/60">
           Example
         </p>
-        <p>{explanation.example}</p>
+        <p className="text-xs leading-snug">{explanation.example}</p>
       </div>
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-background/60">
           What to do
         </p>
-        <p>{explanation.action}</p>
+        <p className="text-xs leading-snug">{explanation.action}</p>
       </div>
     </div>
   );
@@ -55,7 +55,7 @@ function StateBadge({ state, className }: { state: LosState; className?: string 
           {getStateLabel(state)}
         </Badge>
       </TooltipTrigger>
-      <TooltipContent className="max-w-sm">
+      <TooltipContent className="max-w-[280px]">
         <StateExplanationBody state={state} />
       </TooltipContent>
     </Tooltip>
@@ -150,25 +150,19 @@ export function TopicList() {
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Performance by Topic</CardTitle>
           <InfoHint
-            width="lg"
             content={
               <>
-                <HintBlock title="What it is">
-                  Each topic shows a state, accuracy and sample size. The state is more honest than
-                  the % alone because it considers how many questions you actually answered.
-                </HintBlock>
-                <HintBlock title="State thresholds">
-                  • <b>≥80% on 12+ questions, recent</b> → Mastered<br />
-                  • <b>60–80%</b> → Strong<br />
-                  • <b>&lt;60% on 5+ questions</b> → Practiced (read first)<br />
-                  • <b>&lt;5 questions</b> → In progress (not enough proof)
+                <HintBlock>
+                  Each topic shows state + accuracy + sample size. State considers how many
+                  questions you answered, not only the %.
                 </HintBlock>
                 <HintBlock title="Examples">
-                  • <b>1/1 right (100%)</b> → In progress, not Mastered. 1 question = noise.<br />
-                  • <b>8/12 right (67%)</b> → Strong.<br />
-                  • <b>4/10 right (40%)</b> → Practiced. Re-read the module.<br />
-                  • <b>11/12 (92%) seen 3 weeks ago</b> → Needs review.
+                  • 1/1 (100%) → In progress (1 question = noise)<br />
+                  • 8/12 (67%) → Strong<br />
+                  • 4/10 (40%) → Practiced — re-read first<br />
+                  • 11/12 seen 3 weeks ago → Needs review
                 </HintBlock>
+                <HintBlock>Hover any badge below for the full rule.</HintBlock>
               </>
             }
           />

@@ -14,9 +14,9 @@ interface InfoHintProps {
 }
 
 const widthMap = {
-  sm: "max-w-xs",
-  md: "max-w-sm",
-  lg: "max-w-md",
+  sm: "max-w-[260px]",
+  md: "max-w-[320px]",
+  lg: "max-w-[380px]",
 } as const;
 
 export function InfoHint({ text, content, className, side = "top", width = "md" }: InfoHintProps) {
@@ -37,31 +37,26 @@ export function InfoHint({ text, content, className, side = "top", width = "md" 
         side={side}
         className={cn("text-left leading-relaxed", widthMap[width])}
       >
-        {body}
+        <div className="flex w-full flex-col gap-2">{body}</div>
       </TooltipContent>
     </Tooltip>
   );
 }
 
 interface HintBlockProps {
-  title: string;
+  title?: string;
   children: ReactNode;
-  tone?: "default" | "warn" | "good";
 }
 
-export function HintBlock({ title, children, tone = "default" }: HintBlockProps) {
-  const toneClass =
-    tone === "warn"
-      ? "text-amber-200"
-      : tone === "good"
-      ? "text-emerald-200"
-      : "text-background/70";
+export function HintBlock({ title, children }: HintBlockProps) {
   return (
-    <div className="mt-2 first:mt-0">
-      <p className={cn("mb-0.5 text-[10px] font-semibold uppercase tracking-wider", toneClass)}>
-        {title}
-      </p>
-      <div className="text-xs leading-relaxed">{children}</div>
+    <div>
+      {title && (
+        <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-background/60">
+          {title}
+        </p>
+      )}
+      <div className="text-xs leading-snug text-background">{children}</div>
     </div>
   );
 }

@@ -43,18 +43,9 @@ export function QuickStats() {
       bg: "bg-emerald-500/10",
       hint: (
         <>
-          <HintBlock title="What it is">
-            How many practice or mock questions you answered since Monday. A simple counter — bigger
-            means you are putting in the reps.
-          </HintBlock>
+          <HintBlock>Practice + mock questions answered since Monday.</HintBlock>
           <HintBlock title="Reference per week">
-            • <b>50–150</b> — serious candidate pace<br />
-            • <b>30–50</b> — light, OK if you are mostly reading<br />
-            • <b>&lt;30</b> — too little, even reading-heavy weeks need practice<br />
-            • <b>200+</b> — burning fuel without studying. Slow down and reread.
-          </HintBlock>
-          <HintBlock title="Example">
-            70 questions in a week with ~70% accuracy is a healthy mix.
+            50–150 healthy · &lt;30 too little · 200+ burning fuel without studying
           </HintBlock>
         </>
       ),
@@ -67,18 +58,11 @@ export function QuickStats() {
       bg: "bg-blue-500/10",
       hint: (
         <>
-          <HintBlock title="What it is">
-            Out of the questions you answered this week, the share you got right. Range: 0%–100%.
-          </HintBlock>
+          <HintBlock>Share of this week's questions you got right. 0%–100%.</HintBlock>
           <HintBlock title="Reference">
-            • <b>≥70%</b> — on pace<br />
-            • <b>50–70%</b> — shaky<br />
-            • <b>&lt;50%</b> — stop and study before more questions
+            ≥70% on pace · 50–70% shaky · &lt;50% stop and study
           </HintBlock>
-          <HintBlock title="Example">
-            14 right out of 20 = 70%. A single week can swing — judge the 3–4 week trend, not one
-            data point.
-          </HintBlock>
+          <HintBlock title="Example">14/20 = 70%. Watch the 3–4 week trend, not a single point.</HintBlock>
         </>
       ),
     },
@@ -90,20 +74,13 @@ export function QuickStats() {
       bg: "bg-violet-500/10",
       hint: (
         <>
-          <HintBlock title="What it is">
-            How many of the {readiness.byTopic.length} CFA topics you have already practiced at
-            least once. This is what drives the Coverage on the Readiness card.
-          </HintBlock>
-          <HintBlock title="Reference">
-            • <b>{readiness.byTopic.length}/{readiness.byTopic.length}</b> — full coverage, trust
-            Readiness fully<br />
-            • <b>~70%+</b> of topics — Readiness is fairly reliable<br />
-            • <b>&lt;30%</b> — Readiness is mostly a guess
+          <HintBlock>
+            Topics where you already answered at least one question. Drives the Coverage on the
+            Readiness card.
           </HintBlock>
           <HintBlock title="Example">
-            3/{readiness.byTopic.length} means we only know your level in 3 topics. The remaining{" "}
-            {readiness.byTopic.length - 3} topics could be very different. Even 5 questions on each
-            untouched topic moves Coverage drastically.
+            3/{readiness.byTopic.length} means we only know your level in 3 of {readiness.byTopic.length} topics
+            — Readiness becomes a guess. Aim for full coverage.
           </HintBlock>
         </>
       ),
@@ -116,18 +93,11 @@ export function QuickStats() {
       bg: "bg-rose-500/10",
       hint: (
         <>
-          <HintBlock title="What it is">
-            Specific learning points (LOS) you studied a while ago and the brain is starting to
-            forget. They appear here based on a spaced-repetition schedule.
+          <HintBlock>
+            Learning points (LOS) you studied a while ago and the brain is starting to forget.
           </HintBlock>
           <HintBlock title="Reference">
-            • <b>0</b> — on top of every refresh<br />
-            • <b>5–15</b> — normal during heavy study<br />
-            • <b>30+</b> — building forgetting debt; carve a dedicated review session
-          </HintBlock>
-          <HintBlock title="Example">
-            You nailed Inventories 3 weeks ago and have not practiced since → those LOS now show as
-            due. 10 minutes redoing 5 questions clears them.
+            0 great · 5–15 normal · 30+ forgetting debt — schedule a review session
           </HintBlock>
         </>
       ),
@@ -146,7 +116,7 @@ export function QuickStats() {
               <p className="text-xl font-bold font-mono tabular-nums">{stat.value}</p>
               <div className="flex items-center gap-1">
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
-                <InfoHint content={stat.hint} width="lg" />
+                <InfoHint content={stat.hint} />
               </div>
             </div>
           </CardContent>
