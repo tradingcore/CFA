@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowDownRight, ArrowUpRight, CalendarRange, Trophy } from "lucide-react";
 import Link from "next/link";
-import { InfoHint } from "@/components/ui/info-hint";
+import { HintBlock, InfoHint } from "@/components/ui/info-hint";
 
 interface MoverRow {
   topicId: string;
@@ -105,7 +105,30 @@ export function WeeklySnapshot() {
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarRange className="h-4 w-4 text-primary" />
           This week
-          <InfoHint text="A snapshot of where you stand now vs. last week. Reference: +3 to +5 points per week is healthy progress; flat (0) is normal during heavy review weeks; negative usually means a recent mock exposed gaps or some topics decayed. Examples: '+4 pts' = solid week of practice, '0 pts' = you spent the week reading without testing yourself, '-3 pts' = recent mock revealed weak spots — that is a good thing, you now know what to fix." />
+          <InfoHint
+            width="lg"
+            content={
+              <>
+                <HintBlock title="What it is">
+                  Where you stand now vs. where you stood last week, plus the topics that improved
+                  the most and the ones that slipped.
+                </HintBlock>
+                <HintBlock title="How to read the points delta">
+                  • <b>+3 to +5 pts</b> — healthy weekly progress<br />
+                  • <b>0 pts</b> — flat. Normal in pure-reading weeks<br />
+                  • <b>-1 to -5 pts</b> — usually a recent mock surfaced gaps<br />
+                  • <b>-5 pts or worse</b> — a topic you knew well decayed, or you took a tough
+                  unfamiliar mock
+                </HintBlock>
+                <HintBlock title="Examples">
+                  • <b>+4 pts</b> → solid practice week with mostly right answers.<br />
+                  • <b>0 pts after 10h studied</b> → you read but did not test yourself.<br />
+                  • <b>-3 pts after a mock</b> → the mock revealed weak spots. This is good news —
+                  now you know what to fix.
+                </HintBlock>
+              </>
+            }
+          />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           Compare your readiness with last week and see which topics improved and which need attention.
@@ -116,7 +139,25 @@ export function WeeklySnapshot() {
           <div>
             <div className="flex items-center gap-1">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Readiness</p>
-              <InfoHint text="0%–100%. Reference: <50% needs a lot more work, 60–75% is the typical pass zone, 80%+ is comfortable. Topics that count more in the real exam also count more here." />
+              <InfoHint
+                width="lg"
+                content={
+                  <>
+                    <HintBlock title="What it is">
+                      An estimate of how the real CFA exam would go for you today, 0%–100%.
+                    </HintBlock>
+                    <HintBlock title="Reference">
+                      • <b>≥80%</b> — comfortable<br />
+                      • <b>65–75%</b> — pass zone<br />
+                      • <b>&lt;50%</b> — far from ready
+                    </HintBlock>
+                    <HintBlock title="Read with Coverage" tone="warn">
+                      Only counts topics you have practiced. Look at the Coverage on the dashboard
+                      Readiness card to know if this number really represents you.
+                    </HintBlock>
+                  </>
+                }
+              />
             </div>
             <p className="text-2xl font-bold font-mono tabular-nums">
               {readiness.readinessPct}%

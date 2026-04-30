@@ -8,9 +8,44 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, AlertTriangle, GraduationCap, AlarmClock } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { getStateBadgeClass, getStateExplanation, getStateLabel } from "@/lib/mastery";
-import { InfoHint } from "@/components/ui/info-hint";
+import { getStateBadgeClass, getStateExplanation, getStateLabel, LosState } from "@/lib/mastery";
+import { HintBlock, InfoHint } from "@/components/ui/info-hint";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+function StateBadgeWithExplanation({ state }: { state: LosState }) {
+  const explanation = getStateExplanation(state);
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <Badge className={cn("cursor-help text-[9px]", getStateBadgeClass(state))}>
+          {getStateLabel(state)}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-sm">
+        <div className="space-y-2 text-left text-xs leading-relaxed">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-background/70">
+              Rule
+            </p>
+            <p>{explanation.rule}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-background/70">
+              Example
+            </p>
+            <p>{explanation.example}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
+              What to do
+            </p>
+            <p>{explanation.action}</p>
+          </div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export function NextStudy() {
   const { level } = useLevel();
@@ -34,7 +69,30 @@ export function NextStudy() {
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           Recommended focus
-          <InfoHint text="The 3 topics that, if you study them next, give the biggest jump in exam readiness. Example: 50% on Ethics (~15% of the exam) is more urgent than 50% on Alternative Investments (~7%) — fixing Ethics moves the needle ~2x more. Topics you have not touched in 2+ weeks also bubble up so they do not decay. If a topic shows 'No data', it appears here because we have nothing to measure you on yet — start with a quick practice set." />
+          <InfoHint
+            width="lg"
+            content={
+              <>
+                <HintBlock title="What it is">
+                  The 3 topics that, if you study them next, will give you the biggest jump in
+                  exam readiness. Combines accuracy, exam weight and how long since you last
+                  practiced.
+                </HintBlock>
+                <HintBlock title="Why these 3 and not others">
+                  • Topics you score low on AND have high exam weight are most urgent.<br />
+                  • Topics you have not touched in 2+ weeks bubble up so they do not decay.<br />
+                  • Topics with no data appear so you can build a baseline.
+                </HintBlock>
+                <HintBlock title="Examples">
+                  • <b>50% on Ethics (~15% of exam)</b> beats <b>50% on Alt. Investments
+                  (~7%)</b> — fixing Ethics moves the needle ~2x more.<br />
+                  • <b>Equity at 70%, last seen 4 weeks ago</b> shows up even though it is not
+                  weak — without practice it will start dropping.<br />
+                  • <b>Derivatives, no data</b> appears so you do at least 1 practice set.
+                </HintBlock>
+              </>
+            }
+          />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           These are the topics most likely to move the needle on your exam result. Click Practice to drill them or Study to read the material.
@@ -55,16 +113,7 @@ export function NextStudy() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{topic.fullName}</span>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Badge className={cn("cursor-help text-[9px]", getStateBadgeClass(topic.state))}>
-                        {getStateLabel(topic.state)}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-left leading-relaxed">
-                      {getStateExplanation(topic.state)}
-                    </TooltipContent>
-                  </Tooltip>
+                  <StateBadgeWithExplanation state={topic.state} />
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-32 rounded-full bg-muted">

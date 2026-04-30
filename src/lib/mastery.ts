@@ -261,20 +261,50 @@ export function levelReadiness(
   };
 }
 
-export function getStateExplanation(state: LosState): string {
+export interface StateExplanation {
+  rule: string;
+  example: string;
+  action: string;
+}
+
+export function getStateExplanation(state: LosState): StateExplanation {
   switch (state) {
     case "not_started":
-      return "Zero questions answered. Example: you have not touched this subject yet. What to do: open a quick practice set (5–10 questions) so we can start measuring you.";
+      return {
+        rule: "0 questions answered.",
+        example: "You have not opened this subject yet, so we have nothing to measure.",
+        action: "Open a quick practice set (5–10 questions) so this LOS starts being tracked.",
+      };
     case "in_progress":
-      return "Between 1 and 4 questions answered. Example: 1 right out of 1 looks like 100%, but it tells us almost nothing. What to do: keep going until you reach at least 5 questions, then come back to read this label.";
+      return {
+        rule: "1 to 4 questions answered. Sample is too small to judge.",
+        example: "1 right out of 1 looks like 100% but it is just luck. Even 4/4 stays here.",
+        action: "Keep practicing until you reach at least 5 questions on this LOS.",
+      };
     case "practiced":
-      return "5+ questions answered, but less than 6 out of 10 are correct. Example: 4 right out of 10 means you are missing the concept. What to do: go back to the reading first, then come back to questions.";
+      return {
+        rule: "5+ questions answered, but less than 60% correct.",
+        example: "4 right out of 10 (40%) means you are missing the concept, not just slipping.",
+        action: "Go back to the reading or watch a quick explanation. Then come back and re-test.",
+      };
     case "strong":
-      return "Between 6 and 8 right out of every 10. Example: 8 right out of 12 questions. You are in the safe zone but not bulletproof. What to do: 10–15 more targeted questions to push to 8+ out of 10.";
+      return {
+        rule: "5+ questions, 60%–80% correct. Or 80%+ but with fewer than 12 attempts.",
+        example: "8 right out of 12 (67%) on Time Value of Money.",
+        action: "Do 10–15 more targeted questions to push past 80% and reach Mastered.",
+      };
     case "mastered":
-      return "9 out of 10 right or better, on at least 12 questions, and you have practiced recently. Example: 12 right out of 14, last seen 3 days ago. What to do: nothing now — we will ping you to review later so you do not forget.";
+      return {
+        rule: "12+ questions, 80%+ correct, practiced recently.",
+        example: "12 right out of 14 (86%), last seen 3 days ago.",
+        action: "Nothing now. We will surface this as Needs review later so you do not forget it.",
+      };
     case "needs_review":
-      return "You used to know this well, but it has been a while since you practiced. Example: you nailed it 3 weeks ago and have not seen it since. What to do: spend 10 minutes redoing 5 questions to refresh it before exam day.";
+      return {
+        rule: "You knew it well, but the spaced-repetition date for this LOS has passed.",
+        example: "You nailed it 3 weeks ago and have not practiced it since.",
+        action: "Spend 5–10 minutes redoing a few questions to lock it back in.",
+      };
   }
 }
 

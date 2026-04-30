@@ -19,7 +19,33 @@ import {
   TopicReadiness,
 } from "@/lib/mastery";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { InfoHint } from "@/components/ui/info-hint";
+import { HintBlock, InfoHint } from "@/components/ui/info-hint";
+
+function StateExplanationBody({ state }: { state: LosState }) {
+  const explanation = getStateExplanation(state);
+  return (
+    <div className="space-y-2 text-left text-xs leading-relaxed">
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-background/70">
+          {getStateLabel(state)} — rule
+        </p>
+        <p>{explanation.rule}</p>
+      </div>
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-background/70">
+          Example
+        </p>
+        <p>{explanation.example}</p>
+      </div>
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
+          What to do
+        </p>
+        <p>{explanation.action}</p>
+      </div>
+    </div>
+  );
+}
 
 function StateBadge({ state, className }: { state: LosState; className?: string }) {
   return (
@@ -29,8 +55,8 @@ function StateBadge({ state, className }: { state: LosState; className?: string 
           {getStateLabel(state)}
         </Badge>
       </TooltipTrigger>
-      <TooltipContent className="max-w-xs text-left leading-relaxed">
-        {getStateExplanation(state)}
+      <TooltipContent className="max-w-sm">
+        <StateExplanationBody state={state} />
       </TooltipContent>
     </Tooltip>
   );
@@ -94,8 +120,8 @@ function ModuleRow({ module, moduleName, losDescriptions }: {
                     {getStateLabel(lm.mastery.state)}
                   </span>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs text-left leading-relaxed">
-                  {getStateExplanation(lm.mastery.state)}
+                <TooltipContent className="max-w-sm">
+                  <StateExplanationBody state={lm.mastery.state} />
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -123,7 +149,29 @@ export function TopicList() {
       <CardHeader className="pb-3">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Performance by Topic</CardTitle>
-          <InfoHint text="Each topic shows a label + percentage + sample size. Reference: ≥80% on 12+ questions = Mastered, 60–80% = Strong, <60% = Practiced (read first), <5 questions = In progress. Examples: '1/1 right (100%)' stays In progress — 1 question is not enough proof. '8/12 (67%)' = Strong. '4/10 (40%)' = Practiced — go back to the reading. '11/12 (92%) seen 3 weeks ago' = Needs review." />
+          <InfoHint
+            width="lg"
+            content={
+              <>
+                <HintBlock title="What it is">
+                  Each topic shows a state, accuracy and sample size. The state is more honest than
+                  the % alone because it considers how many questions you actually answered.
+                </HintBlock>
+                <HintBlock title="State thresholds">
+                  • <b>≥80% on 12+ questions, recent</b> → Mastered<br />
+                  • <b>60–80%</b> → Strong<br />
+                  • <b>&lt;60% on 5+ questions</b> → Practiced (read first)<br />
+                  • <b>&lt;5 questions</b> → In progress (not enough proof)
+                </HintBlock>
+                <HintBlock title="Examples">
+                  • <b>1/1 right (100%)</b> → In progress, not Mastered. 1 question = noise.<br />
+                  • <b>8/12 right (67%)</b> → Strong.<br />
+                  • <b>4/10 right (40%)</b> → Practiced. Re-read the module.<br />
+                  • <b>11/12 (92%) seen 3 weeks ago</b> → Needs review.
+                </HintBlock>
+              </>
+            }
+          />
         </div>
         <p className="text-xs text-muted-foreground">
           {loading

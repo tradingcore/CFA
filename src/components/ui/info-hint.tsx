@@ -1,16 +1,26 @@
 "use client";
 
+import { ReactNode } from "react";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface InfoHintProps {
-  text: string;
+  text?: string;
+  content?: ReactNode;
   className?: string;
   side?: "top" | "right" | "bottom" | "left";
+  width?: "sm" | "md" | "lg";
 }
 
-export function InfoHint({ text, className, side = "top" }: InfoHintProps) {
+const widthMap = {
+  sm: "max-w-xs",
+  md: "max-w-sm",
+  lg: "max-w-md",
+} as const;
+
+export function InfoHint({ text, content, className, side = "top", width = "md" }: InfoHintProps) {
+  const body = content ?? text;
   return (
     <Tooltip>
       <TooltipTrigger
@@ -23,9 +33,35 @@ export function InfoHint({ text, className, side = "top" }: InfoHintProps) {
       >
         <Info className="h-3 w-3" />
       </TooltipTrigger>
-      <TooltipContent side={side} className="max-w-xs text-left leading-relaxed">
-        {text}
+      <TooltipContent
+        side={side}
+        className={cn("text-left leading-relaxed", widthMap[width])}
+      >
+        {body}
       </TooltipContent>
     </Tooltip>
+  );
+}
+
+interface HintBlockProps {
+  title: string;
+  children: ReactNode;
+  tone?: "default" | "warn" | "good";
+}
+
+export function HintBlock({ title, children, tone = "default" }: HintBlockProps) {
+  const toneClass =
+    tone === "warn"
+      ? "text-amber-200"
+      : tone === "good"
+      ? "text-emerald-200"
+      : "text-background/70";
+  return (
+    <div className="mt-2 first:mt-0">
+      <p className={cn("mb-0.5 text-[10px] font-semibold uppercase tracking-wider", toneClass)}>
+        {title}
+      </p>
+      <div className="text-xs leading-relaxed">{children}</div>
+    </div>
   );
 }

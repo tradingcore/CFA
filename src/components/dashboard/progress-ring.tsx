@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { getWeeklyQuizStats } from "@/lib/firestore";
 import { useLevelReadiness } from "@/lib/use-readiness";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoHint } from "@/components/ui/info-hint";
+import { HintBlock, InfoHint } from "@/components/ui/info-hint";
 
 interface CircularProgressProps {
   value: number;
@@ -13,7 +13,7 @@ interface CircularProgressProps {
   strokeWidth?: number;
   label: string;
   sublabel: string;
-  hint?: string;
+  hint?: React.ReactNode;
 }
 
 function CircularProgress({ value, size = 120, strokeWidth = 10, label, sublabel, hint }: CircularProgressProps) {
@@ -60,7 +60,7 @@ function CircularProgress({ value, size = 120, strokeWidth = 10, label, sublabel
       <div className="text-center">
         <div className="flex items-center justify-center gap-1">
           <p className="text-sm font-semibold">{label}</p>
-          {hint && <InfoHint text={hint} />}
+          {hint && <InfoHint content={hint} width="lg" />}
         </div>
         <p className="text-xs text-muted-foreground">{sublabel}</p>
       </div>
@@ -90,10 +90,30 @@ export function ProgressRing() {
       <CardHeader className="pb-2">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Exam readiness</CardTitle>
-          <InfoHint text="0%–100% estimate of how the real CFA exam would go for you today. Reference: ~70% is the typical pass band, 80%+ is comfortable, <50% needs a lot more work. Important: only topics you have practiced count toward this number. Always read it together with Coverage to understand if it really represents you." />
+          <InfoHint
+            width="lg"
+            content={
+              <>
+                <HintBlock title="What it is">
+                  An estimate of how close you are to passing the real CFA exam, from 0% to 100%.
+                  Topics that count more on the real exam (like Ethics or FRA) also weigh more here.
+                </HintBlock>
+                <HintBlock title="Reference">
+                  • <b>≥80%</b> — comfortable<br />
+                  • <b>65–75%</b> — typical pass zone<br />
+                  • <b>50–65%</b> — borderline, more work needed<br />
+                  • <b>&lt;50%</b> — far from ready
+                </HintBlock>
+                <HintBlock title="Always read together with Coverage" tone="warn">
+                  Readiness only looks at topics you have practiced. If Coverage is low, the
+                  number is unreliable — see the Readiness ring tooltip for examples.
+                </HintBlock>
+              </>
+            }
+          />
         </div>
         <p className="text-xs text-muted-foreground">
-          0% to 100%. Around 70% is the typical pass zone. Read it together with Coverage — see hint below.
+          0% to 100%. Around 70% is the typical pass zone. Always read it together with Coverage — hint below.
         </p>
       </CardHeader>
       <CardContent className="flex items-center justify-around pb-6">
@@ -102,16 +122,58 @@ export function ProgressRing() {
           label="Readiness"
           sublabel={`${readiness.totalSampleSize} answers · ${evidenceCoverage}% of program covered`}
           hint={
-            readiness.totalSampleSize === 0
-              ? "0%–100%. Right now it is 0% because you have not answered any question. Aim for ≥70% over time. Take a mock with 30+ questions so this starts to mean something."
-              : `0%–100%. Yours: ${readiness.readinessPct}% across ${readiness.totalSampleSize} answers (${evidenceCoverage}% of program covered). Example to read it right: if you only studied Ethics and got 80%, this card would still show ~80% Readiness — but Coverage would only be ~15% (1 topic out of 10), meaning the number represents only a small slice of what you'll face. Trust the Readiness more as Coverage approaches 100%.`
+            <>
+              <HintBlock title="What it is">
+                Your weighted readiness across the program, 0%–100%. Topics with more weight on the
+                real exam push this number more.
+              </HintBlock>
+              <HintBlock title="Coverage in plain words">
+                Coverage = how much of the program already has practice data. If Coverage is 30%,
+                the Readiness number only reflects 30% of what you will face on exam day — the
+                other 70% is unknown.
+              </HintBlock>
+              <HintBlock title="Examples">
+                • <b>Only studied Ethics, 80% accuracy</b> → Readiness <b>~80%</b>, Coverage{" "}
+                <b>~15%</b>. Number is right but represents 1 topic out of 10.<br />
+                • <b>1 mock with 60/90 right</b> → Readiness <b>~67%</b>, Coverage{" "}
+                <b>~95%</b>. Trust this — every topic measured.<br />
+                • <b>Readiness 75%, Coverage 60%</b> → Watch out: 4 untouched topics could pull
+                your real score down to ~55% if they turn out weak.
+              </HintBlock>
+              <HintBlock title="Your numbers right now" tone={evidenceCoverage >= 80 ? "good" : "warn"}>
+                {readiness.totalSampleSize === 0
+                  ? "0 answers. Take a mock with 30+ questions to get a meaningful number."
+                  : `${readiness.readinessPct}% over ${readiness.totalSampleSize} answers, covering ${evidenceCoverage}% of the program.`}
+                {readiness.totalSampleSize > 0 && evidenceCoverage < 80
+                  ? " Coverage is still low — practice the missing topics before trusting the Readiness number."
+                  : readiness.totalSampleSize > 0
+                  ? " Coverage is high — the number reflects you well."
+                  : ""}
+              </HintBlock>
+            </>
           }
         />
         <CircularProgress
           value={accuracy}
           label="Weekly accuracy"
           sublabel={`${stats.questionsAnswered} questions · ${stats.simuladosCompleted} mocks`}
-          hint="0%–100% of questions you got right this week. Reference: ≥70% keeps pace with the exam, 50–70% is shaky, <50% stop and study before more questions. Example: 14 right out of 20 = 70%. One week alone can be noisy — look at the trend across several weeks."
+          hint={
+            <>
+              <HintBlock title="What it is">
+                Of the questions you answered this week (Mon–Sun), the share you got right.
+                Range: 0%–100%.
+              </HintBlock>
+              <HintBlock title="Reference">
+                • <b>≥70%</b> — keeping pace with the real exam<br />
+                • <b>50–70%</b> — shaky, study before more drilling<br />
+                • <b>&lt;50%</b> — stop and re-read the material
+              </HintBlock>
+              <HintBlock title="Example">
+                14 right out of 20 = 70%. One week alone can be noisy — look at the trend across
+                3–4 weeks instead of a single point.
+              </HintBlock>
+            </>
+          }
         />
       </CardContent>
     </Card>
