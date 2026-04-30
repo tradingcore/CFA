@@ -53,7 +53,7 @@ export function PlanGoalsCard({ topics, value, onChange }: PlanGoalsCardProps) {
         <div className="space-y-2">
           <label className="flex items-center gap-1 text-sm font-medium">
             What do you want to focus on?
-            <InfoHint text="Write in your own words what you would like to study or improve. The AI reads this when building your plan, so the more specific you are, the better the plan." />
+            <InfoHint text="Write in your own words what you want from this plan. Examples: 'I want to review Ethics standards III and IV before next week', 'Drill duration and convexity questions every other day', 'Light week, only 5h available'. The AI reads this verbatim." />
           </label>
           <textarea
             value={value.userGoals}
@@ -70,7 +70,7 @@ export function PlanGoalsCard({ topics, value, onChange }: PlanGoalsCardProps) {
         <div className="space-y-2">
           <label className="flex items-center gap-1 text-sm font-medium">
             Plan period
-            <InfoHint text="How many days ahead you want the plan to cover. A shorter plan is easier to follow week by week. A longer plan gives you a bigger picture, but might need adjustments along the way." />
+            <InfoHint text="How many days the plan covers. Examples: This week (7d) for tactical pushes; Next 2 weeks (14d) is the sweet spot for most users; Next month (30d) if your exam is far away. Shorter = easier to follow, longer = bigger picture." />
           </label>
           <div className="flex gap-2">
             {([7, 14, 30] as const).map((days) => (
@@ -95,7 +95,7 @@ export function PlanGoalsCard({ topics, value, onChange }: PlanGoalsCardProps) {
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-1 text-sm font-medium">
               Target modules ({value.targetModuleIds.length} selected)
-              <InfoHint text="Pick the specific subjects (modules) you want the plan to focus on. If you do not pick anything, the AI will choose for you based on what you are weakest at." />
+              <InfoHint text="Pick specific modules you want the plan to focus on (e.g. 'Time Value of Money', 'Inventories'). Tip: 3–6 modules per week works well; more than 10 turns into a wishlist. Leave empty and the AI picks the weakest ones for you." />
             </label>
             {value.targetModuleIds.length > 0 && (
               <button
@@ -182,7 +182,7 @@ export function PlanGoalsCard({ topics, value, onChange }: PlanGoalsCardProps) {
               className="h-3 w-3 accent-primary"
             />
             Prioritize weak topics
-            <InfoHint text="When on, the plan spends more time on topics you are doing badly at. Turn this off if you prefer a more balanced review across the whole program." />
+            <InfoHint text="When on (recommended), the plan spends more time on topics under 70% accuracy. Example: if Equity is at 45% and Ethics at 80%, you will see more Equity blocks. Turn off if you want a balanced review of the whole program." />
           </label>
           <label className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs">
             <input
@@ -194,7 +194,7 @@ export function PlanGoalsCard({ topics, value, onChange }: PlanGoalsCardProps) {
               className="h-3 w-3 accent-primary"
             />
             Include 1 mock per week
-            <InfoHint text="Adds a full simulation of the real exam to one of your study days each week. The best way to check if you are actually getting closer to passing." />
+            <InfoHint text="Adds one full mock exam (90 questions, ~3h) to a study day each week. Reference: candidates who pass usually do 6–10 mocks before exam day. Best metric for honest readiness." />
           </label>
         </div>
       </CardContent>

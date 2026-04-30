@@ -105,7 +105,7 @@ export function WeeklySnapshot() {
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarRange className="h-4 w-4 text-primary" />
           This week
-          <InfoHint text="A photo of where you stand right now, compared to where you were last week. Helps you see if your studying is actually moving you forward." />
+          <InfoHint text="A snapshot of where you stand now vs. last week. Reference: +3 to +5 points per week is healthy progress; flat (0) is normal during heavy review weeks; negative means a topic decayed or a recent mock pulled the average down." />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           Compare your readiness with last week and see which topics improved and which need attention.
@@ -116,7 +116,7 @@ export function WeeklySnapshot() {
           <div>
             <div className="flex items-center gap-1">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Readiness</p>
-              <InfoHint text="An estimate of how the real exam would go for you today, with topics that count more on the real exam also weighing more here." />
+              <InfoHint text="0%–100%. Reference: <50% needs a lot more work, 60–75% is the typical pass zone, 80%+ is comfortable. Topics that count more in the real exam also count more here." />
             </div>
             <p className="text-2xl font-bold font-mono tabular-nums">
               {readiness.readinessPct}%

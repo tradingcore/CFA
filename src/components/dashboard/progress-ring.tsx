@@ -90,10 +90,10 @@ export function ProgressRing() {
       <CardHeader className="pb-2">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Exam readiness</CardTitle>
-          <InfoHint text="An estimate of how the real CFA exam would go for you today. Topics that count more in the real exam (like Ethics and FRA) also count more here." />
+          <InfoHint text="An estimate of how the real CFA exam would go for you today (0% = not ready, 100% = perfect). Reference: ~70% is the typical pass band, 80%+ is comfortable, below 50% means you have a lot of ground to cover. Topics with more weight in the real exam (Ethics, FRA on Level I) also weigh more here." />
         </div>
         <p className="text-xs text-muted-foreground">
-          The bigger the number, the closer you are to passing. Coverage tells you how much of the program we already have data on.
+          0% to 100%. Around 70% is the typical pass zone. Coverage shows how much of the program we already have data on.
         </p>
       </CardHeader>
       <CardContent className="flex items-center justify-around pb-6">
@@ -103,15 +103,15 @@ export function ProgressRing() {
           sublabel={`${readiness.totalSampleSize} answers · ${evidenceCoverage}% of program covered`}
           hint={
             readiness.totalSampleSize === 0
-              ? "We do not have any answers yet. Take a mock so this number starts to mean something."
-              : `Right now we have ${readiness.totalSampleSize} answers covering ${evidenceCoverage}% of the program. The more topics you practice, the more reliable this number gets.`
+              ? "Range 0%–100%. Right now it is 0% because you have not answered any question yet. Take a mock with 30+ questions so this starts to mean something. Aim for ≥70% over time."
+              : `Range 0%–100%. Yours is ${readiness.readinessPct}% based on ${readiness.totalSampleSize} answers covering ${evidenceCoverage}% of the program. Reference: <50% needs a lot more work, 60–75% is the pass zone, 80%+ is comfortable. The more topics you practice, the more trustworthy this number gets.`
           }
         />
         <CircularProgress
           value={accuracy}
           label="Weekly accuracy"
           sublabel={`${stats.questionsAnswered} questions · ${stats.simuladosCompleted} mocks`}
-          hint="How well you did on the questions you answered this week (Mon–Sun). Helpful to see the trend, but a single week can be noisy."
+          hint="Range 0%–100% of questions you got right this week. Reference: ≥70% means you are keeping pace with the exam, 50–70% is shaky, <50% means stop and study before more questions. One week alone can be noisy — look at the trend."
         />
       </CardContent>
     </Card>

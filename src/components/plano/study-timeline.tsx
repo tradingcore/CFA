@@ -25,28 +25,28 @@ const typeConfig = {
     icon: BookOpen,
     color: "text-blue-500",
     bg: "bg-blue-500/10",
-    hint: "Open the module and read it carefully. The goal here is to understand the content, not to get questions right.",
+    hint: "Open the module and read it carefully. Typical duration: 30–60 min. Goal: understand the concepts, not get questions right yet. Take short notes you can come back to later.",
   },
   practice: {
     label: "Practice",
     icon: PenTool,
     color: "text-emerald-500",
     bg: "bg-emerald-500/10",
-    hint: "Solve questions on this subject. The more you practice, the more we learn about what you really know and what you still need to study.",
+    hint: "Solve questions on this subject. Typical duration: 20–45 min (10–15 questions). Goal: convert reading into recall. Use the in-question chat when you miss something.",
   },
   review: {
     label: "Review",
     icon: RefreshCw,
     color: "text-amber-500",
     bg: "bg-amber-500/10",
-    hint: "Quickly go back to something you have studied a while ago to keep it fresh. Skim notes and do a few questions to check yourself.",
+    hint: "Refresh material you studied days or weeks ago before you forget it. Typical duration: 10–20 min. Skim notes + redo 5 questions and you are done.",
   },
   mock: {
     label: "Mock",
     icon: Trophy,
     color: "text-violet-500",
     bg: "bg-violet-500/10",
-    hint: "A full simulation of the real exam: timed, no help. The most honest way to check how prepared you really are.",
+    hint: "Full simulation of the real CFA exam: 90 questions, ~3 hours, no help. Reference: aim for 6–10 mocks before exam day, with a target score of ≥70%.",
   },
 };
 

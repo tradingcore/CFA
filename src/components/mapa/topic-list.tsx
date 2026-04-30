@@ -123,7 +123,7 @@ export function TopicList() {
       <CardHeader className="pb-3">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Performance by Topic</CardTitle>
-          <InfoHint text="Each topic shows a label that tells you, in plain words, how well you know it. The label is more honest than a percentage because it also looks at how many questions you have answered." />
+          <InfoHint text="Each topic shows a label and a percentage. Reference: ≥80% on 12+ questions is Mastered, 60–80% is Strong, <60% is Practiced (read first). Example: 1/1 right looks like 100% but stays as In progress because 1 question is not enough proof." />
         </div>
         <p className="text-xs text-muted-foreground">
           {loading

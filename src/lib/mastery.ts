@@ -264,17 +264,17 @@ export function levelReadiness(
 export function getStateExplanation(state: LosState): string {
   switch (state) {
     case "not_started":
-      return "You have not answered any question on this yet. Do a quick practice set so we can start tracking how you are doing.";
+      return "Zero questions answered. Example: you have not touched this subject yet. What to do: open a quick practice set (5–10 questions) so we can start measuring you.";
     case "in_progress":
-      return "You have answered very few questions here. Even if you got them all right, it is too early to know if you really understand the topic. Keep practicing.";
+      return "Between 1 and 4 questions answered. Example: 1 right out of 1 looks like 100%, but it tells us almost nothing. What to do: keep going until you reach at least 5 questions, then come back to read this label.";
     case "practiced":
-      return "You have practiced this enough times, but you are getting most questions wrong. Go back to the material, study the concept, and only then drill questions again.";
+      return "5+ questions answered, but less than 6 out of 10 are correct. Example: 4 right out of 10 means you are missing the concept. What to do: go back to the reading first, then come back to questions.";
     case "strong":
-      return "You are doing well here. Most of your answers are correct. Keep practicing a bit more to lock the topic in and make it solid.";
+      return "Between 6 and 8 right out of every 10. Example: 8 right out of 12 questions. You are in the safe zone but not bulletproof. What to do: 10–15 more targeted questions to push to 8+ out of 10.";
     case "mastered":
-      return "You really know this topic. You have answered enough questions, almost all correctly, and recently. We will remind you to revisit it later so you do not forget.";
+      return "9 out of 10 right or better, on at least 12 questions, and you have practiced recently. Example: 12 right out of 14, last seen 3 days ago. What to do: nothing now — we will ping you to review later so you do not forget.";
     case "needs_review":
-      return "It has been a while since you saw this topic and the brain forgets fast. Do a few questions now to refresh it before exam day.";
+      return "You used to know this well, but it has been a while since you practiced. Example: you nailed it 3 weeks ago and have not seen it since. What to do: spend 10 minutes redoing 5 questions to refresh it before exam day.";
   }
 }
 

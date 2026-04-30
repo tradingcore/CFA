@@ -34,7 +34,7 @@ export function NextStudy() {
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           Recommended focus
-          <InfoHint text="We pick the topics where putting time in will give you the biggest exam-day boost: things you struggle with that also count for a lot in the real exam, plus any topic you have not seen for too long." />
+          <InfoHint text="The 3 topics that, if you study them next, give the biggest jump in exam readiness. Example: a 50% on Ethics (15% of the exam) is more urgent than a 50% on Alternative Investments (5%). Topics you have not seen for weeks also bubble up here." />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           These are the topics most likely to move the needle on your exam result. Click Practice to drill them or Study to read the material.

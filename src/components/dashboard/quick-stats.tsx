@@ -33,7 +33,7 @@ export function QuickStats() {
       icon: CheckCircle2,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
-      hint: "How many practice or mock questions you answered since Monday. A simple counter to see if you are putting in the reps.",
+      hint: "Counter from 0 upward, resets every Monday. Reference: serious candidates do 50–150 per week. Below 30 is too little; over 200 you are probably skipping the reading.",
     },
     {
       label: "Accuracy this week",
@@ -41,7 +41,7 @@ export function QuickStats() {
       icon: Target,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
-      hint: "Of the questions you answered this week, how many you got right. Best looked at as a trend across several weeks.",
+      hint: "Range 0%–100% of questions you got right this week. Reference: ≥70% means you are keeping pace with the exam, 50–70% is shaky, <50% means stop and study before doing more questions.",
     },
     {
       label: "Topics with data",
@@ -49,7 +49,7 @@ export function QuickStats() {
       icon: BookOpen,
       color: "text-violet-500",
       bg: "bg-violet-500/10",
-      hint: "How many of the CFA topics you have already practiced at least once. The more topics you cover, the more we can trust your readiness number.",
+      hint: `Goes from 0 to ${readiness.byTopic.length}. Example: 3/${readiness.byTopic.length} means we only know your level in 3 topics — your readiness is mostly a guess. Aim to cover all ${readiness.byTopic.length} so the readiness number actually reflects you.`,
     },
     {
       label: "LOS due for review",
@@ -57,7 +57,7 @@ export function QuickStats() {
       icon: AlarmClock,
       color: "text-rose-500",
       bg: "bg-rose-500/10",
-      hint: "Specific learning points (LOS) that you studied a while ago and the brain is starting to forget. Review them now and they will stick for the exam.",
+      hint: "Counter from 0 upward. Reference: 0 means you are on top of every refresh, ~10 is normal during heavy study, 30+ means you are accumulating forgetting debt. Try to keep it as low as possible the closer you get to the exam.",
     },
   ];
 

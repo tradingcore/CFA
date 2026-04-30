@@ -249,7 +249,7 @@ export default function PlanoPage() {
               <div>
                 <div className="flex items-center gap-1">
                   <p className="text-sm font-semibold">Availability this week</p>
-                  <InfoHint text="If this week is different from your usual routine (less time, fewer days, a trip), change the values here. It only affects this week — your normal schedule stays the same." />
+                  <InfoHint text="If this week is different from your usual routine (trip, busy at work, exam approaching), tweak the hours and days. Reference: 10–15h/week is a steady pace, 20–30h/week is exam crunch. It only affects this week — your default profile stays the same." />
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Adjust the hours and days for this week only, without changing your default schedule.
