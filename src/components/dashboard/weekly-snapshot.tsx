@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowDownRight, ArrowUpRight, CalendarRange, Trophy } from "lucide-react";
 import Link from "next/link";
+import { InfoHint } from "@/components/ui/info-hint";
 
 interface MoverRow {
   topicId: string;
@@ -104,6 +105,7 @@ export function WeeklySnapshot() {
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarRange className="h-4 w-4 text-primary" />
           This week
+          <InfoHint text="We save a snapshot of your readiness once per week. The diff and movers compare this week vs. last week's snapshot." />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           Snapshot of readiness vs. last week. Saved automatically when you open the dashboard.
@@ -112,7 +114,10 @@ export function WeeklySnapshot() {
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center justify-between rounded-xl border border-border bg-card/40 p-3">
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Readiness</p>
+            <div className="flex items-center gap-1">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Readiness</p>
+              <InfoHint text="Weighted average of your accuracy across CFA topics, using the official exam weights." />
+            </div>
             <p className="text-2xl font-bold font-mono tabular-nums">
               {readiness.readinessPct}%
             </p>
@@ -120,6 +125,7 @@ export function WeeklySnapshot() {
           <Badge
             variant={readinessDelta >= 0 ? "default" : "destructive"}
             className="gap-1 text-xs"
+            title={previous ? `Compared to last week: ${previous.readinessPct}%` : "No previous snapshot yet"}
           >
             {readinessDelta >= 0 ? (
               <ArrowUpRight className="h-3 w-3" />

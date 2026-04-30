@@ -25,6 +25,7 @@ import { GoalTracker } from "@/components/plano/goal-tracker";
 import { PlanGoalsCard, PlanGoals } from "@/components/plano/plan-goals";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarDays, Sparkles, Loader2 } from "lucide-react";
+import { InfoHint } from "@/components/ui/info-hint";
 
 const DEFAULT_GOALS: PlanGoals = {
   userGoals: "",
@@ -246,7 +247,10 @@ export default function PlanoPage() {
           <CardContent className="space-y-4 p-4">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold">Availability this week</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-semibold">Availability this week</p>
+                  <InfoHint text="One-week override of your study schedule. Saving here only affects the current week — your default profile stays untouched." />
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Adjust this week without changing your default profile schedule.
                 </p>

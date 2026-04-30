@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { getWeeklyQuizStats } from "@/lib/firestore";
 import { useLevelReadiness } from "@/lib/use-readiness";
 import { Card, CardContent } from "@/components/ui/card";
+import { InfoHint } from "@/components/ui/info-hint";
 import { CheckCircle2, Target, AlarmClock, BookOpen } from "lucide-react";
 
 export function QuickStats() {
@@ -32,6 +33,7 @@ export function QuickStats() {
       icon: CheckCircle2,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
+      hint: "How many mock or training questions you answered between Monday and today.",
     },
     {
       label: "Accuracy this week",
@@ -39,6 +41,7 @@ export function QuickStats() {
       icon: Target,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
+      hint: "Correct ÷ answered for this week only. Good for trend; over a single week the sample is small.",
     },
     {
       label: "Topics with data",
@@ -46,6 +49,7 @@ export function QuickStats() {
       icon: BookOpen,
       color: "text-violet-500",
       bg: "bg-violet-500/10",
+      hint: "How many CFA topics already have at least one answered question. Drives how much of the curriculum your readiness reflects.",
     },
     {
       label: "LOS due for review",
@@ -53,6 +57,7 @@ export function QuickStats() {
       icon: AlarmClock,
       color: "text-rose-500",
       bg: "bg-rose-500/10",
+      hint: "Learning Outcome Statements whose spaced-repetition date already passed. Refresh them before they decay further.",
     },
   ];
 
@@ -66,7 +71,10 @@ export function QuickStats() {
             </div>
             <div className="min-w-0">
               <p className="text-xl font-bold font-mono tabular-nums">{stat.value}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <InfoHint text={stat.hint} />
+              </div>
             </div>
           </CardContent>
         </Card>

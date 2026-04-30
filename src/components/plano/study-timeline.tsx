@@ -14,14 +14,40 @@ import {
   Trophy,
   ArrowUpRight,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoHint } from "@/components/ui/info-hint";
 
 type Block = StudyPlanDoc["blocks"][number];
 
 const typeConfig = {
-  reading: { label: "Reading", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-500/10" },
-  practice: { label: "Practice", icon: PenTool, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-  review: { label: "Review", icon: RefreshCw, color: "text-amber-500", bg: "bg-amber-500/10" },
-  mock: { label: "Mock", icon: Trophy, color: "text-violet-500", bg: "bg-violet-500/10" },
+  reading: {
+    label: "Reading",
+    icon: BookOpen,
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    hint: "Read the module and take short notes. No grading; goal is to understand the concepts.",
+  },
+  practice: {
+    label: "Practice",
+    icon: PenTool,
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10",
+    hint: "Drill questions on this module. Each answer updates your mastery for the targeted LOS.",
+  },
+  review: {
+    label: "Review",
+    icon: RefreshCw,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    hint: "Refresh material that is fading. Triggered by spaced-repetition or older modules with low recency.",
+  },
+  mock: {
+    label: "Mock",
+    icon: Trophy,
+    color: "text-violet-500",
+    bg: "bg-violet-500/10",
+    hint: "Simulate the exam: full-length, timed, no notes. Use this to track honest readiness.",
+  },
 };
 
 interface StudyTimelineProps {
@@ -64,7 +90,10 @@ export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Weekly Plan</CardTitle>
+        <div className="flex items-center gap-1">
+          <CardTitle className="text-base">Weekly Plan</CardTitle>
+          <InfoHint text="Each block targets one module and (often) specific LOS. Block types: Reading (study), Practice (drill questions), Review (refresh) and Mock (full simulation)." />
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {dates.map((date) => {
@@ -105,9 +134,17 @@ export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
                   const studyLink = `/estudo${block.moduleId ? `#${block.moduleId}` : ""}`;
                   return (
                     <div key={block.id} className={cn("flex items-start gap-3 rounded-lg border border-border p-3 transition-all", block.completed && "bg-muted/30")}>
-                      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", config.bg)}>
-                        <config.icon className={cn("h-4 w-4", config.color)} />
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <div className={cn("flex h-9 w-9 shrink-0 cursor-help items-center justify-center rounded-lg", config.bg)}>
+                            <config.icon className={cn("h-4 w-4", config.color)} />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs text-left leading-relaxed">
+                          <span className="font-semibold">{config.label}</span>
+                          <span className="ml-1 text-background/80">— {config.hint}</span>
+                        </TooltipContent>
+                      </Tooltip>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className={cn("text-sm font-medium", block.completed && "line-through text-muted-foreground")}>

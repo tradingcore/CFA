@@ -261,6 +261,23 @@ export function levelReadiness(
   };
 }
 
+export function getStateExplanation(state: LosState): string {
+  switch (state) {
+    case "not_started":
+      return "No questions answered yet. Practice once to start tracking this LOS.";
+    case "in_progress":
+      return "Fewer than 5 attempts. Sample is too small to draw conclusions, even at 100%.";
+    case "practiced":
+      return "5+ attempts but accuracy below 60%. Read the material before more questions.";
+    case "strong":
+      return "Solid accuracy (60%+). Keep practicing to push toward 80%+ and reach Mastered.";
+    case "mastered":
+      return "12+ attempts at 80%+ accuracy with recent activity. Will need a refresh later.";
+    case "needs_review":
+      return "Spaced-repetition due date passed. Redo a couple of questions to refresh memory.";
+  }
+}
+
 export function getStateLabel(state: LosState): string {
   switch (state) {
     case "not_started":

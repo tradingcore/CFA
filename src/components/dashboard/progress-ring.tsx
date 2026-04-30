@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { getWeeklyQuizStats } from "@/lib/firestore";
 import { useLevelReadiness } from "@/lib/use-readiness";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoHint } from "@/components/ui/info-hint";
 
 interface CircularProgressProps {
   value: number;
@@ -12,9 +13,10 @@ interface CircularProgressProps {
   strokeWidth?: number;
   label: string;
   sublabel: string;
+  hint?: string;
 }
 
-function CircularProgress({ value, size = 120, strokeWidth = 10, label, sublabel }: CircularProgressProps) {
+function CircularProgress({ value, size = 120, strokeWidth = 10, label, sublabel, hint }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
@@ -56,7 +58,10 @@ function CircularProgress({ value, size = 120, strokeWidth = 10, label, sublabel
         </div>
       </div>
       <div className="text-center">
-        <p className="text-sm font-semibold">{label}</p>
+        <div className="flex items-center justify-center gap-1">
+          <p className="text-sm font-semibold">{label}</p>
+          {hint && <InfoHint text={hint} />}
+        </div>
         <p className="text-xs text-muted-foreground">{sublabel}</p>
       </div>
     </div>
@@ -83,9 +88,12 @@ export function ProgressRing() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Exam readiness</CardTitle>
+        <div className="flex items-center gap-1">
+          <CardTitle className="text-base">Exam readiness</CardTitle>
+          <InfoHint text="Weighted average of accuracy across topics, using the official CFA exam weights. Topics without data do not enter the average — that is what Coverage measures." />
+        </div>
         <p className="text-xs text-muted-foreground">
-          Weighted by official CFA topic weights. Evidence coverage shows how much of the curriculum has data.
+          Weighted by official CFA topic weights. Coverage shows how much of the curriculum already has data.
         </p>
       </CardHeader>
       <CardContent className="flex items-center justify-around pb-6">
@@ -93,11 +101,13 @@ export function ProgressRing() {
           value={readiness.readinessPct}
           label="Readiness"
           sublabel={`${readiness.totalSampleSize} attempts · ${evidenceCoverage}% covered`}
+          hint={`Σ (accuracy × weight) ÷ Σ weight, only over topics with data. Today: ${readiness.totalSampleSize} attempts, ${evidenceCoverage}% of the curriculum measured.`}
         />
         <CircularProgress
           value={accuracy}
           label="Weekly accuracy"
           sublabel={`${stats.questionsAnswered} questions · ${stats.simuladosCompleted} mocks`}
+          hint="Correct ÷ answered for this week only. Treat as a trend signal — a single week can be noisy."
         />
       </CardContent>
     </Card>

@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, AlertTriangle, GraduationCap, AlarmClock } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { getStateBadgeClass, getStateLabel } from "@/lib/mastery";
+import { getStateBadgeClass, getStateExplanation, getStateLabel } from "@/lib/mastery";
+import { InfoHint } from "@/components/ui/info-hint";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function NextStudy() {
   const { level } = useLevel();
@@ -32,9 +34,10 @@ export function NextStudy() {
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           Recommended focus
+          <InfoHint text="We score each topic by (1 − accuracy) × CFA weight, plus a bonus for LOS due for review. Heavy + weak topics surface first." />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
-          Combines low accuracy, due reviews and CFA topic weights. Topics with no data show next to Practice to get a baseline.
+          Combines low accuracy, due reviews and CFA topic weights. Topics with no data appear with a Practice link so you can build a baseline.
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -52,9 +55,16 @@ export function NextStudy() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{topic.fullName}</span>
-                  <Badge className={cn("text-[9px]", getStateBadgeClass(topic.state))}>
-                    {getStateLabel(topic.state)}
-                  </Badge>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Badge className={cn("cursor-help text-[9px]", getStateBadgeClass(topic.state))}>
+                        {getStateLabel(topic.state)}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-left leading-relaxed">
+                      {getStateExplanation(topic.state)}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-32 rounded-full bg-muted">

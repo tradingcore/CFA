@@ -12,16 +12,27 @@ import { getTopicsForLevel } from "@/lib/cfa-topics";
 import {
   getStateBadgeClass,
   getStateBarClass,
+  getStateExplanation,
   getStateLabel,
+  LosState,
   ModuleMastery,
   TopicReadiness,
 } from "@/lib/mastery";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoHint } from "@/components/ui/info-hint";
 
-function StateBadge({ readiness }: { readiness: { state: TopicReadiness["state"]; sampleSize: number } }) {
+function StateBadge({ state, className }: { state: LosState; className?: string }) {
   return (
-    <Badge className={cn("gap-1 text-[10px]", getStateBadgeClass(readiness.state))}>
-      {getStateLabel(readiness.state)}
-    </Badge>
+    <Tooltip>
+      <TooltipTrigger>
+        <Badge className={cn("cursor-help gap-1 text-[10px]", getStateBadgeClass(state), className)}>
+          {getStateLabel(state)}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs text-left leading-relaxed">
+        {getStateExplanation(state)}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -49,9 +60,7 @@ function ModuleRow({ module, moduleName, losDescriptions }: {
         <span className="font-mono text-[10px] text-muted-foreground">
           {module.sampleSize > 0 ? `${Math.round(module.accuracy * 100)}%` : "—"} · {module.sampleSize}q
         </span>
-        <Badge className={cn("text-[9px]", getStateBadgeClass(module.state))}>
-          {getStateLabel(module.state)}
-        </Badge>
+        <StateBadge state={module.state} className="text-[9px]" />
       </button>
       {expanded && (
         <div className="ml-5 mt-1 mb-1 flex flex-col gap-1 border-l border-dashed border-border pl-3">
@@ -74,14 +83,21 @@ function ModuleRow({ module, moduleName, losDescriptions }: {
                   {lm.mastery.isDue ? " · review due" : ""}
                 </p>
               </div>
-              <span
-                className={cn(
-                  "shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold",
-                  getStateBadgeClass(lm.mastery.state)
-                )}
-              >
-                {getStateLabel(lm.mastery.state)}
-              </span>
+              <Tooltip>
+                <TooltipTrigger>
+                  <span
+                    className={cn(
+                      "shrink-0 cursor-help rounded px-1.5 py-0.5 text-[9px] font-semibold",
+                      getStateBadgeClass(lm.mastery.state)
+                    )}
+                  >
+                    {getStateLabel(lm.mastery.state)}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs text-left leading-relaxed">
+                  {getStateExplanation(lm.mastery.state)}
+                </TooltipContent>
+              </Tooltip>
             </div>
           ))}
         </div>
@@ -105,12 +121,22 @@ export function TopicList() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Performance by Topic</CardTitle>
+        <div className="flex items-center gap-1">
+          <CardTitle className="text-base">Performance by Topic</CardTitle>
+          <InfoHint text="Each topic and module has a state: Not started, In progress, Practiced, Strong, Mastered or Needs review. Hover any badge to see what triggered it." />
+        </div>
         <p className="text-xs text-muted-foreground">
           {loading
             ? "Loading mastery from your activity..."
-            : "States are based on accuracy and number of attempts. Mastered requires at least 12 attempts and 80% accuracy with recent practice."}
+            : "States are based on accuracy and sample size. Mastered requires 12+ attempts and 80%+ accuracy with recent practice."}
         </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {(["not_started", "in_progress", "practiced", "strong", "mastered", "needs_review"] as LosState[]).map(
+            (state) => (
+              <StateBadge key={state} state={state} className="text-[9px]" />
+            )
+          )}
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         {sorted.map((topic) => {
@@ -143,7 +169,7 @@ export function TopicList() {
                         <span className="font-mono text-sm font-bold tabular-nums">
                           {topic.sampleSize === 0 ? "—" : `${accuracyPct}%`}
                         </span>
-                        <StateBadge readiness={topic} />
+                        <StateBadge state={topic.state} />
                       </div>
                     </div>
                     <div className="h-2.5 w-full rounded-full bg-muted">
