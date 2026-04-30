@@ -32,14 +32,46 @@ export default function LoginPage() {
     }
   };
 
+  const [debugInfo, setDebugInfo] = useState("");
+
+  // #region agent log — H4: check auth handler accessibility
+  useState(() => {
+    fetch("https://cfa-tc.firebaseapp.com/__/auth/handler", { mode: "no-cors" })
+      .then(() => {
+        fetch('http://127.0.0.1:7731/ingest/6435cd98-1e33-4e07-83a1-370e4d5e2313',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7fb751'},body:JSON.stringify({sessionId:'7fb751',location:'login/page.tsx:authHandlerCheck',message:'Auth handler reachable',data:{url:'https://cfa-tc.firebaseapp.com/__/auth/handler'},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+      })
+      .catch((e) => {
+        fetch('http://127.0.0.1:7731/ingest/6435cd98-1e33-4e07-83a1-370e4d5e2313',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7fb751'},body:JSON.stringify({sessionId:'7fb751',location:'login/page.tsx:authHandlerCheck',message:'Auth handler NOT reachable',data:{error:String(e)},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+      });
+  });
+  // #endregion
+
   const handleGoogle = async () => {
     setError("");
+    setDebugInfo("");
     setLoading(true);
+    // #region agent log
+    fetch('http://127.0.0.1:7731/ingest/6435cd98-1e33-4e07-83a1-370e4d5e2313',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7fb751'},body:JSON.stringify({sessionId:'7fb751',location:'login/page.tsx:handleGoogle',message:'Google sign-in attempt started',data:{hostname:window.location.hostname,href:window.location.href},timestamp:Date.now(),hypothesisId:'H1-H3'})}).catch(()=>{});
+    // #endregion
     try {
       await signInWithGoogle();
+      // #region agent log
+      fetch('http://127.0.0.1:7731/ingest/6435cd98-1e33-4e07-83a1-370e4d5e2313',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7fb751'},body:JSON.stringify({sessionId:'7fb751',location:'login/page.tsx:handleGoogle:success',message:'Google sign-in succeeded',data:{},timestamp:Date.now(),hypothesisId:'H1-H3'})}).catch(()=>{});
+      // #endregion
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setError(`Google sign-in failed: ${message}`);
+      const firebaseErr = err as { code?: string; message?: string; customData?: unknown };
+      const debugData = {
+        code: firebaseErr.code || 'no-code',
+        message: firebaseErr.message || 'no-message',
+        customData: firebaseErr.customData || null,
+        fullError: JSON.stringify(err, Object.getOwnPropertyNames(err as object)),
+        hostname: window.location.hostname,
+      };
+      // #region agent log
+      fetch('http://127.0.0.1:7731/ingest/6435cd98-1e33-4e07-83a1-370e4d5e2313',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7fb751'},body:JSON.stringify({sessionId:'7fb751',location:'login/page.tsx:handleGoogle:error',message:'Google sign-in failed',data:debugData,timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
+      // #endregion
+      setError(`Google sign-in failed: ${firebaseErr.message}`);
+      setDebugInfo(JSON.stringify(debugData, null, 2));
     } finally {
       setLoading(false);
     }
@@ -98,6 +130,11 @@ export default function LoginPage() {
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
             </p>
+          )}
+          {debugInfo && (
+            <pre className="rounded-lg bg-muted p-3 text-[10px] text-muted-foreground overflow-auto max-h-40">
+              {debugInfo}
+            </pre>
           )}
 
           <button
