@@ -118,6 +118,9 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
                       "text-xs leading-relaxed",
                       item.studied ? "text-muted-foreground" : "text-foreground"
                     )}>
+                      <span className="inline-block mr-1.5 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary tabular-nums">
+                        LOS {String.fromCharCode(97 + item.index)}
+                      </span>
                       {item.text}
                     </p>
                     {item.studied && date && (

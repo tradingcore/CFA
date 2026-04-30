@@ -108,7 +108,10 @@ export function TopicList() {
                           <div className="ml-5 mt-0.5 mb-1 flex flex-col gap-0.5 border-l border-dashed border-border pl-3">
                             {mod.los.map((los, i) => (
                               <p key={i} className="text-[10px] leading-relaxed text-muted-foreground/80">
-                                <span className="text-primary/60 mr-1">LOS:</span>{los}
+                                <span className="inline-block mr-1.5 rounded bg-primary/10 px-1 py-0.5 text-[9px] font-bold text-primary/70 tabular-nums">
+                                  LOS {String.fromCharCode(97 + i)}
+                                </span>
+                                {los}
                               </p>
                             ))}
                           </div>
