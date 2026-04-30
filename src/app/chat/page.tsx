@@ -113,7 +113,7 @@ export default function ChatPage() {
     const textarea = inputRef.current;
     if (!textarea) return;
     textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 220)}px`;
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 280)}px`;
   }, [input]);
 
   useEffect(() => {
@@ -441,7 +441,7 @@ export default function ChatPage() {
       )}
       {/* Main chat */}
       <div className="flex flex-1 flex-col">
-        <div className="flex-1 overflow-y-auto pb-4">
+        <div className="chat-scroll flex-1 overflow-y-auto pb-4">
           {messages.length <= 1 && (
             <div className="flex flex-col items-center gap-4 pt-12 pb-8">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
@@ -567,14 +567,14 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-input bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="flex h-11 w-11 shrink-0 items-center justify-center self-end rounded-xl border border-input bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               aria-label="Attach file"
               title="Attach file or image"
             >
               <Plus className="h-5 w-5" />
             </button>
 
-            <div className="relative flex-1">
+            <div className="flex flex-1 flex-col">
               {attachments.length > 0 && (
                 <div className="mb-2 flex items-center gap-2 rounded-xl border border-border bg-card p-2">
                   <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted">
@@ -600,35 +600,39 @@ export default function ChatPage() {
                   </button>
                 </div>
               )}
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={isListening ? "Listening in English..." : "Ask about CFA..."}
-                rows={1}
-                className="max-h-[220px] min-h-11 w-full resize-none overflow-y-auto rounded-xl border border-input bg-card px-4 py-3 pr-24 text-sm outline-none ring-ring transition-shadow placeholder:text-muted-foreground focus:ring-2"
-              />
-              <button
-                type="button"
-                onClick={handleToggleVoice}
-                className={cn(
-                  "absolute right-12 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg transition-colors",
-                  isListening ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                )}
-                aria-label={isListening ? "Stop dictation" : "Start voice dictation"}
-                title="Dictate in English"
-              >
-                <Mic className="h-4 w-4" />
-              </button>
-              <button
-                type="submit"
-                disabled={(!input.trim() && attachments.length === 0) || isTyping}
-                className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-opacity disabled:opacity-30"
-                aria-label="Send"
-              >
-                {isTyping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </button>
+              <div className="flex min-h-11 items-end rounded-xl border border-input bg-card pr-1.5 transition-shadow focus-within:ring-2 focus-within:ring-ring">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={isListening ? "Listening in English..." : "Ask about CFA..."}
+                  rows={1}
+                  className="chat-scroll min-h-11 max-h-[280px] flex-1 resize-none overflow-y-auto bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
+                />
+                <div className="flex shrink-0 items-center gap-1 pb-1.5">
+                  <button
+                    type="button"
+                    onClick={handleToggleVoice}
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
+                      isListening ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    )}
+                    aria-label={isListening ? "Stop dictation" : "Start voice dictation"}
+                    title="Dictate in English"
+                  >
+                    <Mic className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={(!input.trim() && attachments.length === 0) || isTyping}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-opacity disabled:opacity-30"
+                    aria-label="Send"
+                  >
+                    {isTyping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
             </div>
           </form>
           {(attachmentError || voiceError) && (
