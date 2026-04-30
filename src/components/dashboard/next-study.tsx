@@ -33,7 +33,7 @@ export function NextStudy() {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
-          Foco Recomendado
+          Recommended Focus
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -70,12 +70,12 @@ export function NextStudy() {
               <div className="flex flex-col gap-1.5">
                 <Link href={`/simulado?topic=${topic.topicId}`}>
                   <Badge variant="secondary" className="cursor-pointer gap-1 text-[10px] transition-colors hover:bg-primary hover:text-primary-foreground">
-                    Praticar <ArrowRight className="h-3 w-3" />
+                    Practice <ArrowRight className="h-3 w-3" />
                   </Badge>
                 </Link>
                 <Link href="/estudo">
                   <Badge variant="outline" className="cursor-pointer gap-1 text-[10px] transition-colors hover:bg-primary hover:text-primary-foreground">
-                    <GraduationCap className="h-3 w-3" /> Estudar
+                    <GraduationCap className="h-3 w-3" /> Study
                   </Badge>
                 </Link>
               </div>

@@ -13,9 +13,9 @@ interface LOSSearchProps {
 }
 
 const filters: { value: LOSFilter; label: string }[] = [
-  { value: "all", label: "Todos" },
-  { value: "pending", label: "Pendentes" },
-  { value: "studied", label: "Estudados" },
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "studied", label: "Studied" },
 ];
 
 /**
@@ -35,7 +35,7 @@ export function LOSSearch({ searchQuery, onSearchChange, filter, onFilterChange 
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Buscar LOS (ex: GIPS, duration, CAPM...)"
+          placeholder="Search LOS (e.g. GIPS, duration, CAPM...)"
           className="w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-4 text-sm outline-none ring-ring transition-shadow placeholder:text-muted-foreground focus:ring-2"
         />
       </div>

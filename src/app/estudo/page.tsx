@@ -32,9 +32,9 @@ export default function EstudoPage() {
           <GraduationCap className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Progresso de Estudo</h1>
+          <h1 className="text-xl font-bold">Study Progress</h1>
           <p className="text-sm text-muted-foreground">
-            CFA Level {level} — Acompanhe cada LOS estudado
+            CFA Level {level} — Track every LOS studied
           </p>
         </div>
       </div>
@@ -65,13 +65,13 @@ export default function EstudoPage() {
             />
           </div>
           <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>{selectedTopic.modules.length} módulos</span>
+            <span>{selectedTopic.modules.length} modules</span>
             <span>
               {topicPct === 100
-                ? "Tópico completo!"
+                ? "Topic complete!"
                 : topicPct > 0
-                ? `${topicProgress.total - topicProgress.studied} LOS restantes`
-                : "Nenhum LOS estudado ainda"}
+                ? `${topicProgress.total - topicProgress.studied} LOS remaining`
+                : "No LOS studied yet"}
             </span>
           </div>
         </div>

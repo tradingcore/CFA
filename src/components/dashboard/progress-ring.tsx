@@ -64,11 +64,11 @@ export function ProgressRing() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Progresso Semanal</CardTitle>
+        <CardTitle className="text-base">Weekly Progress</CardTitle>
       </CardHeader>
       <CardContent className="flex items-center justify-around pb-6">
-        <CircularProgress value={progress} label="Meta Semanal" sublabel="questões respondidas" />
-        <CircularProgress value={accuracy} label="Acerto Semanal" sublabel="taxa da semana" />
+        <CircularProgress value={progress} label="Weekly Goal" sublabel="questions answered" />
+        <CircularProgress value={accuracy} label="Weekly Accuracy" sublabel="this week's rate" />
       </CardContent>
     </Card>
   );

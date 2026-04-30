@@ -18,9 +18,9 @@ function getScoreBarColor(score: number): string {
 }
 
 function getScoreBadge(score: number) {
-  if (score >= 70) return { label: "Domina", variant: "default" as const, icon: TrendingUp, textColor: "text-emerald-700 dark:text-emerald-400" };
-  if (score >= 50) return { label: "Atenção", variant: "secondary" as const, icon: Minus, textColor: "text-amber-700 dark:text-amber-400" };
-  return { label: "Precisa melhorar", variant: "destructive" as const, icon: TrendingDown, textColor: "text-red-700 dark:text-red-400" };
+  if (score >= 70) return { label: "Mastered", variant: "default" as const, icon: TrendingUp, textColor: "text-emerald-700 dark:text-emerald-400" };
+  if (score >= 50) return { label: "Needs Work", variant: "secondary" as const, icon: Minus, textColor: "text-amber-700 dark:text-amber-400" };
+  return { label: "Weak", variant: "destructive" as const, icon: TrendingDown, textColor: "text-red-700 dark:text-red-400" };
 }
 
 export function TopicList() {
@@ -53,7 +53,7 @@ export function TopicList() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Desempenho por Tópico</CardTitle>
+        <CardTitle className="text-base">Performance by Topic</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         {sortedScores.map((topicScore) => {
@@ -86,7 +86,7 @@ export function TopicList() {
                     </div>
                   </div>
                 </button>
-                <Link href={`/simulado?topic=${topicScore.topicId}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-primary/5 text-primary transition-colors hover:bg-primary hover:text-primary-foreground" title="Praticar">
+                <Link href={`/simulado?topic=${topicScore.topicId}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-primary/5 text-primary transition-colors hover:bg-primary hover:text-primary-foreground" title="Practice">
                   <Play className="h-4 w-4" />
                 </Link>
               </div>
@@ -117,8 +117,8 @@ export function TopicList() {
                     );
                   })}
                   <p className="mt-1 text-[10px] text-muted-foreground">
-                    {topicScore.questionsAnswered} questões respondidas
-                    {topicData.weightRange ? ` (peso: ${topicData.weightRange})` : ""}
+                    {topicScore.questionsAnswered} questions answered
+                    {topicData.weightRange ? ` (weight: ${topicData.weightRange})` : ""}
                   </p>
                 </div>
               )}

@@ -8,9 +8,9 @@ import { CFALevel } from "@/lib/cfa-topics";
 import { TrendingUp, ArrowRight, ArrowLeft, Loader2, GraduationCap, CalendarDays, Clock } from "lucide-react";
 
 const LEVELS: { value: CFALevel; label: string; desc: string }[] = [
-  { value: "I", label: "CFA Level I", desc: "Fundamentos — Ethics, Quant, FSA, Equity, FI, Derivatives, Alts, PM" },
-  { value: "II", label: "CFA Level II", desc: "Aplicação — Valuation, análise avançada, modelos de risco" },
-  { value: "III", label: "CFA Level III", desc: "Síntese — Portfolio management, wealth, pathways especializados" },
+  { value: "I", label: "CFA Level I", desc: "Foundations — Ethics, Quant, FSA, Equity, FI, Derivatives, Alts, PM" },
+  { value: "II", label: "CFA Level II", desc: "Application — Valuation, advanced analysis, risk models" },
+  { value: "III", label: "CFA Level III", desc: "Synthesis — Portfolio management, wealth, specialized pathways" },
 ];
 
 export default function OnboardingPage() {
@@ -48,9 +48,9 @@ export default function OnboardingPage() {
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
             <TrendingUp className="h-7 w-7 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold">Configuração Inicial</h1>
+          <h1 className="text-2xl font-bold">Initial Setup</h1>
           <p className="text-sm text-muted-foreground">
-            Vamos personalizar sua experiência em {3 - step} passos
+            Let&apos;s personalize your experience in {3 - step} steps
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export default function OnboardingPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <GraduationCap className="h-4 w-4" />
-              Qual level do CFA você está estudando?
+              Which CFA level are you studying for?
             </div>
             <div className="space-y-3">
               {LEVELS.map((l) => (
@@ -97,7 +97,7 @@ export default function OnboardingPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <CalendarDays className="h-4 w-4" />
-              Quando é sua prova?
+              When is your exam?
             </div>
             <input
               type="date"
@@ -106,7 +106,7 @@ export default function OnboardingPage() {
               className="w-full rounded-xl border border-input bg-card px-4 py-3 text-sm outline-none ring-ring focus:ring-2"
             />
             <p className="text-xs text-muted-foreground">
-              Usamos a data para calcular dias restantes e ajustar seu plano de estudos.
+              We use the date to calculate remaining days and adjust your study plan.
             </p>
           </div>
         )}
@@ -116,7 +116,7 @@ export default function OnboardingPage() {
           <div className="space-y-6">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Clock className="h-4 w-4" />
-              Quantas horas por semana você pode estudar?
+              How many hours per week can you study?
             </div>
             <div className="flex flex-col items-center gap-4">
               <span className="text-5xl font-bold text-primary">{weeklyHours}h</span>
@@ -136,7 +136,7 @@ export default function OnboardingPage() {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              O CFA Institute recomenda ~300 horas totais de estudo por level.
+              The CFA Institute recommends ~300 total study hours per level.
             </p>
           </div>
         )}
@@ -148,7 +148,7 @@ export default function OnboardingPage() {
               onClick={() => setStep(step - 1)}
               className="flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium hover:bg-accent"
             >
-              <ArrowLeft className="h-4 w-4" /> Voltar
+              <ArrowLeft className="h-4 w-4" /> Back
             </button>
           ) : (
             <div />
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
               onClick={() => setStep(step + 1)}
               className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90"
             >
-              Próximo <ArrowRight className="h-4 w-4" />
+              Next <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
             <button
@@ -168,7 +168,7 @@ export default function OnboardingPage() {
               className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Começar a Estudar
+              Start Studying
             </button>
           )}
         </div>

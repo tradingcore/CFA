@@ -19,13 +19,13 @@ export default function LoginPage() {
     try {
       await signIn(email, password);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Erro ao fazer login";
+      const message = err instanceof Error ? err.message : "Failed to sign in";
       if (message.includes("invalid-credential") || message.includes("wrong-password")) {
-        setError("Email ou senha incorretos.");
+        setError("Incorrect email or password.");
       } else if (message.includes("user-not-found")) {
-        setError("Usuário não encontrado.");
+        setError("User not found.");
       } else {
-        setError("Erro ao fazer login. Tente novamente.");
+        setError("Failed to sign in. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -38,7 +38,7 @@ export default function LoginPage() {
     try {
       await signInWithGoogle();
     } catch {
-      setError("Erro ao fazer login com Google.");
+      setError("Failed to sign in with Google.");
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ export default function LoginPage() {
             <TrendingUp className="h-7 w-7 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold">Trading Core</h1>
-          <p className="text-sm text-muted-foreground">Entre para continuar seus estudos</p>
+          <p className="text-sm text-muted-foreground">Sign in to continue studying</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -69,14 +69,14 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full rounded-xl border border-input bg-card py-3 pl-10 pr-4 text-sm outline-none ring-ring transition-shadow focus:ring-2"
-                placeholder="seu@email.com"
+                placeholder="you@email.com"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="password">
-              Senha
+              Password
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -105,7 +105,7 @@ export default function LoginPage() {
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Entrar
+            Sign In
           </button>
         </form>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
             <div className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-background px-4 text-xs text-muted-foreground">ou</span>
+            <span className="bg-background px-4 text-xs text-muted-foreground">or</span>
           </div>
         </div>
 
@@ -141,13 +141,13 @@ export default function LoginPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Continuar com Google
+          Continue with Google
         </button>
 
         <p className="text-center text-sm text-muted-foreground">
-          Não tem conta?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/registro" className="font-medium text-primary hover:underline">
-            Criar conta
+            Create Account
           </Link>
         </p>
       </div>

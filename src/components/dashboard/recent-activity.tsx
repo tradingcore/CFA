@@ -21,11 +21,11 @@ export function RecentActivity() {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Atividade Recente</CardTitle>
+          <CardTitle className="text-base">Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground py-4 text-center">
-            Nenhum simulado realizado ainda. Comece um simulado para ver seu histórico aqui!
+            No mock exams taken yet. Start one to see your history here!
           </p>
         </CardContent>
       </Card>
@@ -35,7 +35,7 @@ export function RecentActivity() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Atividade Recente</CardTitle>
+        <CardTitle className="text-base">Recent Activity</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {history.map((sim, index) => {
@@ -54,11 +54,11 @@ export function RecentActivity() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    Simulado {sim.mode === "official" ? "Oficial" : "Treino"} · Level {sim.level}
+                    {sim.mode === "official" ? "Official" : "Training"} Mock · Level {sim.level}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(sim.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                    {" · "}{sim.totalQuestions} questões · {timeMinutes}min
+                    {new Date(sim.date).toLocaleDateString("en-US", { day: "2-digit", month: "short" })}
+                    {" · "}{sim.totalQuestions} questions · {timeMinutes}min
                   </p>
                 </div>
               </div>

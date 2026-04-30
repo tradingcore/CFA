@@ -9,9 +9,9 @@ import { BookOpen, PenTool, RefreshCw, CheckCircle2, Circle } from "lucide-react
 type Block = StudyPlanDoc["blocks"][number];
 
 const typeConfig = {
-  reading: { label: "Leitura", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-500/10" },
-  practice: { label: "Prática", icon: PenTool, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-  review: { label: "Revisão", icon: RefreshCw, color: "text-amber-500", bg: "bg-amber-500/10" },
+  reading: { label: "Reading", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-500/10" },
+  practice: { label: "Practice", icon: PenTool, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  review: { label: "Review", icon: RefreshCw, color: "text-amber-500", bg: "bg-amber-500/10" },
 };
 
 interface StudyTimelineProps {
@@ -31,11 +31,11 @@ export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Plano da Semana</CardTitle>
+          <CardTitle className="text-base">Weekly Plan</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground py-8 text-center">
-            Nenhum plano gerado ainda. Clique em &quot;Gerar Plano com IA&quot; para começar!
+            No plan generated yet. Click &quot;Generate Plan with AI&quot; to get started!
           </p>
         </CardContent>
       </Card>
@@ -54,13 +54,13 @@ export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Plano da Semana</CardTitle>
+        <CardTitle className="text-base">Weekly Plan</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {dates.map((date) => {
           const dayBlocks = groupedByDate[date];
           const isToday = date === todayStr;
-          const dateLabel = new Date(date + "T12:00:00").toLocaleDateString("pt-BR", {
+          const dateLabel = new Date(date + "T12:00:00").toLocaleDateString("en-US", {
             weekday: "short",
             day: "2-digit",
             month: "short",
@@ -83,7 +83,7 @@ export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
                   <span className={cn("text-xs font-medium capitalize", isToday && "text-primary font-semibold")}>
                     {dateLabel}
                   </span>
-                  {isToday && <Badge className="text-[10px]">Hoje</Badge>}
+                  {isToday && <Badge className="text-[10px]">Today</Badge>}
                 </div>
 
                 {dayBlocks.map((block) => {

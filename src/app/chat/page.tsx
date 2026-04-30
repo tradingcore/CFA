@@ -18,7 +18,7 @@ import {
 const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
   content:
-    "Olá! Sou seu assistente de estudos para o CFA. Posso ajudar com dúvidas sobre qualquer tópico do curriculum, explicar conceitos, sugerir estratégias de estudo ou discutir seu progresso.",
+    "Hi! I'm your CFA study assistant. I can help with questions about any curriculum topic, explain concepts, suggest study strategies, or discuss your progress.",
   timestamp: new Date().toISOString(),
 };
 
@@ -51,7 +51,7 @@ export default function ChatPage() {
   const saveCurrentSession = async (msgs: ChatMessage[]) => {
     if (!user || msgs.length <= 1) return;
     const firstUserMsg = msgs.find(m => m.role === "user");
-    const title = firstUserMsg?.content.slice(0, 50) || "Nova conversa";
+    const title = firstUserMsg?.content.slice(0, 50) || "New conversation";
 
     const session: ChatSession = {
       id: currentSessionId || undefined,
@@ -109,7 +109,7 @@ export default function ChatPage() {
       console.error("Chat error:", err);
       const errorMessage: ChatMessage = {
         role: "assistant",
-        content: "Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.",
+        content: "Sorry, an error occurred while processing your message. Please try again.",
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -156,7 +156,7 @@ export default function ChatPage() {
       {showSidebar && (
         <div className="w-64 shrink-0 border-r border-border bg-card overflow-y-auto">
           <div className="flex items-center justify-between border-b border-border p-3">
-            <span className="text-sm font-semibold">Conversas</span>
+            <span className="text-sm font-semibold">Conversations</span>
             <button onClick={() => setShowSidebar(false)} className="rounded p-1 hover:bg-accent">
               <X className="h-4 w-4" />
             </button>
@@ -166,7 +166,7 @@ export default function ChatPage() {
               onClick={handleNewChat}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
             >
-              <Plus className="h-4 w-4" /> Nova conversa
+              <Plus className="h-4 w-4" /> New conversation
             </button>
           </div>
           <div className="flex flex-col gap-1 p-2">
@@ -203,8 +203,8 @@ export default function ChatPage() {
               </div>
               <h1 className="text-2xl font-bold">Chat CFA</h1>
               <p className="max-w-md text-center text-sm text-muted-foreground">
-                Pergunte sobre qualquer tópico do CFA Level {level}.
-                Respostas geradas por IA.
+                Ask about any CFA Level {level} topic.
+                AI-generated answers.
               </p>
             </div>
           )}
@@ -229,7 +229,7 @@ export default function ChatPage() {
                   {msg.role === "assistant" ? (
                     <Sparkles className="h-4 w-4" />
                   ) : (
-                    <span className="text-xs font-bold">Eu</span>
+                    <span className="text-xs font-bold">Me</span>
                   )}
                 </div>
                 <div
@@ -271,8 +271,8 @@ export default function ChatPage() {
               type="button"
               onClick={() => setShowSidebar(!showSidebar)}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-input bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              aria-label="Histórico"
-              title="Ver conversas anteriores"
+              aria-label="History"
+              title="View previous conversations"
             >
               <MessageCircle className="h-5 w-5" />
             </button>
@@ -283,7 +283,7 @@ export default function ChatPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Pergunte sobre CFA..."
+                placeholder="Ask about CFA..."
                 rows={1}
                 className="w-full resize-none rounded-xl border border-input bg-card px-4 py-3 pr-14 text-sm outline-none ring-ring transition-shadow placeholder:text-muted-foreground focus:ring-2"
               />
@@ -291,14 +291,14 @@ export default function ChatPage() {
                 type="submit"
                 disabled={!input.trim() || isTyping}
                 className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-opacity disabled:opacity-30"
-                aria-label="Enviar"
+                aria-label="Send"
               >
                 {isTyping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>
           </form>
           <p className="mt-2 text-center text-[10px] text-muted-foreground">
-            Respostas geradas por IA — podem conter imprecisões.
+            AI-generated answers — may contain inaccuracies.
           </p>
         </div>
       </div>

@@ -32,8 +32,8 @@ export function StudyCalendar({ blocks }: StudyCalendarProps) {
     });
   });
 
-  const monthName = viewDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  const monthName = viewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const getDayStatus = (day: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -57,7 +57,7 @@ export function StudyCalendar({ blocks }: StudyCalendarProps) {
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button onClick={() => setMonthOffset(0)} className="rounded-lg px-2 py-1 text-xs hover:bg-accent">
-              Hoje
+              Today
             </button>
             <button onClick={() => setMonthOffset((p) => p + 1)} className="rounded-lg p-1.5 hover:bg-accent">
               <ChevronRight className="h-4 w-4" />
@@ -90,9 +90,9 @@ export function StudyCalendar({ blocks }: StudyCalendarProps) {
         </div>
         <div className="mt-4 flex items-center justify-center gap-4">
           {[
-            { label: "Concluído", color: "bg-emerald-500/20" },
-            { label: "Parcial", color: "bg-amber-500/20" },
-            { label: "Pendente", color: "bg-blue-500/15" },
+            { label: "Completed", color: "bg-emerald-500/20" },
+            { label: "Partial", color: "bg-amber-500/20" },
+            { label: "Pending", color: "bg-blue-500/15" },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
               <div className={cn("h-3 w-3 rounded", item.color)} />

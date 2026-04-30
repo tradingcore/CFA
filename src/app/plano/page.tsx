@@ -104,9 +104,9 @@ export default function PlanoPage() {
             <CalendarDays className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Plano de Estudos</h1>
+            <h1 className="text-xl font-bold">Study Plan</h1>
             <p className="text-sm text-muted-foreground">
-              CFA Level {level} — Organize sua preparação
+              CFA Level {level} — Organize your preparation
             </p>
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function PlanoPage() {
           className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl disabled:opacity-50"
         >
           {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          {generating ? "Gerando..." : "Gerar Plano com IA"}
+          {generating ? "Generating..." : "Generate Plan with AI"}
         </button>
       </div>
 
@@ -125,9 +125,9 @@ export default function PlanoPage() {
         <CardContent className="flex items-center gap-3 p-4">
           <Sparkles className="h-5 w-5 shrink-0 text-primary" />
           <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">Dica:</span> Clique em
-            &quot;Gerar Plano com IA&quot; para criar um plano personalizado baseado no seu desempenho
-            nos simulados e nas áreas que precisam de mais atenção.
+            <span className="font-semibold text-foreground">Tip:</span> Click
+            &quot;Generate Plan with AI&quot; to create a personalized plan based on your mock exam
+            performance and the areas that need more attention.
           </p>
         </CardContent>
       </Card>

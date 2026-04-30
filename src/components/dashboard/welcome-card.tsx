@@ -19,14 +19,14 @@ const MOTIVATIONAL_QUOTES = [
   { text: "The essence of investment management is the management of risks, not the management of returns.", author: "Benjamin Graham" },
   { text: "Spend each day trying to be a little wiser than you were when you woke up.", author: "Charlie Munger" },
   { text: "Price is what you pay. Value is what you get.", author: "Warren Buffett" },
-  { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confúcio" },
+  { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
 ];
 
 function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return "Bom dia";
-  if (hour < 18) return "Boa tarde";
-  return "Boa noite";
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
 }
 
 function getDailyQuote() {
@@ -38,7 +38,7 @@ function getDailyQuote() {
 export function WelcomeCard() {
   const { level } = useLevel();
   const { user, profile } = useAuth();
-  const [greeting, setGreeting] = useState("Bom dia");
+  const [greeting, setGreeting] = useState("Good morning");
   const [quote, setQuote] = useState(MOTIVATIONAL_QUOTES[0]);
 
   const daysLeft = profile?.examDate
@@ -62,7 +62,7 @@ export function WelcomeCard() {
               {greeting}{displayName ? `, ${displayName.split(" ")[0]}` : ""}!
             </h1>
             <p className="text-sm text-muted-foreground">
-              Você está se preparando para o{" "}
+              You are preparing for the{" "}
               <span className="font-semibold text-primary">CFA Level {level}</span>.
             </p>
           </div>
@@ -75,7 +75,7 @@ export function WelcomeCard() {
                   <span className="text-xl font-bold font-mono tabular-nums text-primary">
                     {daysLeft}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">dias até a prova</span>
+                  <span className="text-[10px] text-muted-foreground">days until exam</span>
                 </div>
               </div>
             )}
@@ -83,7 +83,7 @@ export function WelcomeCard() {
               <Flame className="h-7 w-7 text-orange-500" />
               <div className="flex flex-col">
                 <span className="text-xl font-bold font-mono tabular-nums">{streak}</span>
-                <span className="text-[10px] text-muted-foreground">dias seguidos</span>
+                <span className="text-[10px] text-muted-foreground">day streak</span>
               </div>
             </div>
           </div>

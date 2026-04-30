@@ -46,7 +46,7 @@ export function Header() {
         <button
           onClick={() => setMobileOpen(true)}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-border transition-colors hover:bg-accent md:hidden"
-          aria-label="Abrir menu"
+          aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -115,11 +115,11 @@ export function Header() {
             </div>
             <DropdownMenuItem onClick={() => router.push("/perfil")}>
               <Settings className="mr-2 h-4 w-4" />
-              Meu Perfil
+              My Profile
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout} className="text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
-              Sair
+              Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

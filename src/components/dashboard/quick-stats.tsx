@@ -22,14 +22,14 @@ export function QuickStats() {
 
   const items = [
     {
-      label: "Questões esta semana",
+      label: "Questions this week",
       value: stats.questionsAnswered,
       icon: CheckCircle2,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
     {
-      label: "Acerto esta semana",
+      label: "Accuracy this week",
       value: `${accuracy}%`,
       icon: Target,
       color: "text-blue-500",

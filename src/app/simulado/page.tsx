@@ -143,7 +143,7 @@ function SimuladoInner() {
       }
 
       if (allGenerated.length === 0) {
-        setLoadingError("Não foi possível gerar questões. Tente novamente.");
+        setLoadingError("Could not generate questions. Please try again.");
         setState("config");
         return;
       }
@@ -157,7 +157,7 @@ function SimuladoInner() {
       setState("running");
     } catch (err) {
       console.error("Question generation error:", err);
-      setLoadingError("Erro ao gerar questões. Verifique sua conexão e tente novamente.");
+      setLoadingError("Error generating questions. Check your connection and try again.");
       setState("config");
     }
   };
@@ -289,8 +289,8 @@ function SimuladoInner() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-32">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Gerando questões com IA...</p>
-        <p className="text-xs text-muted-foreground">Isso pode levar alguns segundos</p>
+        <p className="text-sm text-muted-foreground">Generating questions with AI...</p>
+        <p className="text-xs text-muted-foreground">This may take a few seconds</p>
       </div>
     );
   }
@@ -317,7 +317,7 @@ function SimuladoInner() {
           </Badge>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="font-mono tabular-nums">
-              {answeredCount} respondidas
+              {answeredCount} answered
             </Badge>
             <QuizTimer
               isRunning
@@ -364,7 +364,7 @@ function SimuladoInner() {
             disabled={currentIndex === 0}
             className="flex items-center gap-1 rounded-lg border border-border px-4 py-2 text-sm font-medium disabled:opacity-30 hover:bg-accent"
           >
-            <ArrowLeft className="h-4 w-4" /> Anterior
+            <ArrowLeft className="h-4 w-4" /> Previous
           </button>
 
           <div className="flex gap-2">
@@ -373,14 +373,14 @@ function SimuladoInner() {
                 onClick={() => setCurrentIndex(currentIndex + 1)}
                 className="flex items-center gap-1 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
               >
-                Próxima <ArrowRight className="h-4 w-4" />
+                Next <ArrowRight className="h-4 w-4" />
               </button>
             ) : null}
             <button
               onClick={handleSubmitOfficial}
               className="flex items-center gap-1 rounded-xl bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
             >
-              <Send className="h-4 w-4" /> Finalizar Prova
+              <Send className="h-4 w-4" /> Submit Exam
             </button>
           </div>
         </div>
@@ -403,7 +403,7 @@ function SimuladoInner() {
               className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
                 chatOpen ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"
               }`}
-              title="Discutir questão"
+              title="Discuss question"
             >
               <MessageCircle className="h-4 w-4" />
             </button>
@@ -430,14 +430,14 @@ function SimuladoInner() {
               disabled={answers[currentIndex] === null}
               className="rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-40"
             >
-              Confirmar Resposta
+              Confirm Answer
             </button>
           ) : (
             <button
               onClick={handleNextTraining}
               className="flex items-center gap-2 rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
             >
-              {currentIndex < questions.length - 1 ? "Próxima Questão" : "Ver Resultado"}
+              {currentIndex < questions.length - 1 ? "Next Question" : "View Results"}
               <ArrowRight className="h-4 w-4" />
             </button>
           )}

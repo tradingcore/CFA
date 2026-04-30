@@ -52,9 +52,9 @@ export function SimuladoConfig({
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5 py-6">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Simulado CFA Level {level}</h1>
+        <h1 className="text-2xl font-bold">CFA Level {level} Mock Exam</h1>
         <p className="max-w-md text-sm text-muted-foreground">
-          Configure tópicos, módulos, quantidade de questões e modo do simulado.
+          Configure topics, modules, question count, and exam mode.
         </p>
       </div>
 
@@ -68,9 +68,9 @@ export function SimuladoConfig({
           )}
         >
           <Shield className={cn("h-8 w-8", mode === "official" ? "text-primary" : "text-muted-foreground")} />
-          <span className="text-sm font-semibold">Simulado Oficial</span>
+          <span className="text-sm font-semibold">Official Exam</span>
           <span className="text-[11px] text-muted-foreground leading-tight">
-            Timer regressivo ({examFormat.secondsPerQuestion}s/questão), sem feedback, navegação livre. Condições reais da prova.
+            Countdown timer ({examFormat.secondsPerQuestion}s/question), no feedback, free navigation. Real exam conditions.
           </span>
         </button>
         <button
@@ -81,9 +81,9 @@ export function SimuladoConfig({
           )}
         >
           <BookOpen className={cn("h-8 w-8", mode === "training" ? "text-primary" : "text-muted-foreground")} />
-          <span className="text-sm font-semibold">Simulado Treinamento</span>
+          <span className="text-sm font-semibold">Training Mode</span>
           <span className="text-[11px] text-muted-foreground leading-tight">
-            Sem limite de tempo, feedback após cada questão, chat para discutir.
+            No time limit, feedback after each question, chat to discuss.
           </span>
         </button>
       </div>
@@ -91,7 +91,7 @@ export function SimuladoConfig({
       {/* Quantity */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Quantidade de questões</CardTitle>
+          <CardTitle className="text-sm">Number of questions</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-2">
           {QUANTITY_PRESETS.map((n) => (
@@ -129,7 +129,7 @@ export function SimuladoConfig({
               onClick={() => { setCustomInput(true); setCustomValue(String(questionCount)); }}
               className="rounded-lg border-2 border-dashed border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:border-primary/40"
             >
-              Outro
+              Other
             </button>
           )}
         </CardContent>
@@ -139,9 +139,9 @@ export function SimuladoConfig({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm">Tópicos e Módulos</CardTitle>
+            <CardTitle className="text-sm">Topics & Modules</CardTitle>
             <button onClick={onToggleAll} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-              {allSelected ? <><CheckSquare className="h-3.5 w-3.5" /> Desmarcar todos</> : <><Square className="h-3.5 w-3.5" /> Selecionar todos</>}
+              {allSelected ? <><CheckSquare className="h-3.5 w-3.5" /> Deselect all</> : <><Square className="h-3.5 w-3.5" /> Select all</>}
             </button>
           </div>
         </CardHeader>
@@ -205,7 +205,7 @@ export function SimuladoConfig({
       {/* Start */}
       <div className="flex flex-col items-center gap-2">
         <p className="text-xs text-muted-foreground">
-          {availableQuestionCount} questões disponíveis
+          {availableQuestionCount} questions available
           {mode === "official" && ` · Timer: ${Math.ceil((questionCount * examFormat.secondsPerQuestion) / 60)} min`}
         </p>
         <button
@@ -213,7 +213,7 @@ export function SimuladoConfig({
           disabled={selectedTopics.size === 0 || availableQuestionCount === 0}
           className="flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 disabled:opacity-40"
         >
-          Iniciar {mode === "official" ? "Simulado Oficial" : "Treinamento"}
+          Start {mode === "official" ? "Official Exam" : "Training"}
           <ArrowRight className="h-5 w-5" />
         </button>
       </div>

@@ -54,23 +54,23 @@ export function QuizReview({ questions, answers, totalTimeSeconds, onRestart }: 
                 </svg>
                 <span className="absolute text-2xl font-bold font-mono">{score}%</span>
               </div>
-              <Badge variant={passed ? "default" : "secondary"}>{passed ? "Aprovado" : "Reprovado"}</Badge>
+              <Badge variant={passed ? "default" : "secondary"}>{passed ? "Passed" : "Failed"}</Badge>
             </div>
             <div className="flex gap-6">
               <div className="flex flex-col items-center gap-1">
                 <Target className="h-5 w-5 text-primary" />
                 <span className="text-xl font-bold font-mono">{correctCount}/{questions.length}</span>
-                <span className="text-[10px] text-muted-foreground">Acertos</span>
+                <span className="text-[10px] text-muted-foreground">Correct</span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Clock className="h-5 w-5 text-blue-500" />
                 <span className="text-xl font-bold font-mono">{minutes}:{String(secs).padStart(2, "0")}</span>
-                <span className="text-[10px] text-muted-foreground">Tempo</span>
+                <span className="text-[10px] text-muted-foreground">Time</span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Trophy className="h-5 w-5 text-amber-500" />
                 <span className="text-xl font-bold font-mono">{questions.length - correctCount}</span>
-                <span className="text-[10px] text-muted-foreground">Erros</span>
+                <span className="text-[10px] text-muted-foreground">Errors</span>
               </div>
             </div>
           </div>
@@ -87,14 +87,14 @@ export function QuizReview({ questions, answers, totalTimeSeconds, onRestart }: 
           )}
         >
           <Filter className="h-4 w-4" />
-          {showOnlyErrors ? "Mostrando apenas erros" : "Mostrar apenas erros"}
+          {showOnlyErrors ? "Showing errors only" : "Show errors only"}
         </button>
         <button
           onClick={onRestart}
           className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
         >
           <RotateCcw className="h-4 w-4" />
-          Novo Simulado
+          New Exam
         </button>
       </div>
 
@@ -127,8 +127,8 @@ export function QuizReview({ questions, answers, totalTimeSeconds, onRestart }: 
                     <span className="text-muted-foreground">Q{qIndex + 1}.</span> {q.question}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Sua resposta: {userAnswer !== null ? optionLetters[userAnswer] : "Sem resposta"}
-                    {!isCorrect && ` · Correta: ${optionLetters[q.correctIndex]}`}
+                    Your answer: {userAnswer !== null ? optionLetters[userAnswer] : "No answer"}
+                    {!isCorrect && ` · Correct: ${optionLetters[q.correctIndex]}`}
                   </p>
                 </div>
                 {isExpanded ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
@@ -162,7 +162,7 @@ export function QuizReview({ questions, answers, totalTimeSeconds, onRestart }: 
                     ))}
                   </div>
                   <div className="rounded-lg bg-muted/50 border border-border p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Explicação</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Explanation</p>
                     <p className="text-sm leading-relaxed">{q.explanation}</p>
                   </div>
                 </CardContent>

@@ -32,9 +32,9 @@ export function GoalTracker({ completedBlocks }: GoalTrackerProps) {
   const weeklyTarget = (profile?.weeklyHoursGoal || 15) * 4;
 
   const goals: WeeklyGoal[] = [
-    { id: "g-1", description: "Questões respondidas", current: stats.questionsAnswered, target: weeklyTarget, unit: "questões" },
-    { id: "g-2", description: "Simulados completos", current: stats.simuladosCompleted, target: 3, unit: "simulados" },
-    { id: "g-3", description: "Blocos de estudo", current: completedBlocks || 0, target: 10, unit: "blocos" },
+    { id: "g-1", description: "Questions answered", current: stats.questionsAnswered, target: weeklyTarget, unit: "questions" },
+    { id: "g-2", description: "Mock exams completed", current: stats.simuladosCompleted, target: 3, unit: "mocks" },
+    { id: "g-3", description: "Study blocks", current: completedBlocks || 0, target: 10, unit: "blocks" },
   ];
 
   return (
@@ -42,7 +42,7 @@ export function GoalTracker({ completedBlocks }: GoalTrackerProps) {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Target className="h-4 w-4 text-primary" />
-          Metas da Semana
+          Weekly Goals
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

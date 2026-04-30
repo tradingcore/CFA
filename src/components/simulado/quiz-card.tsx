@@ -78,7 +78,7 @@ export function QuizCard({ question, selectedIndex, showAnswer, onSelect }: Quiz
         {showAnswer && (
           <div className="rounded-xl border border-border bg-muted/50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              Explicação
+              Explanation
             </p>
             <p className="text-sm leading-relaxed">{question.explanation}</p>
           </div>

@@ -38,7 +38,7 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
       setMessages([{
         id: "ctx",
         role: "assistant",
-        content: `Estamos discutindo a questão: "${question.question.slice(0, 100)}..." — O que gostaria de saber?`,
+        content: `We're discussing the question: "${question.question.slice(0, 100)}..." — What would you like to know?`,
       }]);
     }
   }, [question]);
@@ -65,7 +65,7 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
       });
       setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: explanation }]);
     } catch {
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: "Desculpe, não consegui gerar uma explicação. Tente novamente." }]);
+      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", content: "Sorry, I couldn't generate an explanation. Please try again." }]);
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,7 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold">Discutir Questão</span>
+          <span className="text-sm font-semibold">Discuss Question</span>
         </div>
         <button onClick={onClose} className="rounded p-1 hover:bg-accent">
           <X className="h-4 w-4" />
@@ -89,7 +89,7 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
         {messages.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-8 text-center">
             <Sparkles className="h-8 w-8 text-primary/40" />
-            <p className="text-xs text-muted-foreground">Pergunte sobre esta questão para receber dicas e explicações.</p>
+            <p className="text-xs text-muted-foreground">Ask about this question to get tips and explanations.</p>
           </div>
         )}
         <div className="flex flex-col gap-2">
@@ -111,7 +111,7 @@ export function QuizChat({ question, isOpen, onClose }: QuizChatProps) {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Pergunte..."
+          placeholder="Ask a question..."
           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-xs outline-none ring-ring focus:ring-2"
         />
         <button type="submit" disabled={!input.trim()} className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-30">

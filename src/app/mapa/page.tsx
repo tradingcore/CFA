@@ -34,9 +34,9 @@ export default function MapaPage() {
             <Map className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Mapa de Desempenho</h1>
+            <h1 className="text-xl font-bold">Performance Map</h1>
             <p className="text-sm text-muted-foreground">
-              CFA Level {level} — Identifique seus pontos fortes e fracos
+              CFA Level {level} — Identify your strengths and weaknesses
             </p>
           </div>
         </div>
@@ -44,7 +44,7 @@ export default function MapaPage() {
           variant={weeklyAccuracy >= 70 ? "default" : "secondary"}
           className="font-mono text-base px-4 py-1.5"
         >
-          Acerto Semanal: {weeklyAccuracy}%
+          Weekly Accuracy: {weeklyAccuracy}%
         </Badge>
       </div>
 

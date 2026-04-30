@@ -19,12 +19,12 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 const MOCK_RESPONSES = [
-  "Ótima pergunta! No CFA Level I, esse tópico é cobrado com frequência. A chave é entender os conceitos fundamentais antes de avançar para as fórmulas.",
-  "Recomendo revisar esse tema usando a abordagem de questões práticas. Tente resolver pelo menos 10 questões por dia sobre esse assunto.",
-  "Esse é um dos tópicos mais desafiadores do CFA. Vou preparar um resumo detalhado para você. Por enquanto, foque nos exemplos do curriculum.",
-  "De acordo com o seu desempenho, sugiro dedicar mais tempo a Financial Statement Analysis e Fixed Income, que são suas áreas mais fracas.",
-  "Para melhorar sua taxa de acerto, tente a técnica de eliminação: descarte as alternativas claramente incorretas antes de escolher a resposta.",
-  "Lembre-se: no CFA, Ethics tem um peso significativo e pode fazer a diferença entre passar e não passar. Dedique pelo menos 15% do seu tempo de estudo a esse tópico.",
+  "Great question! In CFA Level I, this topic comes up frequently. The key is understanding the fundamental concepts before moving on to the formulas.",
+  "I recommend reviewing this topic using a practice-questions approach. Try solving at least 10 questions per day on this subject.",
+  "This is one of the most challenging CFA topics. I'll prepare a detailed summary for you. For now, focus on the curriculum examples.",
+  "Based on your performance, I suggest spending more time on Financial Statement Analysis and Fixed Income, which are your weakest areas.",
+  "To improve your accuracy rate, try the elimination technique: rule out the clearly incorrect options before choosing your answer.",
+  "Remember: in the CFA, Ethics carries significant weight and can make the difference between passing and failing. Dedicate at least 15% of your study time to this topic.",
 ];
 
 /**
@@ -37,7 +37,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     {
       id: "welcome",
       role: "assistant",
-      content: "Olá! Sou seu assistente de estudos para o CFA. Pergunte qualquer coisa sobre a prova, tópicos específicos ou seu progresso. Como posso ajudar?",
+      content: "Hi! I'm your CFA study assistant. Ask me anything about the exam, specific topics, or your progress. How can I help?",
       timestamp: new Date(),
     },
   ]);

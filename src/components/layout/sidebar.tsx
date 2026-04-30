@@ -26,10 +26,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/simulado", label: "Simulado", icon: FileQuestion },
-  { href: "/mapa", label: "Mapa de Desempenho", icon: Map },
-  { href: "/estudo", label: "Progresso de Estudo", icon: GraduationCap },
-  { href: "/plano", label: "Plano de Estudos", icon: CalendarDays },
+  { href: "/simulado", label: "Mock Exam", icon: FileQuestion },
+  { href: "/mapa", label: "Performance Map", icon: Map },
+  { href: "/estudo", label: "Study Progress", icon: GraduationCap },
+  { href: "/plano", label: "Study Plan", icon: CalendarDays },
   { href: "/chat", label: "Chat", icon: MessageCircle },
 ];
 
@@ -118,14 +118,14 @@ export function Sidebar() {
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="flex w-full items-center justify-center rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          aria-label={collapsed ? "Expandir menu" : "Colapsar menu"}
+          aria-label={collapsed ? "Expand menu" : "Collapse menu"}
         >
           {collapsed ? (
             <PanelLeft className="h-5 w-5" />
           ) : (
             <div className="flex w-full items-center gap-3">
               <PanelLeftClose className="h-5 w-5" />
-              <span className="text-sm">Colapsar</span>
+              <span className="text-sm">Collapse</span>
             </div>
           )}
         </button>

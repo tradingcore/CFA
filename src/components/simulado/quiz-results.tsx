@@ -37,12 +37,12 @@ export function QuizResults({
           <Trophy className={`h-8 w-8 ${passed ? "text-amber-500" : "text-muted-foreground"}`} />
         </div>
         <CardTitle className="text-xl">
-          {passed ? "Parabéns!" : "Continue estudando!"}
+          {passed ? "Congratulations!" : "Keep studying!"}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {passed
-            ? "Você está no caminho certo para a aprovação."
-            : "Revise os tópicos onde errou e tente novamente."}
+            ? "You're on the right track to passing."
+            : "Review the topics you missed and try again."}
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-6 p-6">
@@ -71,19 +71,19 @@ export function QuizResults({
             <span className="text-lg font-bold font-mono">
               {correctAnswers}/{totalQuestions}
             </span>
-            <span className="text-[10px] text-muted-foreground">Acertos</span>
+            <span className="text-[10px] text-muted-foreground">Correct</span>
           </div>
           <div className="flex flex-col items-center gap-1 rounded-lg border border-border p-3">
             <Clock className="h-5 w-5 text-blue-500" />
             <span className="text-lg font-bold font-mono">
               {minutes}:{String(seconds).padStart(2, "0")}
             </span>
-            <span className="text-[10px] text-muted-foreground">Tempo</span>
+            <span className="text-[10px] text-muted-foreground">Time</span>
           </div>
           <div className="flex flex-col items-center gap-1 rounded-lg border border-border p-3">
             <Trophy className="h-5 w-5 text-amber-500" />
             <Badge variant={passed ? "default" : "secondary"} className="text-xs">
-              {passed ? "Aprovado" : "Reprovado"}
+              {passed ? "Passed" : "Failed"}
             </Badge>
             <span className="text-[10px] text-muted-foreground">Status</span>
           </div>
@@ -94,7 +94,7 @@ export function QuizResults({
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
         >
           <RotateCcw className="h-4 w-4" />
-          Refazer Simulado
+          Retake Exam
         </button>
       </CardContent>
     </Card>

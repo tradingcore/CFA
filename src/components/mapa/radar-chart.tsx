@@ -35,7 +35,7 @@ export function PerformanceRadarChart() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Visão Geral por Tópico</CardTitle>
+        <CardTitle className="text-base">Topic Overview</CardTitle>
       </CardHeader>
       <CardContent className="pb-4">
         <ResponsiveContainer width="100%" height={350}>

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
     const prompt = `You are a CFA tutor. The student answered a question incorrectly. Explain why the correct answer is correct and why their chosen answer is wrong.
 
-Respond in Portuguese (Brazilian Portuguese). Be clear, educational, and encouraging.
+Respond in English. Be clear, educational, and encouraging.
 
 Question: ${question}
 

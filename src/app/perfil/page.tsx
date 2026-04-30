@@ -80,7 +80,7 @@ export default function PerfilPage() {
           <User className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Meu Perfil</h1>
+          <h1 className="text-xl font-bold">My Profile</h1>
           <p className="text-sm text-muted-foreground">
             {user?.email}
           </p>
@@ -100,7 +100,7 @@ export default function PerfilPage() {
           <CardContent className="flex flex-col items-center gap-1 p-4">
             <Flame className="h-5 w-5 text-orange-500" />
             <span className="text-2xl font-bold">{profile?.studyStreak || 0}</span>
-            <span className="text-[10px] text-muted-foreground">Dias seguidos</span>
+            <span className="text-[10px] text-muted-foreground">Day streak</span>
           </CardContent>
         </Card>
         {daysUntilExam != null && daysUntilExam > 0 && (
@@ -108,7 +108,7 @@ export default function PerfilPage() {
             <CardContent className="flex flex-col items-center gap-1 p-4">
               <CalendarDays className="h-5 w-5 text-blue-500" />
               <span className="text-2xl font-bold">{daysUntilExam}</span>
-              <span className="text-[10px] text-muted-foreground">Dias até a prova</span>
+              <span className="text-[10px] text-muted-foreground">Days until exam</span>
             </CardContent>
           </Card>
         )}
@@ -139,7 +139,7 @@ export default function PerfilPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="exam-date">
               <CalendarDays className="mr-1 inline h-4 w-4" />
-              Data da prova
+              Exam date
             </label>
             <input
               id="exam-date"
@@ -153,7 +153,7 @@ export default function PerfilPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium">
               <Clock className="mr-1 inline h-4 w-4" />
-              Meta semanal: {weeklyHours}h
+              Weekly goal: {weeklyHours}h
             </label>
             <input
               type="range"
@@ -167,7 +167,7 @@ export default function PerfilPage() {
 
           {mounted && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tema</label>
+              <label className="text-sm font-medium">Theme</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => setTheme("dark")}
@@ -175,7 +175,7 @@ export default function PerfilPage() {
                     theme === "dark" ? "border-primary bg-primary/10" : "border-border hover:border-primary/30"
                   }`}
                 >
-                  <Moon className="h-4 w-4" /> Escuro
+                  <Moon className="h-4 w-4" /> Dark
                 </button>
                 <button
                   onClick={() => setTheme("light")}
@@ -183,7 +183,7 @@ export default function PerfilPage() {
                     theme === "light" ? "border-primary bg-primary/10" : "border-border hover:border-primary/30"
                   }`}
                 >
-                  <Sun className="h-4 w-4" /> Claro
+                  <Sun className="h-4 w-4" /> Light
                 </button>
               </div>
             </div>
@@ -197,10 +197,10 @@ export default function PerfilPage() {
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : saved ? (
-              "Salvo!"
+              "Saved!"
             ) : (
               <>
-                <Save className="h-4 w-4" /> Salvar Alterações
+                <Save className="h-4 w-4" /> Save Changes
               </>
             )}
           </button>
@@ -211,7 +211,7 @@ export default function PerfilPage() {
         onClick={handleLogout}
         className="flex items-center justify-center gap-2 rounded-xl border border-destructive/30 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
       >
-        <LogOut className="h-4 w-4" /> Sair da conta
+        <LogOut className="h-4 w-4" /> Sign Out
       </button>
     </div>
   );

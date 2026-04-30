@@ -122,7 +122,7 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
                     </p>
                     {item.studied && date && (
                       <p className="mt-1 text-[10px] text-emerald-600 dark:text-emerald-400">
-                        Estudado em {new Date(date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                        Studied on {new Date(date + "T12:00:00").toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })}
                       </p>
                     )}
                   </div>
@@ -137,7 +137,7 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
               className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <Play className="h-3 w-3" />
-              Praticar este módulo
+              Practice this module
             </Link>
           </div>
         </CardContent>
