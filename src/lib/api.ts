@@ -95,6 +95,7 @@ export async function apiGenerateStudyPlan(params: {
   targetLosIds?: string[];
   prioritizeWeakTopics?: boolean;
   includeWeeklyMock?: boolean;
+  startFromModuleId?: string;
   weakTopics: { topicId: string; topicName: string; score: number; sampleSize: number }[];
   topicsList: {
     topicId: string;

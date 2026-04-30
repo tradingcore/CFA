@@ -23,11 +23,12 @@ export function TopicSelector({ activeTopic, onSelect }: TopicSelectorProps) {
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1">
-      {topics.map((topic) => {
+      {topics.map((topic, topicIdx) => {
         const prog = getTopicProgress(topic.id, level);
         const pct = prog.total > 0 ? Math.round((prog.studied / prog.total) * 100) : 0;
         const isActive = activeTopic === topic.id;
 
+        const topicNum = topicIdx + 1;
         return (
           <button
             key={topic.id}
@@ -45,7 +46,7 @@ export function TopicSelector({ activeTopic, onSelect }: TopicSelectorProps) {
                 style={{ backgroundColor: topic.color }}
               />
               <span className={cn("text-sm font-semibold truncate", isActive ? "text-primary" : "text-foreground")}>
-                {topic.shortName}
+                {topicNum}. {topic.shortName}
               </span>
             </div>
             <div className="flex items-center gap-2">

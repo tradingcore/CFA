@@ -205,12 +205,6 @@ export function WeeklySnapshot() {
           </p>
         )}
 
-        <Link
-          href="/simulado?official=true"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90"
-        >
-          <Trophy className="h-3 w-3" /> Start this week's mock
-        </Link>
       </CardContent>
     </Card>
   );

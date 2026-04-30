@@ -7,6 +7,7 @@ import { getStudyProgress, saveStudyProgress, StudyProgressData } from "@/lib/fi
 
 interface StudyProgressContextType {
   toggleLOS: (moduleId: string, losIndex: number) => void;
+  markLOSStudied: (losKeys: string[]) => void;
   isLOSStudied: (moduleId: string, losIndex: number) => boolean;
   getLOSDate: (moduleId: string, losIndex: number) => string | null;
   getModuleProgress: (moduleId: string, totalLOS: number) => { studied: number; total: number };
@@ -24,13 +25,12 @@ export function StudyProgressProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<StudyProgressData>({});
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
+  const loadProgress = useCallback(() => {
     if (!user || !profile) {
       setState({});
       setLoaded(false);
       return;
     }
-
     getStudyProgress(user.uid, profile.cfaLevel)
       .then((data) => {
         setState(data);
@@ -42,6 +42,10 @@ export function StudyProgressProvider({ children }: { children: ReactNode }) {
         setLoaded(true);
       });
   }, [user, profile?.cfaLevel]);
+
+  useEffect(() => {
+    loadProgress();
+  }, [loadProgress]);
 
   const persistState = useCallback(
     (newState: StudyProgressData) => {
@@ -68,6 +72,25 @@ export function StudyProgressProvider({ children }: { children: ReactNode }) {
           };
         }
 
+        persistState(next);
+        return next;
+      });
+    },
+    [persistState]
+  );
+
+  const markLOSStudied = useCallback(
+    (losKeys: string[]) => {
+      setState((prev) => {
+        const today = new Date().toISOString().split("T")[0];
+        const additions: StudyProgressData = {};
+        for (const key of losKeys) {
+          if (!prev[key]) {
+            additions[key] = { date: today };
+          }
+        }
+        if (Object.keys(additions).length === 0) return prev;
+        const next = { ...prev, ...additions };
         persistState(next);
         return next;
       });
@@ -120,7 +143,7 @@ export function StudyProgressProvider({ children }: { children: ReactNode }) {
 
   return (
     <StudyProgressContext.Provider
-      value={{ toggleLOS, isLOSStudied, getLOSDate, getModuleProgress, getTopicProgress }}
+      value={{ toggleLOS, markLOSStudied, isLOSStudied, getLOSDate, getModuleProgress, getTopicProgress }}
     >
       {children}
     </StudyProgressContext.Provider>

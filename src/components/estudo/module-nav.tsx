@@ -1,7 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import { LearningModule } from "@/lib/cfa-topics";
 import { useStudyProgress } from "@/contexts/study-progress-context";
+import { useLevel } from "@/contexts/level-context";
+import { buildCurriculumIndex } from "@/lib/curriculum-numbering";
 import { cn } from "@/lib/utils";
 
 interface ModuleNavProps {
@@ -12,6 +15,8 @@ interface ModuleNavProps {
 
 export function ModuleNav({ modules, activeModuleId, onSelectModule }: ModuleNavProps) {
   const { getModuleProgress } = useStudyProgress();
+  const { level } = useLevel();
+  const curriculum = useMemo(() => buildCurriculumIndex(level), [level]);
 
   return (
     <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] w-72 shrink-0 overflow-y-auto rounded-xl border border-border bg-card p-3 xl:block">
@@ -43,7 +48,7 @@ export function ModuleNav({ modules, activeModuleId, onSelectModule }: ModuleNav
             >
               <div className="flex items-start gap-2">
                 <span className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                  {String(index + 1).padStart(2, "0")}
+                  {curriculum.moduleLabels.get(module.id)?.moduleNumber ?? String(index + 1)}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-2 text-xs font-medium leading-snug">

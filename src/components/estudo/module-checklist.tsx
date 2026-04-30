@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useStudyProgress } from "@/contexts/study-progress-context";
+import { useLevel } from "@/contexts/level-context";
 import { LearningModule } from "@/lib/cfa-topics";
+import { buildCurriculumIndex } from "@/lib/curriculum-numbering";
 import { LOSFilter } from "@/components/estudo/los-search";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -29,7 +31,10 @@ interface ModuleChecklistProps {
  */
 export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultExpanded = false, forceExpanded = false }: ModuleChecklistProps) {
   const { toggleLOS, isLOSStudied, getLOSDate, getModuleProgress } = useStudyProgress();
+  const { level } = useLevel();
+  const curriculum = useMemo(() => buildCurriculumIndex(level), [level]);
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const moduleLabel = curriculum.moduleLabels.get(module.id);
 
   const progress = getModuleProgress(module.id, module.los.length);
   const pct = module.los.length > 0 ? Math.round((progress.studied / progress.total) * 100) : 0;
@@ -71,7 +76,9 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
 
           <div className="flex flex-1 flex-col gap-1">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">{module.name}</span>
+              <span className="text-sm font-medium">
+                {moduleLabel ? `${moduleLabel.moduleNumber} ` : ""}{module.name}
+              </span>
               <div className="flex items-center gap-2">
                 <span className={cn(
                   "text-xs font-mono tabular-nums font-semibold",
@@ -121,7 +128,7 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
                       item.studied ? "text-muted-foreground" : "text-foreground"
                     )}>
                       <span className="inline-block mr-1.5 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary tabular-nums">
-                        LOS {String.fromCharCode(97 + item.index)}
+                        {moduleLabel ? `${moduleLabel.moduleNumber}.` : ""}{String.fromCharCode(97 + item.index)}
                       </span>
                       {item.text}
                     </p>

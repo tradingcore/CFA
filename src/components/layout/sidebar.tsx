@@ -6,16 +6,12 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileQuestion,
-  Map,
   CalendarDays,
   GraduationCap,
   MessageCircle,
-  ChevronDown,
-  ChevronRight,
   PanelLeftClose,
   PanelLeft,
   X,
-  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/contexts/sidebar-context";
@@ -26,41 +22,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChatSession, getChatSessions } from "@/lib/firestore";
+import { ChatSession, getChatSessions, deleteChatSession } from "@/lib/firestore";
 
 const navItems = [
-  {
-    group: "Home",
-    items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    ],
-  },
-  {
-    group: "Practice",
-    items: [
-      { href: "/simulado", label: "Mock Exam", icon: FileQuestion },
-      { href: "/mapa", label: "Performance Map", icon: Map },
-    ],
-  },
-  {
-    group: "Study",
-    items: [
-      { href: "/estudo", label: "Study Progress", icon: GraduationCap },
-      { href: "/plano", label: "Study Plan", icon: CalendarDays },
-    ],
-  },
-  {
-    group: "Tutor",
-    items: [
-      { href: "/chat", label: "Chat", icon: MessageCircle },
-    ],
-  },
-  {
-    group: "Resources",
-    items: [
-      { href: "/help", label: "How it works", icon: HelpCircle },
-    ],
-  },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/simulado", label: "Mock Exam", icon: FileQuestion },
+  { href: "/estudo", label: "Study Progress", icon: GraduationCap },
+  { href: "/plano", label: "Study Plan", icon: CalendarDays },
+  { href: "/chat?new=1", label: "Chat", icon: MessageCircle },
 ];
 
 export function Sidebar() {
@@ -68,7 +37,7 @@ export function Sidebar() {
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { user, profile } = useAuth();
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
-  const [chatSubitemsOpen, setChatSubitemsOpen] = useState(true);
+
 
   const loadChatSessions = useCallback(() => {
     if (!user) {
@@ -92,19 +61,13 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      <nav className="flex flex-1 flex-col gap-5 p-3">
-        {navItems.map((group) => (
-          <div key={group.group} className="flex flex-col gap-1">
-            {(!collapsed || mobileOpen) && (
-              <p className="px-3 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {group.group}
-              </p>
-            )}
-            {group.items.map((item) => {
+      <nav className="flex flex-1 flex-col gap-1 p-3">
+        {navItems.map((item) => {
+          const hrefPath = item.href.split("?")[0];
           const isActive =
-            item.href === "/dashboard"
+            hrefPath === "/dashboard"
               ? pathname === "/dashboard"
-              : pathname.startsWith(item.href);
+              : pathname.startsWith(hrefPath);
 
           const linkElement = (
             <Link
@@ -145,48 +108,42 @@ export function Sidebar() {
             );
           }
 
-          const showChatSubitems = item.href === "/chat" && isActive && (!collapsed || mobileOpen);
+          const showChatSubitems = item.href === "/chat?new=1" && (!collapsed || mobileOpen);
 
           return (
             <div key={item.href}>
               {linkElement}
-              {showChatSubitems && (
+              {showChatSubitems && chatSessions.length > 0 && (
                 <div className="ml-8 mt-1 flex flex-col gap-0.5 border-l border-border/70 pl-3">
-                  <div className="flex items-center gap-1">
-                    <Link
-                      href="/chat?new=1"
-                      onClick={() => setMobileOpen(false)}
-                      className="min-w-0 flex-1 rounded-md px-2 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-sidebar-accent"
-                    >
-                      New chat
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => setChatSubitemsOpen((open) => !open)}
-                      className="rounded p-1 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-primary"
-                      aria-label={chatSubitemsOpen ? "Hide recent chats" : "Show recent chats"}
-                    >
-                      {chatSubitemsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                    </button>
-                  </div>
-                  {chatSubitemsOpen && chatSessions.slice(0, 10).map((session) => (
-                    <Link
-                      key={session.id}
-                      href={`/chat?session=${session.id}`}
-                      onClick={() => setMobileOpen(false)}
-                      className="truncate rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-primary"
-                      title={session.title}
-                    >
-                      {session.title}
-                    </Link>
+                  {chatSessions.slice(0, 10).map((session) => (
+                    <div key={session.id} className="group flex items-center gap-0.5">
+                      <Link
+                        href={`/chat?session=${session.id}`}
+                        onClick={() => setMobileOpen(false)}
+                        className="min-w-0 flex-1 truncate rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-primary"
+                        title={session.title}
+                      >
+                        {session.title}
+                      </Link>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (user && session.id) {
+                            deleteChatSession(user.uid, session.id).then(loadChatSessions).catch(console.error);
+                          }
+                        }}
+                        className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-sidebar-accent hover:text-destructive group-hover:block"
+                        title="Delete chat"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
           );
-            })}
-          </div>
-        ))}
+        })}
       </nav>
 
       {/* User + collapse */}

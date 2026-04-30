@@ -53,11 +53,22 @@ export function SimuladoConfig({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 py-6">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">CFA Level {level} Mock Exam</h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Configure topics, modules, question count, and exam mode.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">CFA Level {level} Mock Exam</h1>
+          <p className="text-sm text-muted-foreground">
+            {availableQuestionCount} questions available
+            {mode === "official" && ` · Timer: ${Math.ceil((questionCount * examFormat.secondsPerQuestion) / 60)} min`}
+          </p>
+        </div>
+        <button
+          onClick={onStart}
+          disabled={selectedTopics.size === 0 || availableQuestionCount === 0}
+          className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 disabled:opacity-40"
+        >
+          Start {mode === "official" ? "Official Exam" : "Training"}
+          <ArrowRight className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Mode selection */}
@@ -229,21 +240,6 @@ export function SimuladoConfig({
         </CardContent>
       </Card>
 
-      {/* Start */}
-      <div className="flex flex-col items-center gap-2">
-        <p className="text-xs text-muted-foreground">
-          {availableQuestionCount} questions available
-          {mode === "official" && ` · Timer: ${Math.ceil((questionCount * examFormat.secondsPerQuestion) / 60)} min`}
-        </p>
-        <button
-          onClick={onStart}
-          disabled={selectedTopics.size === 0 || availableQuestionCount === 0}
-          className="flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 disabled:opacity-40"
-        >
-          Start {mode === "official" ? "Official Exam" : "Training"}
-          <ArrowRight className="h-5 w-5" />
-        </button>
-      </div>
     </div>
   );
 }

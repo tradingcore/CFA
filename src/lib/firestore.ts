@@ -42,6 +42,7 @@ export interface UserProfile {
   studyStreak: number;
   lastStudyDate: string;
   losStatsBuiltAt?: Partial<Record<CFALevel, string>>;
+  notes?: string;
 }
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {

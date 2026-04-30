@@ -19,8 +19,7 @@ import {
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
-  content:
-    "Hi! I'm your CFA study assistant. I can help with questions about any curriculum topic, explain concepts, suggest study strategies, or discuss your progress.",
+  content: "Ask me anything about the CFA curriculum — concepts, formulas, practice strategies, or any topic you're studying.",
   timestamp: new Date().toISOString(),
 };
 
