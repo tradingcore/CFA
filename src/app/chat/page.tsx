@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Sparkles, X, Plus, MessageCircle, Trash2, Loader2 } from "lucide-react";
+import { Send, Sparkles, Plus, Loader2, Mic, X, Copy, RotateCcw, Check } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 import { useLevel } from "@/contexts/level-context";
@@ -11,7 +12,7 @@ import {
   saveChatSession,
   getChatSessions,
   getChatSession,
-  deleteChatSession,
+  ChatAttachment,
   ChatSession,
   ChatMessage,
 } from "@/lib/firestore";
@@ -23,18 +24,82 @@ const WELCOME_MESSAGE: ChatMessage = {
   timestamp: new Date().toISOString(),
 };
 
+type BrowserSpeechRecognition = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((event: { resultIndex: number; results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean }> }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type BrowserWindowWithSpeech = Window & {
+  SpeechRecognition?: new () => BrowserSpeechRecognition;
+  webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+};
+
+async function resizeImage(file: File): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Could not read image"));
+    reader.readAsDataURL(file);
+  });
+
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Could not load image"));
+    img.src = dataUrl;
+  });
+
+  const maxSide = 1200;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+  ctx.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", 0.78);
+}
+
+async function readTextFile(file: File): Promise<string> {
+  const text = await file.text();
+  return text.length > 12000 ? `${text.slice(0, 12000)}\n\n[File truncated for length]` : text;
+}
+
 export default function ChatPage() {
   const { user } = useAuth();
   const { level } = useLevel();
+  const searchParams = useSearchParams();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [attachmentError, setAttachmentError] = useState("");
+  const [dragActive, setDragActive] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
+  const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [showSidebar, setShowSidebar] = useState(true);
   const didAutoLoadSession = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const listeningRef = useRef(false);
+  const stopRequestedRef = useRef(false);
+  const voiceBaseInputRef = useRef("");
+  const voiceFinalTranscriptRef = useRef("");
+
+  const sessionParam = searchParams.get("session");
+  const newChatParam = searchParams.get("new");
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,17 +110,42 @@ export default function ChatPage() {
   }, [messages, scrollToBottom]);
 
   useEffect(() => {
+    const textarea = inputRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 220)}px`;
+  }, [input]);
+
+  useEffect(() => {
     if (!user) {
       didAutoLoadSession.current = false;
-      setSessions([]);
       setCurrentSessionId(null);
       setMessages([WELCOME_MESSAGE]);
       return;
     }
 
+    if (newChatParam) {
+      didAutoLoadSession.current = true;
+      setCurrentSessionId(null);
+      setMessages([WELCOME_MESSAGE]);
+      return;
+    }
+
+    if (sessionParam) {
+      didAutoLoadSession.current = true;
+      getChatSession(user.uid, sessionParam)
+        .then((session) => {
+          if (session) {
+            setCurrentSessionId(sessionParam);
+            setMessages(session.messages);
+          }
+        })
+        .catch(console.error);
+      return;
+    }
+
     getChatSessions(user.uid, 50)
       .then((loadedSessions) => {
-        setSessions(loadedSessions);
         if (!didAutoLoadSession.current && loadedSessions[0]) {
           didAutoLoadSession.current = true;
           setCurrentSessionId(loadedSessions[0].id || null);
@@ -63,7 +153,7 @@ export default function ChatPage() {
         }
       })
       .catch(console.error);
-  }, [user]);
+  }, [user, sessionParam, newChatParam]);
 
   const saveCurrentSession = async (msgs: ChatMessage[]) => {
     if (!user || msgs.length <= 1) return;
@@ -81,25 +171,27 @@ export default function ChatPage() {
 
     const id = await saveChatSession(user.uid, session);
     setCurrentSessionId(id);
-
-    const updated = await getChatSessions(user.uid, 50);
-    setSessions(updated);
+    window.dispatchEvent(new Event("tradingcore:chat-sessions-updated"));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isTyping) return;
+    if ((!input.trim() && attachments.length === 0) || isTyping) return;
+
+    const query = input.trim() || "Please analyze the attached image for CFA-relevant content.";
 
     const userMessage: ChatMessage = {
       role: "user",
-      content: input.trim(),
+      content: query,
       timestamp: new Date().toISOString(),
+      attachments: attachments.length > 0 ? attachments : undefined,
     };
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
-    const query = input.trim();
     setInput("");
+    setAttachments([]);
+    setAttachmentError("");
     setIsTyping(true);
 
     try {
@@ -111,6 +203,7 @@ export default function ChatPage() {
         message: query,
         history: history.slice(-20),
         level,
+        attachments,
       });
 
       const assistantMessage: ChatMessage = {
@@ -135,6 +228,50 @@ export default function ChatPage() {
     }
   };
 
+  const handleCopyMessage = async (content: string, index: number) => {
+    await navigator.clipboard.writeText(content);
+    setCopiedMessageIndex(index);
+    window.setTimeout(() => setCopiedMessageIndex(null), 1400);
+  };
+
+  const handleRegenerate = async (assistantIndex: number) => {
+    if (!user || isTyping) return;
+    const priorMessages = messages.slice(0, assistantIndex);
+    const lastUserIndex = [...priorMessages].map((message) => message.role).lastIndexOf("user");
+    if (lastUserIndex < 0) return;
+
+    const lastUserMessage = priorMessages[lastUserIndex];
+    const retryHistory = priorMessages
+      .slice(0, lastUserIndex)
+      .filter((message) => message !== WELCOME_MESSAGE)
+      .map((message) => ({ role: message.role, content: message.content }));
+
+    const nextMessages = priorMessages;
+    setMessages(nextMessages);
+    setIsTyping(true);
+
+    try {
+      const { response } = await apiChat({
+        message: lastUserMessage.content,
+        history: retryHistory.slice(-20),
+        level,
+        attachments: lastUserMessage.attachments,
+      });
+      const assistantMessage: ChatMessage = {
+        role: "assistant",
+        content: response,
+        timestamp: new Date().toISOString(),
+      };
+      const finalMessages = [...nextMessages, assistantMessage];
+      setMessages(finalMessages);
+      await saveCurrentSession(finalMessages);
+    } catch {
+      setMessages(messages);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -145,72 +282,163 @@ export default function ChatPage() {
   const handleNewChat = () => {
     setMessages([WELCOME_MESSAGE]);
     setCurrentSessionId(null);
+    setAttachments([]);
+    setAttachmentError("");
+    setVoiceError("");
   };
 
-  const handleLoadSession = async (sessionId: string) => {
-    if (!user) return;
-    const session = await getChatSession(user.uid, sessionId);
-    if (session) {
-      setMessages(session.messages);
-      setCurrentSessionId(sessionId);
+  const handleAttachFile = async (file: File | undefined) => {
+    if (!file) return;
+    setAttachmentError("");
+    if (file.size > 8 * 1024 * 1024) {
+      setAttachmentError("File is too large. Please use a file under 8MB.");
+      return;
+    }
+    try {
+      if (file.type.startsWith("image/")) {
+        const dataUrl = await resizeImage(file);
+        setAttachments([
+          {
+            type: "image",
+            name: file.name,
+            mimeType: "image/jpeg",
+            dataUrl,
+          },
+        ]);
+        return;
+      }
+
+      const isTextLike =
+        file.type.startsWith("text/") ||
+        /\.(txt|md|csv|json|xml|html|css|js|ts|tsx|py|sql)$/i.test(file.name);
+
+      if (!isTextLike) {
+        setAttachmentError("This file type is not supported yet. Use an image or text-based file.");
+        return;
+      }
+
+      const textContent = await readTextFile(file);
+      setAttachments([
+        {
+          type: "file",
+          name: file.name,
+          mimeType: file.type || "text/plain",
+          textContent,
+        },
+      ]);
+    } catch {
+      setAttachmentError("Could not process this file. Please try another one.");
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  const handleDeleteSession = async (sessionId: string) => {
-    if (!user) return;
-    await deleteChatSession(user.uid, sessionId);
-    setSessions(prev => prev.filter(s => s.id !== sessionId));
-    if (currentSessionId === sessionId) {
-      handleNewChat();
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (event.dataTransfer.types.includes("Files")) {
+      setDragActive(true);
     }
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragActive(false);
+    handleAttachFile(event.dataTransfer.files?.[0]);
+  };
+
+  const handleToggleVoice = () => {
+    setVoiceError("");
+    const SpeechRecognitionCtor =
+      (window as BrowserWindowWithSpeech).SpeechRecognition ||
+      (window as BrowserWindowWithSpeech).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionCtor) {
+      setVoiceError("Voice dictation is not supported in this browser.");
+      return;
+    }
+
+    if (isListening) {
+      stopRequestedRef.current = true;
+      listeningRef.current = false;
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0]?.transcript || "";
+        if (event.results[i].isFinal) {
+          voiceFinalTranscriptRef.current = [voiceFinalTranscriptRef.current, transcript]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+        } else {
+          interim += transcript;
+        }
+      }
+      setInput(
+        [voiceBaseInputRef.current, voiceFinalTranscriptRef.current, interim]
+          .filter(Boolean)
+          .join(" ")
+          .trim()
+      );
+    };
+    recognition.onerror = () => {
+      setVoiceError("Could not capture audio. Please try again.");
+      setIsListening(false);
+      listeningRef.current = false;
+    };
+    recognition.onend = () => {
+      if (listeningRef.current && !stopRequestedRef.current) {
+        try {
+          recognition.start();
+        } catch {
+          setIsListening(false);
+          listeningRef.current = false;
+        }
+        return;
+      }
+      setIsListening(false);
+      listeningRef.current = false;
+    };
+    recognitionRef.current = recognition;
+    voiceBaseInputRef.current = input.trim();
+    voiceFinalTranscriptRef.current = "";
+    stopRequestedRef.current = false;
+    listeningRef.current = true;
+    setIsListening(true);
+    recognition.start();
   };
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-7xl">
-      {/* Sessions sidebar */}
-      {showSidebar && (
-        <div className="w-52 shrink-0 overflow-y-auto border-r border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border p-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Chats</span>
-            <button onClick={() => setShowSidebar(false)} className="rounded p-1 hover:bg-accent">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="p-2">
-            <button
-              onClick={handleNewChat}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-primary hover:bg-primary/10"
-            >
-              <Plus className="h-4 w-4" /> New conversation
-            </button>
-          </div>
-          <div className="flex flex-col gap-1 p-2">
-            {sessions.map((s) => (
-              <div key={s.id} className="group flex items-center gap-1">
-                <button
-                  onClick={() => handleLoadSession(s.id!)}
-                  className={cn(
-                    "flex-1 truncate rounded-lg px-2 py-2 text-left text-xs transition-colors",
-                    currentSessionId === s.id ? "bg-primary/10 text-primary font-medium" : "hover:bg-accent"
-                  )}
-                >
-                  <span className="block truncate">{s.title}</span>
-                  <span className="mt-0.5 block text-[10px] font-normal text-muted-foreground">
-                    {new Date(s.updatedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
-                  </span>
-                </button>
-                <button
-                  onClick={() => handleDeleteSession(s.id!)}
-                  className="hidden rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive group-hover:block"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
+    <div
+      className="relative flex h-full w-full"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {dragActive && (
+        <div className="pointer-events-none absolute inset-4 z-50 flex items-center justify-center rounded-3xl border-2 border-dashed border-primary bg-background/80 backdrop-blur-sm">
+          <div className="rounded-2xl border border-primary/30 bg-card px-6 py-4 text-center">
+            <p className="text-sm font-semibold text-primary">Drop file to attach</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Images and text-based files can be added to your next CFA chat message.
+            </p>
           </div>
         </div>
       )}
-
       {/* Main chat */}
       <div className="flex flex-1 flex-col">
         <div className="flex-1 overflow-y-auto pb-4">
@@ -227,7 +455,7 @@ export default function ChatPage() {
             </div>
           )}
 
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-2 sm:px-6">
+                <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-2 sm:px-8">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -255,15 +483,53 @@ export default function ChatPage() {
                     "rounded-2xl px-4 py-3 text-sm leading-relaxed",
                     msg.role === "user"
                       ? "max-w-[78%] rounded-tr-md bg-primary text-primary-foreground"
-                      : "w-full max-w-4xl rounded-tl-md border border-border bg-card"
+                      : "w-full max-w-5xl rounded-tl-md border border-border bg-card"
                   )}
                 >
+                  {msg.attachments?.map((attachment, attachmentIndex) => (
+                    <div key={`${attachment.name}-${attachmentIndex}`} className="mb-3">
+                      {attachment.type === "image" && attachment.dataUrl ? (
+                        <img
+                          src={attachment.dataUrl}
+                          alt={attachment.name}
+                          className="max-h-64 rounded-xl border border-border object-contain"
+                        />
+                      ) : (
+                        <div className="rounded-xl border border-border bg-muted/50 px-3 py-2 text-xs">
+                          Attached file: {attachment.name}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                   {msg.content && (
                     msg.role === "assistant" ? (
                       <MarkdownMessage content={msg.content} />
                     ) : (
                       <p className="whitespace-pre-wrap">{msg.content}</p>
                     )
+                  )}
+                  {msg.role === "assistant" && msg.content && (
+                    <div className="mt-3 flex items-center gap-1 text-muted-foreground">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyMessage(msg.content, idx)}
+                        className="rounded-md p-1.5 transition-colors hover:bg-accent hover:text-foreground"
+                        title="Copy"
+                        aria-label="Copy response"
+                      >
+                        {copiedMessageIndex === idx ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRegenerate(idx)}
+                        disabled={isTyping}
+                        className="rounded-md p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+                        title="Regenerate"
+                        aria-label="Regenerate response"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -290,30 +556,74 @@ export default function ChatPage() {
 
         {/* Input area */}
         <div className="sticky bottom-0 border-t border-border bg-background px-2 py-4 sm:px-4">
-          <form onSubmit={handleSubmit} className="relative mx-auto flex max-w-5xl items-end gap-2">
+          <form onSubmit={handleSubmit} className="relative mx-auto flex max-w-6xl items-end gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.txt,.md,.csv,.json,.xml,.html,.css,.js,.ts,.tsx,.py,.sql"
+              className="hidden"
+              onChange={(e) => handleAttachFile(e.target.files?.[0])}
+            />
             <button
               type="button"
-              onClick={() => setShowSidebar(!showSidebar)}
+              onClick={() => fileInputRef.current?.click()}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-input bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              aria-label="History"
-              title="View previous conversations"
+              aria-label="Attach file"
+              title="Attach file or image"
             >
-              <MessageCircle className="h-5 w-5" />
+              <Plus className="h-5 w-5" />
             </button>
 
             <div className="relative flex-1">
+              {attachments.length > 0 && (
+                <div className="mb-2 flex items-center gap-2 rounded-xl border border-border bg-card p-2">
+                  <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted">
+                    {attachments[0].type === "image" && attachments[0].dataUrl ? (
+                      <img src={attachments[0].dataUrl} alt={attachments[0].name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] font-semibold text-muted-foreground">FILE</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium">{attachments[0].name}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {attachments[0].type === "image" ? "Image ready to send" : "File ready to send"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAttachments([])}
+                    className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                    aria-label="Remove image"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about CFA..."
+                placeholder={isListening ? "Listening in English..." : "Ask about CFA..."}
                 rows={1}
-                className="w-full resize-none rounded-xl border border-input bg-card px-4 py-3 pr-14 text-sm outline-none ring-ring transition-shadow placeholder:text-muted-foreground focus:ring-2"
+                className="max-h-[220px] min-h-11 w-full resize-none overflow-y-auto rounded-xl border border-input bg-card px-4 py-3 pr-24 text-sm outline-none ring-ring transition-shadow placeholder:text-muted-foreground focus:ring-2"
               />
               <button
+                type="button"
+                onClick={handleToggleVoice}
+                className={cn(
+                  "absolute right-12 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg transition-colors",
+                  isListening ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                )}
+                aria-label={isListening ? "Stop dictation" : "Start voice dictation"}
+                title="Dictate in English"
+              >
+                <Mic className="h-4 w-4" />
+              </button>
+              <button
                 type="submit"
-                disabled={!input.trim() || isTyping}
+                disabled={(!input.trim() && attachments.length === 0) || isTyping}
                 className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-opacity disabled:opacity-30"
                 aria-label="Send"
               >
@@ -321,6 +631,11 @@ export default function ChatPage() {
               </button>
             </div>
           </form>
+          {(attachmentError || voiceError) && (
+            <p className="mt-2 text-center text-[11px] text-destructive">
+              {attachmentError || voiceError}
+            </p>
+          )}
           <p className="mt-2 text-center text-[10px] text-muted-foreground">
             AI-generated answers — may contain inaccuracies.
           </p>

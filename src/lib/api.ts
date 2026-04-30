@@ -19,6 +19,14 @@ export interface StudyPlanBlock {
   description: string;
 }
 
+export interface ChatAttachmentPayload {
+  type: "image" | "file";
+  name: string;
+  mimeType: string;
+  dataUrl?: string;
+  textContent?: string;
+}
+
 async function apiFetch<T>(path: string, body: Record<string, unknown>): Promise<T> {
   const res = await fetch(path, {
     method: "POST",
@@ -39,6 +47,7 @@ export async function apiChat(params: {
   history: { role: string; content: string }[];
   level: string;
   topicContext?: string;
+  attachments?: ChatAttachmentPayload[];
 }): Promise<{ response: string }> {
   return apiFetch("/api/chat", params);
 }

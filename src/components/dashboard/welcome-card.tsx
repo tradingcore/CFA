@@ -5,22 +5,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarClock, Flame, Quote } from "lucide-react";
 import { useEffect, useState } from "react";
-
-const MOTIVATIONAL_QUOTES = [
-  { text: "The stock market is a device for transferring money from the impatient to the patient.", author: "Warren Buffett" },
-  { text: "An investment in knowledge pays the best interest.", author: "Benjamin Franklin" },
-  { text: "The four most dangerous words in investing are: 'this time it's different.'", author: "Sir John Templeton" },
-  { text: "In investing, what is comfortable is rarely profitable.", author: "Robert Arnott" },
-  { text: "Know what you own, and know why you own it.", author: "Peter Lynch" },
-  { text: "The individual investor should act consistently as an investor and not as a speculator.", author: "Benjamin Graham" },
-  { text: "Compound interest is the eighth wonder of the world.", author: "Albert Einstein" },
-  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
-  { text: "Risk comes from not knowing what you're doing.", author: "Warren Buffett" },
-  { text: "The essence of investment management is the management of risks, not the management of returns.", author: "Benjamin Graham" },
-  { text: "Spend each day trying to be a little wiser than you were when you woke up.", author: "Charlie Munger" },
-  { text: "Price is what you pay. Value is what you get.", author: "Warren Buffett" },
-  { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
-];
+import { MOTIVATIONAL_QUOTES } from "@/lib/motivational-quotes";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -29,10 +14,8 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-function getDailyQuote() {
-  const today = new Date();
-  const dayHash = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-  return MOTIVATIONAL_QUOTES[dayHash % MOTIVATIONAL_QUOTES.length];
+function getRandomQuote() {
+  return MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
 }
 
 export function WelcomeCard() {
@@ -50,7 +33,7 @@ export function WelcomeCard() {
 
   useEffect(() => {
     setGreeting(getGreeting());
-    setQuote(getDailyQuote());
+    setQuote(getRandomQuote());
   }, []);
 
   return (

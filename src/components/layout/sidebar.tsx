@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,6 +10,8 @@ import {
   CalendarDays,
   GraduationCap,
   MessageCircle,
+  ChevronDown,
+  ChevronRight,
   PanelLeftClose,
   PanelLeft,
   X,
@@ -23,6 +26,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChatSession, getChatSessions } from "@/lib/firestore";
 
 const navItems = [
   {
@@ -57,6 +61,22 @@ export function Sidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { user, profile } = useAuth();
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [chatSubitemsOpen, setChatSubitemsOpen] = useState(true);
+
+  const loadChatSessions = useCallback(() => {
+    if (!user) {
+      setChatSessions([]);
+      return;
+    }
+    getChatSessions(user.uid, 12).then(setChatSessions).catch(console.error);
+  }, [user]);
+
+  useEffect(() => {
+    loadChatSessions();
+    window.addEventListener("tradingcore:chat-sessions-updated", loadChatSessions);
+    return () => window.removeEventListener("tradingcore:chat-sessions-updated", loadChatSessions);
+  }, [loadChatSessions]);
 
   const displayName = user?.displayName || profile?.displayName || "";
   const photoURL = user?.photoURL || profile?.photoURL || "";
@@ -119,7 +139,45 @@ export function Sidebar() {
             );
           }
 
-          return <div key={item.href}>{linkElement}</div>;
+          const showChatSubitems = item.href === "/chat" && isActive && (!collapsed || mobileOpen);
+
+          return (
+            <div key={item.href}>
+              {linkElement}
+              {showChatSubitems && (
+                <div className="ml-8 mt-1 flex flex-col gap-0.5 border-l border-border/70 pl-3">
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href="/chat?new=1"
+                      onClick={() => setMobileOpen(false)}
+                      className="min-w-0 flex-1 rounded-md px-2 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-sidebar-accent"
+                    >
+                      New chat
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setChatSubitemsOpen((open) => !open)}
+                      className="rounded p-1 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-primary"
+                      aria-label={chatSubitemsOpen ? "Hide recent chats" : "Show recent chats"}
+                    >
+                      {chatSubitemsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                  {chatSubitemsOpen && chatSessions.slice(0, 10).map((session) => (
+                    <Link
+                      key={session.id}
+                      href={`/chat?session=${session.id}`}
+                      onClick={() => setMobileOpen(false)}
+                      className="truncate rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-primary"
+                      title={session.title}
+                    >
+                      {session.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
             })}
           </div>
         ))}

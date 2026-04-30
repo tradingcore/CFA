@@ -121,8 +121,7 @@ export async function getWeeklyQuizStats(uid: string): Promise<{
 
   const q = query(
     collection(db, "users", uid, "quizResults"),
-    where("date", ">=", weekAgoStr),
-    orderBy("date", "desc")
+    where("date", ">=", weekAgoStr)
   );
   const snap = await getDocs(q);
 
@@ -147,8 +146,7 @@ export async function getTopicScores(uid: string, level: CFALevel): Promise<
 > {
   const q = query(
     collection(db, "users", uid, "quizResults"),
-    where("level", "==", level),
-    orderBy("date", "desc")
+    where("level", "==", level)
   );
   const snap = await getDocs(q);
 
@@ -221,14 +219,14 @@ export async function saveStudyPlan(uid: string, plan: StudyPlanDoc): Promise<st
 export async function getLatestStudyPlan(uid: string, level: CFALevel): Promise<StudyPlanDoc | null> {
   const q = query(
     collection(db, "users", uid, "studyPlans"),
-    where("level", "==", level),
-    orderBy("createdAt", "desc"),
-    limit(1)
+    where("level", "==", level)
   );
   const snap = await getDocs(q);
   if (snap.empty) return null;
-  const d = snap.docs[0];
-  return { id: d.id, ...d.data() } as StudyPlanDoc;
+  const plans = snap.docs
+    .map((d) => ({ id: d.id, ...d.data() } as StudyPlanDoc))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return plans[0] ?? null;
 }
 
 export async function updateStudyPlanBlock(
@@ -245,6 +243,15 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+  attachments?: ChatAttachment[];
+}
+
+export interface ChatAttachment {
+  type: "image" | "file";
+  name: string;
+  mimeType: string;
+  dataUrl?: string;
+  textContent?: string;
 }
 
 export interface ChatSession {
@@ -265,7 +272,9 @@ export async function saveChatSession(uid: string, session: ChatSession): Promis
     return session.id;
   }
   const ref = await addDoc(collection(db, "users", uid, "chatSessions"), {
-    ...session,
+    title: session.title,
+    level: session.level,
+    messages: session.messages,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });

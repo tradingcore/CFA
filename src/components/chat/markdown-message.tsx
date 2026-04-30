@@ -1,203 +1,49 @@
-import { ReactNode } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { cn } from "@/lib/utils";
+import "katex/dist/katex.min.css";
 
 interface MarkdownMessageProps {
   content: string;
   className?: string;
 }
 
-function simplifyLatex(formula: string): string {
-  return formula
-    .replace(/\\text\{([^{}]+)\}/g, "$1")
-    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, "($1) / ($2)")
-    .replace(/\^\{([^{}]+)\}/g, "^($1)")
-    .replace(/_\{([^{}]+)\}/g, "_($1)")
-    .replace(/\\left|\\right/g, "")
-    .replace(/\\times/g, "×")
-    .replace(/\\cdot/g, "·")
-    .replace(/\\%/g, "%")
-    .replace(/\\,/g, " ")
-    .replace(/\\/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function renderInline(text: string): ReactNode[] {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\$[^$\n]+\$)/g).filter(Boolean);
-
-  return parts.map((part, index) => {
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return (
-        <code key={index} className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.92em] text-primary">
-          {part.slice(1, -1)}
-        </code>
-      );
-    }
-
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return (
-        <strong key={index} className="font-semibold text-foreground">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-
-    if (part.startsWith("$") && part.endsWith("$")) {
-      return (
-        <span key={index} className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[0.92em] text-primary">
-          {simplifyLatex(part.slice(1, -1))}
-        </span>
-      );
-    }
-
-    return part;
-  });
-}
-
-function renderFormula(formula: string, key: string) {
-  const cleaned = simplifyLatex(formula);
-  return (
-    <div key={key} className="my-3 overflow-x-auto rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
-      <div className="whitespace-pre-wrap text-center font-mono text-base leading-relaxed text-primary">
-        {cleaned}
-      </div>
-    </div>
-  );
-}
-
 export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
-  const lines = content.split("\n");
-  const nodes: ReactNode[] = [];
-  let codeBuffer: string[] | null = null;
-  let formulaBuffer: string[] | null = null;
-  let listBuffer: string[] = [];
-  let orderedListBuffer: string[] = [];
-
-  const flushLists = () => {
-    if (listBuffer.length > 0) {
-      const items = listBuffer;
-      listBuffer = [];
-      nodes.push(
-        <ul key={`ul-${nodes.length}`} className="my-2 list-disc space-y-1 pl-5">
-          {items.map((item, index) => (
-            <li key={index}>{renderInline(item)}</li>
-          ))}
-        </ul>
-      );
-    }
-
-    if (orderedListBuffer.length > 0) {
-      const items = orderedListBuffer;
-      orderedListBuffer = [];
-      nodes.push(
-        <ol key={`ol-${nodes.length}`} className="my-2 list-decimal space-y-1 pl-5">
-          {items.map((item, index) => (
-            <li key={index}>{renderInline(item)}</li>
-          ))}
-        </ol>
-      );
-    }
-  };
-
-  lines.forEach((line, index) => {
-    const trimmed = line.trim();
-
-    if (trimmed.startsWith("```")) {
-      if (codeBuffer) {
-        nodes.push(
-          <pre key={`code-${index}`} className="my-3 overflow-x-auto rounded-xl border border-border bg-muted/60 p-4">
-            <code className="font-mono text-xs leading-relaxed">{codeBuffer.join("\n")}</code>
-          </pre>
-        );
-        codeBuffer = null;
-      } else {
-        flushLists();
-        codeBuffer = [];
-      }
-      return;
-    }
-
-    if (codeBuffer) {
-      codeBuffer.push(line);
-      return;
-    }
-
-    if (trimmed === "$$") {
-      if (formulaBuffer) {
-        nodes.push(renderFormula(formulaBuffer.join("\n"), `formula-${index}`));
-        formulaBuffer = null;
-      } else {
-        flushLists();
-        formulaBuffer = [];
-      }
-      return;
-    }
-
-    if (formulaBuffer) {
-      formulaBuffer.push(line);
-      return;
-    }
-
-    if (!trimmed) {
-      flushLists();
-      return;
-    }
-
-    if (trimmed.startsWith("### ")) {
-      flushLists();
-      nodes.push(
-        <h3 key={index} className="mb-1 mt-4 text-sm font-semibold text-foreground">
-          {renderInline(trimmed.slice(4))}
-        </h3>
-      );
-      return;
-    }
-
-    if (trimmed.startsWith("## ")) {
-      flushLists();
-      nodes.push(
-        <h2 key={index} className="mb-1 mt-4 text-base font-semibold text-foreground">
-          {renderInline(trimmed.slice(3))}
-        </h2>
-      );
-      return;
-    }
-
-    if (trimmed.startsWith("# ")) {
-      flushLists();
-      nodes.push(
-        <h1 key={index} className="mb-1 mt-4 text-lg font-bold text-foreground">
-          {renderInline(trimmed.slice(2))}
-        </h1>
-      );
-      return;
-    }
-
-    if (/^[-*]\s+/.test(trimmed)) {
-      orderedListBuffer = [];
-      listBuffer.push(trimmed.replace(/^[-*]\s+/, ""));
-      return;
-    }
-
-    if (/^\d+\.\s+/.test(trimmed)) {
-      listBuffer = [];
-      orderedListBuffer.push(trimmed.replace(/^\d+\.\s+/, ""));
-      return;
-    }
-
-    flushLists();
-    nodes.push(
-      <p key={index} className="my-2 leading-relaxed">
-        {renderInline(trimmed)}
-      </p>
-    );
-  });
-
-  flushLists();
-
   return (
-    <div className={cn("text-sm leading-relaxed text-foreground", className)}>
-      {nodes}
+    <div className={cn("markdown-cfa text-sm leading-relaxed text-foreground", className)}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={{
+          h1: ({ children }) => <h1 className="mb-2 mt-4 text-lg font-bold">{children}</h1>,
+          h2: ({ children }) => <h2 className="mb-2 mt-4 text-base font-semibold">{children}</h2>,
+          h3: ({ children }) => <h3 className="mb-1 mt-3 text-sm font-semibold">{children}</h3>,
+          p: ({ children }) => <p className="my-2 leading-relaxed">{children}</p>,
+          ul: ({ children }) => <ul className="my-2 list-disc space-y-1 pl-5">{children}</ul>,
+          ol: ({ children }) => <ol className="my-2 list-decimal space-y-1 pl-5">{children}</ol>,
+          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+          strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+          code: ({ children, className }) => {
+            const inline = !className;
+            return inline ? (
+              <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.92em] text-primary">
+                {children}
+              </code>
+            ) : (
+              <code className={className}>{children}</code>
+            );
+          },
+          pre: ({ children }) => (
+            <pre className="my-3 overflow-x-auto rounded-xl border border-border bg-muted/60 p-4 text-xs">
+              {children}
+            </pre>
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }

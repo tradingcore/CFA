@@ -134,3 +134,44 @@
     @apply font-sans scroll-smooth;
   }
 }
+
+@layer components {
+  .markdown-cfa .katex {
+    font-size: 1.04em;
+  }
+
+  .markdown-cfa .katex-display {
+    margin: 0.875rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid color-mix(in oklch, var(--primary) 28%, transparent);
+    border-radius: var(--radius-xl);
+    background: color-mix(in oklch, var(--primary) 10%, transparent);
+    padding: 0.875rem 1rem;
+    color: var(--primary);
+  }
+
+  .markdown-cfa .katex-display > .katex {
+    display: inline-block;
+    min-width: max-content;
+  }
+
+  .markdown-cfa table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.875rem;
+  }
+
+  .markdown-cfa th,
+  .markdown-cfa td {
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    text-align: left;
+  }
+
+  .markdown-cfa th {
+    background: var(--muted);
+    font-weight: 600;
+  }
+}
