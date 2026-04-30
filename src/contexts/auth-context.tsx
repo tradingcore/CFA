@@ -6,7 +6,8 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   updateProfile,
 } from "firebase/auth";
@@ -37,6 +38,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) {
+          const existing = await getUserProfile(result.user.uid);
+          if (!existing) {
+            await createUserProfile(result.user.uid, {
+              email: result.user.email || "",
+              displayName: result.user.displayName || "",
+              photoURL: result.user.photoURL || undefined,
+            });
+          }
+        }
+      })
+      .catch(console.error);
+
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
@@ -65,16 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    const cred = await signInWithPopup(auth, googleProvider);
-    const existing = await getUserProfile(cred.user.uid);
-    if (!existing) {
-      await createUserProfile(cred.user.uid, {
-        email: cred.user.email || "",
-        displayName: cred.user.displayName || "",
-        photoURL: cred.user.photoURL || undefined,
-      });
-    }
-    await loadProfile(cred.user);
+    await signInWithRedirect(auth, googleProvider);
   };
 
   const signOut = async () => {
