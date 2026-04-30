@@ -29,6 +29,7 @@ const sections: SectionLink[] = [
   { id: "loop", label: "The weekly loop", icon: Compass },
   { id: "mastery", label: "Mastery states", icon: Target },
   { id: "readiness", label: "Exam readiness", icon: TrendingUp },
+  { id: "scenarios", label: "Common scenarios", icon: Sparkles },
   { id: "review", label: "Spaced review", icon: AlarmClock },
   { id: "map", label: "Performance Map", icon: MapIcon },
   { id: "plan", label: "Study Plan", icon: CalendarDays },
@@ -36,6 +37,52 @@ const sections: SectionLink[] = [
   { id: "chat", label: "AI tutor", icon: MessageCircle },
   { id: "best", label: "Best practices", icon: Shield },
   { id: "faq", label: "FAQ", icon: HelpCircle },
+];
+
+interface Scenario {
+  title: string;
+  setup: string;
+  result: string;
+  reading: string;
+}
+
+const scenarios: Scenario[] = [
+  {
+    title: "I only studied Ethics this week",
+    setup: "You answered 30 questions on Ethics, got 24 right (80%). You did not touch the other 9 topics.",
+    result: "Readiness shows ~80%. Coverage shows ~15% (only Ethics is measured).",
+    reading: "The number is mathematically right, but it only represents 1 topic. The remaining 85% of the program is unknown. Pass odds in real life are still very low. Action: practice another topic next so Coverage grows.",
+  },
+  {
+    title: "I took 1 mock with 90 questions and got 60 right",
+    setup: "Your mock had questions across all 10 topics. Score: 60/90 = 67%. Topics ended with 4–12 attempts each.",
+    result: "Readiness lands around 65–70%, Coverage jumps to ~95%, several topics show Strong, a few still In progress, none yet Mastered.",
+    reading: "This is exactly the right mix to start a study cycle: enough Coverage to trust the number, enough gaps to know where to focus. Action: open Recommended Focus and drill the weakest 3 topics.",
+  },
+  {
+    title: "Last week Readiness was 60%, this week it dropped to 56%",
+    setup: "You did a tough new-style mock and missed several Derivatives questions in a row.",
+    result: "Weekly snapshot shows -4 pts, Derivatives moves from Strong to Practiced.",
+    reading: "Don't panic. The mock revealed real gaps that were hidden before — that is useful, not bad. Action: spend 2–3 sessions on the weak module, redo a few questions, the number will recover within 1–2 weeks.",
+  },
+  {
+    title: "FSA shows 100% but the badge says In progress",
+    setup: "You answered 1 FSA question and got it right.",
+    result: "Topic shows 100% accuracy but stays In progress.",
+    reading: "1 right out of 1 is just luck-of-the-draw. We need at least 5 attempts before judging the topic and 12+ for Mastered. Action: do 4 more FSA questions and the badge will update.",
+  },
+  {
+    title: "30 LOS are due for review",
+    setup: "You studied hard 3 weeks ago, then took a break. Now several modules' next-review dates have passed.",
+    result: "LOS due for review = 30 (high), Recommended Focus shows topics with the most due LOS.",
+    reading: "Forgetting is normal — that is exactly why spaced review exists. Action: spend 30–45 minutes redoing 2–3 questions on each due LOS. The counter will drop to ~10 within a week.",
+  },
+  {
+    title: "Readiness 75% but Coverage only 60%",
+    setup: "You did mostly well in the topics you practiced, but skipped some entirely.",
+    result: "Readiness looks like 'pass zone', but 40% of the program is unmeasured.",
+    reading: "Imagine the 4 untouched topics turn out to be your weakest — your real readiness could be 55%. Action: do a small set on each unpracticed topic to bring Coverage above 90% before trusting the 75%.",
+  },
 ];
 
 interface MasteryState {
@@ -351,6 +398,47 @@ export default function HelpPage() {
                 </p>
               </CardContent>
             </Card>
+          </section>
+
+          <section className="flex flex-col gap-4">
+            <SectionHeader
+              id="scenarios"
+              icon={Sparkles}
+              title="Common scenarios"
+              subtitle="Real situations you will run into, with the right way to read the numbers and what to do next."
+            />
+            <div className="flex flex-col gap-3">
+              {scenarios.map((scenario) => (
+                <Card key={scenario.title}>
+                  <CardContent className="flex flex-col gap-2 p-5">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-semibold">{scenario.title}</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-3">
+                      <div className="rounded-lg border border-border bg-muted/30 p-3">
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Setup
+                        </p>
+                        <p className="leading-relaxed">{scenario.setup}</p>
+                      </div>
+                      <div className="rounded-lg border border-border bg-muted/30 p-3">
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          What you see
+                        </p>
+                        <p className="leading-relaxed">{scenario.result}</p>
+                      </div>
+                      <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-500">
+                          How to read &amp; act
+                        </p>
+                        <p className="leading-relaxed">{scenario.reading}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </section>
 
           <section className="flex flex-col gap-4">

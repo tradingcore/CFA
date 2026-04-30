@@ -34,7 +34,7 @@ export function NextStudy() {
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           Recommended focus
-          <InfoHint text="The 3 topics that, if you study them next, give the biggest jump in exam readiness. Example: a 50% on Ethics (15% of the exam) is more urgent than a 50% on Alternative Investments (5%). Topics you have not seen for weeks also bubble up here." />
+          <InfoHint text="The 3 topics that, if you study them next, give the biggest jump in exam readiness. Example: 50% on Ethics (~15% of the exam) is more urgent than 50% on Alternative Investments (~7%) — fixing Ethics moves the needle ~2x more. Topics you have not touched in 2+ weeks also bubble up so they do not decay. If a topic shows 'No data', it appears here because we have nothing to measure you on yet — start with a quick practice set." />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           These are the topics most likely to move the needle on your exam result. Click Practice to drill them or Study to read the material.

@@ -105,7 +105,7 @@ export function WeeklySnapshot() {
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarRange className="h-4 w-4 text-primary" />
           This week
-          <InfoHint text="A snapshot of where you stand now vs. last week. Reference: +3 to +5 points per week is healthy progress; flat (0) is normal during heavy review weeks; negative means a topic decayed or a recent mock pulled the average down." />
+          <InfoHint text="A snapshot of where you stand now vs. last week. Reference: +3 to +5 points per week is healthy progress; flat (0) is normal during heavy review weeks; negative usually means a recent mock exposed gaps or some topics decayed. Examples: '+4 pts' = solid week of practice, '0 pts' = you spent the week reading without testing yourself, '-3 pts' = recent mock revealed weak spots — that is a good thing, you now know what to fix." />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           Compare your readiness with last week and see which topics improved and which need attention.

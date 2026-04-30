@@ -90,10 +90,10 @@ export function ProgressRing() {
       <CardHeader className="pb-2">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Exam readiness</CardTitle>
-          <InfoHint text="An estimate of how the real CFA exam would go for you today (0% = not ready, 100% = perfect). Reference: ~70% is the typical pass band, 80%+ is comfortable, below 50% means you have a lot of ground to cover. Topics with more weight in the real exam (Ethics, FRA on Level I) also weigh more here." />
+          <InfoHint text="0%–100% estimate of how the real CFA exam would go for you today. Reference: ~70% is the typical pass band, 80%+ is comfortable, <50% needs a lot more work. Important: only topics you have practiced count toward this number. Always read it together with Coverage to understand if it really represents you." />
         </div>
         <p className="text-xs text-muted-foreground">
-          0% to 100%. Around 70% is the typical pass zone. Coverage shows how much of the program we already have data on.
+          0% to 100%. Around 70% is the typical pass zone. Read it together with Coverage — see hint below.
         </p>
       </CardHeader>
       <CardContent className="flex items-center justify-around pb-6">
@@ -103,15 +103,15 @@ export function ProgressRing() {
           sublabel={`${readiness.totalSampleSize} answers · ${evidenceCoverage}% of program covered`}
           hint={
             readiness.totalSampleSize === 0
-              ? "Range 0%–100%. Right now it is 0% because you have not answered any question yet. Take a mock with 30+ questions so this starts to mean something. Aim for ≥70% over time."
-              : `Range 0%–100%. Yours is ${readiness.readinessPct}% based on ${readiness.totalSampleSize} answers covering ${evidenceCoverage}% of the program. Reference: <50% needs a lot more work, 60–75% is the pass zone, 80%+ is comfortable. The more topics you practice, the more trustworthy this number gets.`
+              ? "0%–100%. Right now it is 0% because you have not answered any question. Aim for ≥70% over time. Take a mock with 30+ questions so this starts to mean something."
+              : `0%–100%. Yours: ${readiness.readinessPct}% across ${readiness.totalSampleSize} answers (${evidenceCoverage}% of program covered). Example to read it right: if you only studied Ethics and got 80%, this card would still show ~80% Readiness — but Coverage would only be ~15% (1 topic out of 10), meaning the number represents only a small slice of what you'll face. Trust the Readiness more as Coverage approaches 100%.`
           }
         />
         <CircularProgress
           value={accuracy}
           label="Weekly accuracy"
           sublabel={`${stats.questionsAnswered} questions · ${stats.simuladosCompleted} mocks`}
-          hint="Range 0%–100% of questions you got right this week. Reference: ≥70% means you are keeping pace with the exam, 50–70% is shaky, <50% means stop and study before more questions. One week alone can be noisy — look at the trend."
+          hint="0%–100% of questions you got right this week. Reference: ≥70% keeps pace with the exam, 50–70% is shaky, <50% stop and study before more questions. Example: 14 right out of 20 = 70%. One week alone can be noisy — look at the trend across several weeks."
         />
       </CardContent>
     </Card>

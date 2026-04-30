@@ -123,7 +123,7 @@ export function TopicList() {
       <CardHeader className="pb-3">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Performance by Topic</CardTitle>
-          <InfoHint text="Each topic shows a label and a percentage. Reference: ≥80% on 12+ questions is Mastered, 60–80% is Strong, <60% is Practiced (read first). Example: 1/1 right looks like 100% but stays as In progress because 1 question is not enough proof." />
+          <InfoHint text="Each topic shows a label + percentage + sample size. Reference: ≥80% on 12+ questions = Mastered, 60–80% = Strong, <60% = Practiced (read first), <5 questions = In progress. Examples: '1/1 right (100%)' stays In progress — 1 question is not enough proof. '8/12 (67%)' = Strong. '4/10 (40%)' = Practiced — go back to the reading. '11/12 (92%) seen 3 weeks ago' = Needs review." />
         </div>
         <p className="text-xs text-muted-foreground">
           {loading
