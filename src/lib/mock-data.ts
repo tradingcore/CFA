@@ -443,9 +443,9 @@ export const mockStudyPlan: StudyBlock[] = [
 ];
 
 export const mockWeeklyGoals: WeeklyGoal[] = [
-  { id: "g-1", description: "Questões respondidas", current: 45, target: 100, unit: "questões" },
-  { id: "g-2", description: "Simulados completos", current: 2, target: 3, unit: "simulados" },
-  { id: "g-3", description: "Tópicos revisados", current: 3, target: 5, unit: "tópicos" },
+  { id: "g-1", description: "Questions answered", current: 45, target: 100, unit: "questions" },
+  { id: "g-2", description: "Mock exams completed", current: 2, target: 3, unit: "mocks" },
+  { id: "g-3", description: "Topics reviewed", current: 3, target: 5, unit: "topics" },
 ];
 
 export const examDates: Record<CFALevel, string> = {

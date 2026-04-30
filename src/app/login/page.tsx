@@ -25,7 +25,7 @@ export default function LoginPage() {
       } else if (message.includes("user-not-found")) {
         setError("User not found.");
       } else {
-        setError("Failed to sign in. Please try again.");
+        setError(message);
       }
     } finally {
       setLoading(false);
@@ -37,8 +37,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithGoogle();
-    } catch {
-      setError("Failed to sign in with Google.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setError(`Google sign-in failed: ${message}`);
     } finally {
       setLoading(false);
     }
