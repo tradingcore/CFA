@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
-const PUBLIC_PATHS = ["/login", "/registro"];
+const PUBLIC_PATHS = ["/", "/login", "/registro"];
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth();
@@ -22,8 +22,13 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (user && isPublic) {
-      router.replace("/");
+    if (user && (pathname === "/login" || pathname === "/registro")) {
+      router.replace("/dashboard");
+      return;
+    }
+
+    if (user && pathname === "/") {
+      router.replace("/dashboard");
       return;
     }
 
@@ -42,7 +47,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user && !isPublic) return null;
-  if (user && isPublic) return null;
 
   return <>{children}</>;
 }

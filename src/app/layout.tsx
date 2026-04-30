@@ -6,10 +6,9 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { LevelProvider } from "@/contexts/level-context";
 import { SidebarProvider } from "@/contexts/sidebar-context";
 import { StudyProgressProvider } from "@/contexts/study-progress-context";
-import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AppShell } from "@/components/layout/app-shell";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -23,7 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Trading Core | CFA Prep",
-  description: "Assistente de IA para estudar para o CFA",
+  description: "Seu assistente de IA para o CFA",
 };
 
 export default function RootLayout({
@@ -45,15 +44,9 @@ export default function RootLayout({
                 <StudyProgressProvider>
                   <SidebarProvider>
                     <ProtectedRoute>
-                      <div className="flex h-full flex-col">
-                        <Header />
-                        <div className="flex flex-1 overflow-hidden">
-                          <Sidebar />
-                          <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-                            {children}
-                          </main>
-                        </div>
-                      </div>
+                      <AppShell>
+                        {children}
+                      </AppShell>
                     </ProtectedRoute>
                   </SidebarProvider>
                 </StudyProgressProvider>

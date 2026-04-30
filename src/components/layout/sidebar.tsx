@@ -25,7 +25,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/simulado", label: "Simulado", icon: FileQuestion },
   { href: "/mapa", label: "Mapa de Desempenho", icon: Map },
   { href: "/estudo", label: "Progresso de Estudo", icon: GraduationCap },
@@ -49,8 +49,8 @@ export function Sidebar() {
       <nav className="flex flex-1 flex-col gap-1 p-3">
         {navItems.map((item) => {
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
               : pathname.startsWith(item.href);
 
           const linkElement = (

@@ -33,7 +33,7 @@ export default function OnboardingPage() {
         onboardingCompleted: true,
       });
       await refreshProfile();
-      router.replace("/");
+      router.replace("/dashboard");
     } catch (err) {
       console.error("Onboarding save error:", err);
     } finally {
