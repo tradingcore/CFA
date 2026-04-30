@@ -5,12 +5,15 @@ import type { GeneratedQuestion } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, XCircle, ChevronDown, ChevronRight, Filter, Trophy, Clock, Target, RotateCcw } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronDown, ChevronRight, Filter, Trophy, Clock, Target, RotateCcw, MessageCircle } from "lucide-react";
+import { MarkdownMessage } from "@/components/chat/markdown-message";
+import type { QuizChatMessage } from "@/components/simulado/quiz-chat";
 
 interface QuizReviewProps {
   questions: GeneratedQuestion[];
   answers: (number | null)[];
   totalTimeSeconds: number;
+  discussions?: Record<string, QuizChatMessage[]>;
   onRestart: () => void;
 }
 
@@ -24,7 +27,7 @@ const optionLetters = ["A", "B", "C", "D"];
  * @param onRestart - Callback to restart
  * @returns Review component
  */
-export function QuizReview({ questions, answers, totalTimeSeconds, onRestart }: QuizReviewProps) {
+export function QuizReview({ questions, answers, totalTimeSeconds, discussions, onRestart }: QuizReviewProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showOnlyErrors, setShowOnlyErrors] = useState(false);
 
@@ -165,6 +168,33 @@ export function QuizReview({ questions, answers, totalTimeSeconds, onRestart }: 
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Explanation</p>
                     <p className="text-sm leading-relaxed">{q.explanation}</p>
                   </div>
+                  {discussions?.[q.id]?.length ? (
+                    <div className="mt-4 rounded-xl border border-border bg-card p-3">
+                      <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <MessageCircle className="h-3 w-3" />
+                        Discussion
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {discussions[q.id].map((message, messageIndex) => (
+                          <div
+                            key={messageIndex}
+                            className={cn(
+                              "rounded-xl px-3 py-2 text-xs leading-relaxed",
+                              message.role === "user"
+                                ? "self-end bg-primary text-primary-foreground"
+                                : "self-start bg-secondary"
+                            )}
+                          >
+                            {message.role === "assistant" ? (
+                              <MarkdownMessage content={message.content} />
+                            ) : (
+                              message.content
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </CardContent>
               )}
             </Card>

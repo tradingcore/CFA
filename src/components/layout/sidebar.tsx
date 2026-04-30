@@ -86,11 +86,11 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      <nav className="flex flex-1 flex-col gap-1 p-3">
+      <nav className="flex flex-1 flex-col gap-5 p-3">
         {navItems.map((group) => (
           <div key={group.group} className="flex flex-col gap-1">
             {(!collapsed || mobileOpen) && (
-              <p className="px-3 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground first:pt-0">
+              <p className="px-3 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {group.group}
               </p>
             )}

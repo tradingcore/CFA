@@ -5,7 +5,8 @@ import { getQuizHistory, QuizResult } from "@/lib/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Clock, FileQuestion, Target } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, FileQuestion, Target, MessageCircle } from "lucide-react";
+import { MarkdownMessage } from "@/components/chat/markdown-message";
 
 interface MockHistoryProps {
   uid: string;
@@ -16,13 +17,19 @@ const optionLetters = ["A", "B", "C", "D"];
 export function MockHistory({ uid }: MockHistoryProps) {
   const [history, setHistory] = useState<QuizResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const [expandedResultId, setExpandedResultId] = useState<string | null>(null);
   const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
+    setError("");
     getQuizHistory(uid, 50)
       .then(setHistory)
-      .catch(console.error)
+      .catch((err: unknown) => {
+        console.error("Failed to load mock history:", err);
+        setError(err instanceof Error ? err.message : "Failed to load mock history");
+      })
       .finally(() => setLoading(false));
   }, [uid]);
 
@@ -31,6 +38,16 @@ export function MockHistory({ uid }: MockHistoryProps) {
       <Card>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
           Loading mock history...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="py-10 text-center text-sm text-destructive">
+          Could not load mock history from Firebase: {error}
         </CardContent>
       </Card>
     );
@@ -172,6 +189,33 @@ export function MockHistory({ uid }: MockHistoryProps) {
                                   Explanation
                                 </p>
                                 <p className="text-sm leading-relaxed">{answer.explanation}</p>
+                              </div>
+                            )}
+                            {answer.discussion && answer.discussion.length > 0 && (
+                              <div className="mt-3 rounded-xl border border-border bg-card p-3">
+                                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                  <MessageCircle className="h-3 w-3" />
+                                  Discussion
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                  {answer.discussion.map((message, messageIndex) => (
+                                    <div
+                                      key={messageIndex}
+                                      className={cn(
+                                        "rounded-xl px-3 py-2 text-xs leading-relaxed",
+                                        message.role === "user"
+                                          ? "self-end bg-primary text-primary-foreground"
+                                          : "self-start bg-secondary"
+                                      )}
+                                    >
+                                      {message.role === "assistant" ? (
+                                        <MarkdownMessage content={message.content} />
+                                      ) : (
+                                        message.content
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>

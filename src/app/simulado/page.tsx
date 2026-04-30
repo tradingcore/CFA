@@ -1,16 +1,22 @@
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
+import { useState, useCallback, useEffect, useRef, Suspense } from "react";
 import { useLevel } from "@/contexts/level-context";
 import { useAuth } from "@/contexts/auth-context";
 import { getTopicsForLevel } from "@/lib/cfa-topics";
 import { EXAM_FORMAT, SimuladoMode } from "@/lib/mock-data";
 import { apiGenerateQuestions, GeneratedQuestion } from "@/lib/api";
-import { saveQuizResult, QuizResult } from "@/lib/firestore";
+import {
+  saveQuizResult,
+  QuizResult,
+  saveActiveMock,
+  getActiveMock,
+  deleteActiveMock,
+} from "@/lib/firestore";
 import { QuizCard } from "@/components/simulado/quiz-card";
 import { QuizTimer } from "@/components/simulado/quiz-timer";
 import { QuizReview } from "@/components/simulado/quiz-review";
-import { QuizChat } from "@/components/simulado/quiz-chat";
+import { QuizChat, QuizChatMessage } from "@/components/simulado/quiz-chat";
 import { SimuladoConfig } from "@/components/simulado/simulado-config";
 import { MockHistory } from "@/components/simulado/mock-history";
 import { Progress } from "@/components/ui/progress";
@@ -51,14 +57,158 @@ function SimuladoInner() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
+  const [discussions, setDiscussions] = useState<Record<string, QuizChatMessage[]>>({});
   const [questions, setQuestions] = useState<GeneratedQuestion[]>([]);
   const [loadingError, setLoadingError] = useState("");
+  const [resumePrompt, setResumePrompt] = useState<{
+    startedAt: string;
+    timeSpentSeconds: number;
+    answeredCount: number;
+    totalQuestions: number;
+  } | null>(null);
+  const [resuming, setResuming] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string>("");
+  const [resumeError, setResumeError] = useState<string>("");
+  const stateRef = useRef<QuizState>("config");
+  const initialCountdownRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    if (!user) {
+      setResumePrompt(null);
+      setResumeError("");
+      return;
+    }
+    if (state !== "config") return;
+    let cancelled = false;
+    setResumeError("");
+    getActiveMock(user.uid, level)
+      .then((active) => {
+        if (cancelled || !active) {
+          setResumePrompt(null);
+          return;
+        }
+        const answeredCountForActive = (active.answers || []).filter(
+          (value) => value !== null && value !== undefined
+        ).length;
+        setResumePrompt({
+          startedAt: active.startedAt,
+          timeSpentSeconds: active.timeSpentSeconds || 0,
+          answeredCount: answeredCountForActive,
+          totalQuestions: active.questions?.length || 0,
+        });
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setResumePrompt(null);
+        setResumeError(err instanceof Error ? err.message : "Failed to load active mock");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, level, state]);
+
+  useEffect(() => {
+    if (state !== "running") return;
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [state]);
+
+  useEffect(() => {
+    if (state !== "running") return;
+    const handler = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest("a");
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      const href = anchor.getAttribute("href") || "";
+      if (!href || href.startsWith("#") || href.startsWith("/simulado")) return;
+      if (anchor.target === "_blank") return;
+      const ok = window.confirm(
+        "You are in the middle of a mock exam. Your progress is auto-saved, but are you sure you want to leave this page?"
+      );
+      if (!ok) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, [state]);
 
   const currentQuestion = questions[currentIndex];
   const answeredCount = answers.filter((a) => a !== null).length;
   const progressPercent = questions.length > 0 ? (answeredCount / questions.length) * 100 : 0;
 
   const countdownSeconds = Math.ceil(questionCount * examFormat.secondsPerQuestion);
+
+  const startedAtRef = useRef<string>("");
+  const persistRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
+  useEffect(() => {
+    persistRef.current = async () => {
+      if (!user || questions.length === 0) return;
+      setSaveStatus("saving");
+      setSaveError("");
+      try {
+        await saveActiveMock(user.uid, {
+          level,
+          mode,
+          questions: questions.map((q) => ({
+            id: q.id,
+            topicId: q.topicId,
+            ...(q.moduleId ? { moduleId: q.moduleId } : {}),
+            question: q.question,
+            options: q.options,
+            correctIndex: q.correctIndex,
+            explanation: q.explanation,
+          })),
+          answers: answers.map((value) => (value === undefined ? null : value)),
+          currentIndex,
+          showAnswer,
+          timeSpentSeconds: timeSpent,
+          ...(initialCountdownRef.current != null
+            ? { countdownSecondsTotal: initialCountdownRef.current }
+            : {}),
+          discussions,
+          startedAt: startedAtRef.current || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        setSaveStatus("saved");
+        setLastSavedAt(new Date().toISOString());
+      } catch (err) {
+        console.error("Failed to save active mock:", err);
+        setSaveStatus("error");
+        setSaveError(err instanceof Error ? err.message : "Unknown save error");
+      }
+    };
+  });
+
+  useEffect(() => {
+    if (state !== "running") return;
+    if (!startedAtRef.current) {
+      startedAtRef.current = new Date().toISOString();
+    }
+    const tick = () => {
+      void persistRef.current();
+    };
+    tick();
+    const interval = window.setInterval(tick, 4000);
+    return () => window.clearInterval(interval);
+  }, [state]);
+
+  useEffect(() => {
+    if (state !== "running") return;
+    void persistRef.current();
+  }, [state, answers, currentIndex, showAnswer, discussions]);
 
   const handleToggleTopic = (topicId: string) => {
     setSelectedTopics((prev) => {
@@ -118,6 +268,10 @@ function SimuladoInner() {
     selectedTopics?: Set<string>;
     selectedModules?: Set<string>;
   }) => {
+    if (resumePrompt) {
+      window.alert("You have a mock exam in progress. Resume or discard it before starting a new one.");
+      return;
+    }
     const activeQuestionCount = overrides?.questionCount ?? questionCount;
     const activeSelectedTopics = overrides?.selectedTopics ?? selectedTopics;
     const activeSelectedModules = overrides?.selectedModules ?? selectedModules;
@@ -170,6 +324,12 @@ function SimuladoInner() {
       setShowAnswer(false);
       setTimeSpent(0);
       setChatOpen(false);
+      setDiscussions({});
+      initialCountdownRef.current = overrides?.mode === "official" || (!overrides?.mode && mode === "official")
+        ? Math.ceil(activeQuestionCount * examFormat.secondsPerQuestion)
+        : null;
+      startedAtRef.current = new Date().toISOString();
+      setResumePrompt(null);
       setState("running");
     } catch (err) {
       console.error("Question generation error:", err);
@@ -179,6 +339,10 @@ function SimuladoInner() {
   };
 
   const handleStartOfficialFull = () => {
+    if (resumePrompt) {
+      window.alert("You have a mock exam in progress. Resume or discard it before starting a new one.");
+      return;
+    }
     const allTopicIds = new Set(topics.map((t) => t.id));
     const allModuleIds = new Set<string>();
     topics.forEach((topic) => topic.modules.forEach((module) => allModuleIds.add(module.id)));
@@ -246,17 +410,24 @@ function SimuladoInner() {
       timeSpentSeconds: timeSpent,
       mode,
       level,
-      answers: questions.map((q, i) => ({
-        questionId: q.id,
-        topicId: q.topicId,
-        moduleId: q.moduleId,
-        question: q.question,
-        options: q.options,
-        explanation: q.explanation,
-        selectedIndex: answers[i] ?? -1,
-        correctIndex: q.correctIndex,
-        correct: answers[i] === q.correctIndex,
-      })),
+      answers: questions.map((q, i) => {
+        const discussion = discussions[q.id]?.map((message) => ({
+          role: message.role,
+          content: message.content || "",
+        }));
+        return {
+          questionId: q.id,
+          topicId: q.topicId,
+          ...(q.moduleId ? { moduleId: q.moduleId } : {}),
+          question: q.question || "",
+          options: q.options || [],
+          explanation: q.explanation || "",
+          selectedIndex: answers[i] ?? -1,
+          correctIndex: q.correctIndex,
+          correct: answers[i] === q.correctIndex,
+          ...(discussion && discussion.length > 0 ? { discussion } : {}),
+        };
+      }),
       topicBreakdown: Array.from(topicBreakdownMap.entries()).map(([topicId, data]) => ({
         topicId,
         topicName: data.topicName,
@@ -269,7 +440,19 @@ function SimuladoInner() {
       await saveQuizResult(user.uid, result);
     } catch (err) {
       console.error("Failed to save quiz result:", err);
+      window.alert(
+        "Could not save the mock result. Your answers are still on screen, but the History entry was not created."
+      );
     }
+
+    try {
+      await deleteActiveMock(user.uid, level);
+    } catch (err) {
+      console.error("Failed to clear active mock:", err);
+    }
+    setResumePrompt(null);
+    startedAtRef.current = "";
+    initialCountdownRef.current = null;
   };
 
   const handleTimeUp = useCallback(() => {
@@ -288,6 +471,62 @@ function SimuladoInner() {
     setTimeSpent(0);
     setChatOpen(false);
     setQuestions([]);
+    setDiscussions({});
+    startedAtRef.current = "";
+    initialCountdownRef.current = null;
+  };
+
+  const handleResumeActive = async () => {
+    if (!user) return;
+    setResuming(true);
+    try {
+      const active = await getActiveMock(user.uid, level);
+      if (!active) {
+        setResumePrompt(null);
+        return;
+      }
+      setMode(active.mode);
+      setQuestions(
+        active.questions.map((q) => ({
+          id: q.id,
+          topicId: q.topicId,
+          moduleId: q.moduleId,
+          question: q.question,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation,
+        }))
+      );
+      setAnswers(active.answers || new Array(active.questions.length).fill(null));
+      setCurrentIndex(active.currentIndex || 0);
+      setShowAnswer(active.showAnswer || false);
+      setTimeSpent(active.timeSpentSeconds || 0);
+      setDiscussions(active.discussions || {});
+      setQuestionCount(active.questions.length);
+      initialCountdownRef.current = active.countdownSecondsTotal ?? null;
+      startedAtRef.current = active.startedAt;
+      setResumePrompt(null);
+      setChatOpen(false);
+      setState("running");
+    } catch (err) {
+      console.error("Failed to resume active mock:", err);
+    } finally {
+      setResuming(false);
+    }
+  };
+
+  const handleDiscardActive = async () => {
+    if (!user) return;
+    const ok = window.confirm(
+      "Discard the in-progress mock? You will lose all answers and the discussion saved so far."
+    );
+    if (!ok) return;
+    try {
+      await deleteActiveMock(user.uid, level);
+    } catch (err) {
+      console.error("Failed to discard active mock:", err);
+    }
+    setResumePrompt(null);
   };
 
   // --- CONFIG ---
@@ -297,6 +536,45 @@ function SimuladoInner() {
         {loadingError && (
           <div className="mx-auto mb-4 max-w-2xl rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {loadingError}
+          </div>
+        )}
+        {resumePrompt && (
+          <div className="mx-auto mb-4 max-w-5xl rounded-2xl border border-primary/40 bg-primary/5 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold">Mock exam in progress</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {resumePrompt.answeredCount}/{resumePrompt.totalQuestions} answered ·{" "}
+                  {Math.round(resumePrompt.timeSpentSeconds / 60)}min spent · started{" "}
+                  {new Date(resumePrompt.startedAt).toLocaleString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDiscardActive}
+                  className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-accent"
+                >
+                  Discard
+                </button>
+                <button
+                  onClick={handleResumeActive}
+                  disabled={resuming}
+                  className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {resuming ? "Resuming..." : "Resume"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {resumeError && (
+          <div className="mx-auto mb-4 max-w-5xl rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-xs text-destructive">
+            Could not load active mock from Firebase: {resumeError}
           </div>
         )}
         <div className="mx-auto mb-5 flex max-w-5xl gap-2 rounded-xl border border-border bg-card p-1">
@@ -325,6 +603,14 @@ function SimuladoInner() {
               Sign in to see your mock exam history.
             </div>
           )
+        ) : resumePrompt ? (
+          <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-6 text-center">
+            <p className="text-sm font-semibold">Finish your in-progress mock first</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              You can only run one mock exam at a time. Resume the active mock or discard it
+              above to start a new one.
+            </p>
+          </div>
         ) : (
         <SimuladoConfig
           selectedTopics={selectedTopics}
@@ -363,10 +649,46 @@ function SimuladoInner() {
         questions={questions}
         answers={answers}
         totalTimeSeconds={timeSpent}
+        discussions={discussions}
         onRestart={handleRestart}
       />
     );
   }
+
+  const saveStatusPill = (() => {
+    if (saveStatus === "saving") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" /> Saving
+        </span>
+      );
+    }
+    if (saveStatus === "saved" && lastSavedAt) {
+      const seconds = Math.max(1, Math.round((Date.now() - new Date(lastSavedAt).getTime()) / 1000));
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-300">
+          Saved {seconds}s ago
+        </span>
+      );
+    }
+    if (saveStatus === "error") {
+      return (
+        <span
+          title={saveError || "Save failed"}
+          className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[10px] font-medium text-destructive"
+        >
+          Save failed
+        </span>
+      );
+    }
+    return null;
+  })();
+
+  const saveErrorBanner = saveStatus === "error" && saveError ? (
+    <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
+      Auto-save failed: {saveError}
+    </div>
+  ) : null;
 
   // --- RUNNING: OFFICIAL ---
   if (mode === "official") {
@@ -381,12 +703,14 @@ function SimuladoInner() {
               <Badge variant="outline" className="font-mono tabular-nums">
                 {answeredCount} answered
               </Badge>
+              {saveStatusPill}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <QuizTimer
                 isRunning
                 mode="countdown"
-                initialSeconds={countdownSeconds}
+                initialSeconds={initialCountdownRef.current ?? countdownSeconds}
+                startSeconds={timeSpent}
                 onTimeUp={handleTimeUp}
                 onTimeUpdate={handleTimeUpdate}
               />
@@ -415,6 +739,8 @@ function SimuladoInner() {
           </div>
           <Progress value={progressPercent} className="mt-3 h-2" />
         </div>
+
+        {saveErrorBanner}
 
         <div className="flex flex-wrap gap-1.5">
           {questions.map((_, i) => (
@@ -479,11 +805,19 @@ function SimuladoInner() {
       <div className="flex min-w-0 flex-col items-center gap-4">
         <div className="sticky top-0 z-20 w-full rounded-2xl border border-border bg-background/95 p-3 backdrop-blur">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Badge variant="secondary" className="font-mono tabular-nums">
-              {currentIndex + 1} / {questions.length}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="font-mono tabular-nums">
+                {currentIndex + 1} / {questions.length}
+              </Badge>
+              {saveStatusPill}
+            </div>
             <div className="flex flex-wrap items-center gap-2">
-              <QuizTimer isRunning mode="countup" onTimeUpdate={handleTimeUpdate} />
+              <QuizTimer
+                isRunning
+                mode="countup"
+                startSeconds={timeSpent}
+                onTimeUpdate={handleTimeUpdate}
+              />
               <button
                 onClick={() => setChatOpen(!chatOpen)}
                 className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
@@ -515,6 +849,8 @@ function SimuladoInner() {
           </div>
           <Progress value={((currentIndex + (showAnswer ? 1 : 0)) / questions.length) * 100} className="mt-3 h-2" />
         </div>
+
+        {saveErrorBanner}
 
         {currentQuestion && (
           <QuizCard
@@ -552,6 +888,10 @@ function SimuladoInner() {
           selectedIndex={answers[currentIndex]}
           isOpen={chatOpen}
           onClose={() => setChatOpen(false)}
+          messages={discussions[currentQuestion.id] ?? []}
+          onMessagesChange={(next) =>
+            setDiscussions((prev) => ({ ...prev, [currentQuestion.id]: next }))
+          }
         />
       )}
     </div>

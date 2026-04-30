@@ -64,6 +64,11 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
 
 // ─── Quiz Results ───────────────────────────────────────────────────────────
 
+export interface QuizDiscussionMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface QuizAnswer {
   questionId: string;
   topicId: string;
@@ -74,6 +79,7 @@ export interface QuizAnswer {
   selectedIndex: number;
   correctIndex: number;
   correct: boolean;
+  discussion?: QuizDiscussionMessage[];
 }
 
 export interface QuizResult {
@@ -90,24 +96,33 @@ export interface QuizResult {
 }
 
 export async function saveQuizResult(uid: string, result: QuizResult): Promise<string> {
-  const ref = await addDoc(collection(db, "users", uid, "quizResults"), {
+  const payload = {
     ...result,
     date: result.date || new Date().toISOString(),
-  });
-
-  await updateStudyStreak(uid);
-
-  return ref.id;
+  };
+  try {
+    const ref = await addDoc(collection(db, "users", uid, "quizResults"), payload);
+    await updateStudyStreak(uid);
+    return ref.id;
+  } catch (err) {
+    console.error("saveQuizResult failed", err);
+    throw err;
+  }
 }
 
 export async function getQuizHistory(uid: string, limitCount = 20): Promise<QuizResult[]> {
-  const q = query(
-    collection(db, "users", uid, "quizResults"),
-    orderBy("date", "desc"),
-    limit(limitCount)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as QuizResult));
+  try {
+    const q = query(
+      collection(db, "users", uid, "quizResults"),
+      orderBy("date", "desc"),
+      limit(limitCount)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as QuizResult));
+  } catch (err) {
+    console.error("getQuizHistory failed", err);
+    throw err;
+  }
 }
 
 export async function getWeeklyQuizStats(uid: string): Promise<{
@@ -169,6 +184,64 @@ export async function getTopicScores(uid: string, level: CFALevel): Promise<
     questionsAnswered: data.total,
     totalQuestions: data.total,
   }));
+}
+
+// ─── Active Mock Exam Checkpoint ────────────────────────────────────────────
+
+export interface ActiveMockQuestion {
+  id: string;
+  topicId: string;
+  moduleId?: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export interface ActiveMock {
+  level: CFALevel;
+  mode: "official" | "training";
+  questions: ActiveMockQuestion[];
+  answers: (number | null)[];
+  currentIndex: number;
+  showAnswer: boolean;
+  timeSpentSeconds: number;
+  countdownSecondsTotal?: number;
+  discussions: Record<string, QuizDiscussionMessage[]>;
+  startedAt: string;
+  updatedAt: string;
+}
+
+export async function saveActiveMock(uid: string, mock: ActiveMock): Promise<void> {
+  try {
+    await setDoc(doc(db, "users", uid, "activeMocks", mock.level), {
+      ...mock,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("saveActiveMock failed", err);
+    throw err;
+  }
+}
+
+export async function getActiveMock(uid: string, level: CFALevel): Promise<ActiveMock | null> {
+  try {
+    const snap = await getDoc(doc(db, "users", uid, "activeMocks", level));
+    if (!snap.exists()) return null;
+    return snap.data() as ActiveMock;
+  } catch (err) {
+    console.error("getActiveMock failed", err);
+    throw err;
+  }
+}
+
+export async function deleteActiveMock(uid: string, level: CFALevel): Promise<void> {
+  try {
+    await deleteDoc(doc(db, "users", uid, "activeMocks", level));
+  } catch (err) {
+    console.error("deleteActiveMock failed", err);
+    throw err;
+  }
 }
 
 // ─── Study Progress ─────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Clock, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -8,43 +8,56 @@ interface QuizTimerProps {
   isRunning: boolean;
   mode: "countdown" | "countup";
   initialSeconds?: number;
+  startSeconds?: number;
   onTimeUp?: () => void;
   onTimeUpdate?: (seconds: number) => void;
 }
 
 /**
- * Timer that counts up (training) or down (official).
- * @param isRunning - Whether the timer is active
- * @param mode - "countdown" for official mode, "countup" for training
- * @param initialSeconds - Starting seconds for countdown mode
- * @param onTimeUp - Callback when countdown reaches zero
- * @param onTimeUpdate - Callback each second with current elapsed/remaining
- * @returns Timer display component
+ * Timer that counts up (training) or down (official). When `startSeconds` is
+ * provided, the timer resumes from that point so an in-progress mock can be
+ * restored.
  */
-export function QuizTimer({ isRunning, mode, initialSeconds = 0, onTimeUp, onTimeUpdate }: QuizTimerProps) {
-  const [seconds, setSeconds] = useState(mode === "countdown" ? initialSeconds : 0);
+export function QuizTimer({
+  isRunning,
+  mode,
+  initialSeconds = 0,
+  startSeconds = 0,
+  onTimeUp,
+  onTimeUpdate,
+}: QuizTimerProps) {
+  const [seconds, setSeconds] = useState(() =>
+    mode === "countdown"
+      ? Math.max(0, initialSeconds - startSeconds)
+      : startSeconds
+  );
+  const timeUpFiredRef = useRef(false);
 
   useEffect(() => {
     if (!isRunning) return;
     const interval = setInterval(() => {
       setSeconds((prev) => {
         if (mode === "countdown") {
-          const next = prev - 1;
-          onTimeUpdate?.(initialSeconds - next);
-          if (next <= 0) {
-            onTimeUp?.();
-            clearInterval(interval);
-            return 0;
-          }
-          return next;
+          return Math.max(0, prev - 1);
         }
-        const next = prev + 1;
-        onTimeUpdate?.(next);
-        return next;
+        return prev + 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isRunning, mode, initialSeconds, onTimeUp, onTimeUpdate]);
+  }, [isRunning, mode]);
+
+  useEffect(() => {
+    if (mode === "countdown") {
+      const elapsed = Math.max(0, initialSeconds - seconds);
+      onTimeUpdate?.(elapsed);
+      if (seconds <= 0 && !timeUpFiredRef.current) {
+        timeUpFiredRef.current = true;
+        onTimeUp?.();
+      }
+    } else {
+      onTimeUpdate?.(seconds);
+    }
+  }, [seconds, mode, initialSeconds, onTimeUp, onTimeUpdate]);
 
   const displaySeconds = seconds;
   const minutes = Math.floor(Math.abs(displaySeconds) / 60);
