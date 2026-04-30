@@ -123,12 +123,12 @@ export function TopicList() {
       <CardHeader className="pb-3">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Performance by Topic</CardTitle>
-          <InfoHint text="Each topic and module has a state: Not started, In progress, Practiced, Strong, Mastered or Needs review. Hover any badge to see what triggered it." />
+          <InfoHint text="Each topic shows a label that tells you, in plain words, how well you know it. The label is more honest than a percentage because it also looks at how many questions you have answered." />
         </div>
         <p className="text-xs text-muted-foreground">
           {loading
-            ? "Loading mastery from your activity..."
-            : "States are based on accuracy and sample size. Mastered requires 12+ attempts and 80%+ accuracy with recent practice."}
+            ? "Loading your activity..."
+            : "Hover any label below to read what it means and what to do next."}
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {(["not_started", "in_progress", "practiced", "strong", "mastered", "needs_review"] as LosState[]).map(

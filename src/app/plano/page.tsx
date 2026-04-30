@@ -249,10 +249,10 @@ export default function PlanoPage() {
               <div>
                 <div className="flex items-center gap-1">
                   <p className="text-sm font-semibold">Availability this week</p>
-                  <InfoHint text="One-week override of your study schedule. Saving here only affects the current week — your default profile stays untouched." />
+                  <InfoHint text="If this week is different from your usual routine (less time, fewer days, a trip), change the values here. It only affects this week — your normal schedule stays the same." />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Adjust this week without changing your default profile schedule.
+                  Adjust the hours and days for this week only, without changing your default schedule.
                 </p>
               </div>
               <button

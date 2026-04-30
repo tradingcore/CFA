@@ -264,17 +264,17 @@ export function levelReadiness(
 export function getStateExplanation(state: LosState): string {
   switch (state) {
     case "not_started":
-      return "No questions answered yet. Practice once to start tracking this LOS.";
+      return "You have not answered any question on this yet. Do a quick practice set so we can start tracking how you are doing.";
     case "in_progress":
-      return "Fewer than 5 attempts. Sample is too small to draw conclusions, even at 100%.";
+      return "You have answered very few questions here. Even if you got them all right, it is too early to know if you really understand the topic. Keep practicing.";
     case "practiced":
-      return "5+ attempts but accuracy below 60%. Read the material before more questions.";
+      return "You have practiced this enough times, but you are getting most questions wrong. Go back to the material, study the concept, and only then drill questions again.";
     case "strong":
-      return "Solid accuracy (60%+). Keep practicing to push toward 80%+ and reach Mastered.";
+      return "You are doing well here. Most of your answers are correct. Keep practicing a bit more to lock the topic in and make it solid.";
     case "mastered":
-      return "12+ attempts at 80%+ accuracy with recent activity. Will need a refresh later.";
+      return "You really know this topic. You have answered enough questions, almost all correctly, and recently. We will remind you to revisit it later so you do not forget.";
     case "needs_review":
-      return "Spaced-repetition due date passed. Redo a couple of questions to refresh memory.";
+      return "It has been a while since you saw this topic and the brain forgets fast. Do a few questions now to refresh it before exam day.";
   }
 }
 

@@ -33,7 +33,7 @@ export function QuickStats() {
       icon: CheckCircle2,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
-      hint: "How many mock or training questions you answered between Monday and today.",
+      hint: "How many practice or mock questions you answered since Monday. A simple counter to see if you are putting in the reps.",
     },
     {
       label: "Accuracy this week",
@@ -41,7 +41,7 @@ export function QuickStats() {
       icon: Target,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
-      hint: "Correct ÷ answered for this week only. Good for trend; over a single week the sample is small.",
+      hint: "Of the questions you answered this week, how many you got right. Best looked at as a trend across several weeks.",
     },
     {
       label: "Topics with data",
@@ -49,7 +49,7 @@ export function QuickStats() {
       icon: BookOpen,
       color: "text-violet-500",
       bg: "bg-violet-500/10",
-      hint: "How many CFA topics already have at least one answered question. Drives how much of the curriculum your readiness reflects.",
+      hint: "How many of the CFA topics you have already practiced at least once. The more topics you cover, the more we can trust your readiness number.",
     },
     {
       label: "LOS due for review",
@@ -57,7 +57,7 @@ export function QuickStats() {
       icon: AlarmClock,
       color: "text-rose-500",
       bg: "bg-rose-500/10",
-      hint: "Learning Outcome Statements whose spaced-repetition date already passed. Refresh them before they decay further.",
+      hint: "Specific learning points (LOS) that you studied a while ago and the brain is starting to forget. Review them now and they will stick for the exam.",
     },
   ];
 

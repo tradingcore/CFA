@@ -90,24 +90,28 @@ export function ProgressRing() {
       <CardHeader className="pb-2">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Exam readiness</CardTitle>
-          <InfoHint text="Weighted average of accuracy across topics, using the official CFA exam weights. Topics without data do not enter the average — that is what Coverage measures." />
+          <InfoHint text="An estimate of how the real CFA exam would go for you today. Topics that count more in the real exam (like Ethics and FRA) also count more here." />
         </div>
         <p className="text-xs text-muted-foreground">
-          Weighted by official CFA topic weights. Coverage shows how much of the curriculum already has data.
+          The bigger the number, the closer you are to passing. Coverage tells you how much of the program we already have data on.
         </p>
       </CardHeader>
       <CardContent className="flex items-center justify-around pb-6">
         <CircularProgress
           value={readiness.readinessPct}
           label="Readiness"
-          sublabel={`${readiness.totalSampleSize} attempts · ${evidenceCoverage}% covered`}
-          hint={`Σ (accuracy × weight) ÷ Σ weight, only over topics with data. Today: ${readiness.totalSampleSize} attempts, ${evidenceCoverage}% of the curriculum measured.`}
+          sublabel={`${readiness.totalSampleSize} answers · ${evidenceCoverage}% of program covered`}
+          hint={
+            readiness.totalSampleSize === 0
+              ? "We do not have any answers yet. Take a mock so this number starts to mean something."
+              : `Right now we have ${readiness.totalSampleSize} answers covering ${evidenceCoverage}% of the program. The more topics you practice, the more reliable this number gets.`
+          }
         />
         <CircularProgress
           value={accuracy}
           label="Weekly accuracy"
           sublabel={`${stats.questionsAnswered} questions · ${stats.simuladosCompleted} mocks`}
-          hint="Correct ÷ answered for this week only. Treat as a trend signal — a single week can be noisy."
+          hint="How well you did on the questions you answered this week (Mon–Sun). Helpful to see the trend, but a single week can be noisy."
         />
       </CardContent>
     </Card>

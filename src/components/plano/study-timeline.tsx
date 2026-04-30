@@ -25,28 +25,28 @@ const typeConfig = {
     icon: BookOpen,
     color: "text-blue-500",
     bg: "bg-blue-500/10",
-    hint: "Read the module and take short notes. No grading; goal is to understand the concepts.",
+    hint: "Open the module and read it carefully. The goal here is to understand the content, not to get questions right.",
   },
   practice: {
     label: "Practice",
     icon: PenTool,
     color: "text-emerald-500",
     bg: "bg-emerald-500/10",
-    hint: "Drill questions on this module. Each answer updates your mastery for the targeted LOS.",
+    hint: "Solve questions on this subject. The more you practice, the more we learn about what you really know and what you still need to study.",
   },
   review: {
     label: "Review",
     icon: RefreshCw,
     color: "text-amber-500",
     bg: "bg-amber-500/10",
-    hint: "Refresh material that is fading. Triggered by spaced-repetition or older modules with low recency.",
+    hint: "Quickly go back to something you have studied a while ago to keep it fresh. Skim notes and do a few questions to check yourself.",
   },
   mock: {
     label: "Mock",
     icon: Trophy,
     color: "text-violet-500",
     bg: "bg-violet-500/10",
-    hint: "Simulate the exam: full-length, timed, no notes. Use this to track honest readiness.",
+    hint: "A full simulation of the real exam: timed, no help. The most honest way to check how prepared you really are.",
   },
 };
 
@@ -92,7 +92,7 @@ export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center gap-1">
           <CardTitle className="text-base">Weekly Plan</CardTitle>
-          <InfoHint text="Each block targets one module and (often) specific LOS. Block types: Reading (study), Practice (drill questions), Review (refresh) and Mock (full simulation)." />
+          <InfoHint text="Each card here is a study session. Hover the colored icon to see what you should do in that session: read, practice, review or take a mock." />
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -141,8 +141,8 @@ export function StudyTimeline({ blocks, onBlockToggle }: StudyTimelineProps) {
                           </div>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs text-left leading-relaxed">
-                          <span className="font-semibold">{config.label}</span>
-                          <span className="ml-1 text-background/80">— {config.hint}</span>
+                          <p className="font-semibold">{config.label}</p>
+                          <p className="mt-1 text-background/85">{config.hint}</p>
                         </TooltipContent>
                       </Tooltip>
                       <div className="flex-1 min-w-0">

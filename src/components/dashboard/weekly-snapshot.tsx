@@ -105,10 +105,10 @@ export function WeeklySnapshot() {
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarRange className="h-4 w-4 text-primary" />
           This week
-          <InfoHint text="We save a snapshot of your readiness once per week. The diff and movers compare this week vs. last week's snapshot." />
+          <InfoHint text="A photo of where you stand right now, compared to where you were last week. Helps you see if your studying is actually moving you forward." />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
-          Snapshot of readiness vs. last week. Saved automatically when you open the dashboard.
+          Compare your readiness with last week and see which topics improved and which need attention.
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -116,7 +116,7 @@ export function WeeklySnapshot() {
           <div>
             <div className="flex items-center gap-1">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Readiness</p>
-              <InfoHint text="Weighted average of your accuracy across CFA topics, using the official exam weights." />
+              <InfoHint text="An estimate of how the real exam would go for you today, with topics that count more on the real exam also weighing more here." />
             </div>
             <p className="text-2xl font-bold font-mono tabular-nums">
               {readiness.readinessPct}%

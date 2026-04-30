@@ -34,10 +34,10 @@ export function NextStudy() {
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           Recommended focus
-          <InfoHint text="We score each topic by (1 − accuracy) × CFA weight, plus a bonus for LOS due for review. Heavy + weak topics surface first." />
+          <InfoHint text="We pick the topics where putting time in will give you the biggest exam-day boost: things you struggle with that also count for a lot in the real exam, plus any topic you have not seen for too long." />
         </CardTitle>
         <p className="text-xs text-muted-foreground">
-          Combines low accuracy, due reviews and CFA topic weights. Topics with no data appear with a Practice link so you can build a baseline.
+          These are the topics most likely to move the needle on your exam result. Click Practice to drill them or Study to read the material.
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
