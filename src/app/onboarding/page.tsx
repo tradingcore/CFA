@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { updateUserProfile } from "@/lib/firestore";
 import { CFALevel } from "@/lib/cfa-topics";
+import { DEFAULT_STUDY_DAYS, StudyDay } from "@/lib/study-availability";
+import { StudyDaysSelector } from "@/components/study/study-days-selector";
 import { TrendingUp, ArrowRight, ArrowLeft, Loader2, GraduationCap, CalendarDays, Clock } from "lucide-react";
 
 const LEVELS: { value: CFALevel; label: string; desc: string }[] = [
@@ -20,6 +22,7 @@ export default function OnboardingPage() {
   const [level, setLevel] = useState<CFALevel>("I");
   const [examDate, setExamDate] = useState("2026-08-25");
   const [weeklyHours, setWeeklyHours] = useState(15);
+  const [studyDays, setStudyDays] = useState<StudyDay[]>(DEFAULT_STUDY_DAYS);
   const [saving, setSaving] = useState(false);
 
   const handleFinish = async () => {
@@ -30,6 +33,7 @@ export default function OnboardingPage() {
         cfaLevel: level,
         examDate,
         weeklyHoursGoal: weeklyHours,
+        studyDays,
         onboardingCompleted: true,
       });
       await refreshProfile();
@@ -138,6 +142,11 @@ export default function OnboardingPage() {
             <p className="text-xs text-muted-foreground">
               The CFA Institute recommends ~300 total study hours per level.
             </p>
+            <StudyDaysSelector
+              selectedDays={studyDays}
+              weeklyHours={weeklyHours}
+              onChange={setStudyDays}
+            />
           </div>
         )}
 
@@ -164,7 +173,7 @@ export default function OnboardingPage() {
           ) : (
             <button
               onClick={handleFinish}
-              disabled={saving}
+              disabled={saving || studyDays.length === 0}
               className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}

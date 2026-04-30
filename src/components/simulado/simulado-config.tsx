@@ -50,16 +50,16 @@ export function SimuladoConfig({
   const examFormat = EXAM_FORMAT[level];
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-5 py-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 py-6">
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">CFA Level {level} Mock Exam</h1>
-        <p className="max-w-md text-sm text-muted-foreground">
+        <p className="max-w-2xl text-sm text-muted-foreground">
           Configure topics, modules, question count, and exam mode.
         </p>
       </div>
 
       {/* Mode selection */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <button
           onClick={() => onSetMode("official")}
           className={cn(
@@ -145,7 +145,7 @@ export function SimuladoConfig({
             </button>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1">
+        <CardContent className="grid grid-cols-1 gap-2 lg:grid-cols-2">
           {topics.map((topic) => {
             const isSelected = selectedTopics.has(topic.id);
             const isExpanded = expandedTopic === topic.id;
@@ -157,15 +157,20 @@ export function SimuladoConfig({
                   <button
                     onClick={() => onToggleTopic(topic.id)}
                     className={cn(
-                      "flex flex-1 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-all",
+                      "flex flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition-all",
                       isSelected ? "border-primary/50 bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-primary/30"
                     )}
                   >
                     <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: topic.color }} />
-                    <span className="flex-1 text-left">{topic.shortName}</span>
-                    <Badge variant="secondary" className="text-[9px]">{topic.weightRange}</Badge>
+                    <span className="flex min-w-0 flex-1 flex-col text-left">
+                      <span className="truncate text-sm font-semibold">{topic.name}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {topic.shortName} · {topic.modules.length} modules
+                      </span>
+                    </span>
+                    <Badge variant="secondary" className="shrink-0 text-[9px]">{topic.weightRange}</Badge>
                     {isSelected && selectedModulesInTopic < topic.modules.length && (
-                      <Badge variant="outline" className="text-[9px]">{selectedModulesInTopic}/{topic.modules.length}</Badge>
+                      <Badge variant="outline" className="shrink-0 text-[9px]">{selectedModulesInTopic}/{topic.modules.length}</Badge>
                     )}
                   </button>
                   <button
@@ -185,12 +190,12 @@ export function SimuladoConfig({
                           key={mod.id}
                           onClick={() => onToggleModule(mod.id, topic.id)}
                           className={cn(
-                            "flex items-center gap-2 rounded px-2 py-1.5 text-xs text-left transition-colors",
+                            "flex items-start gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors",
                             modSelected ? "bg-primary/5 text-primary font-medium" : "text-muted-foreground hover:bg-accent/50"
                           )}
                         >
-                          {modSelected ? <CheckSquare className="h-3 w-3 shrink-0 text-primary" /> : <Square className="h-3 w-3 shrink-0" />}
-                          <span className="truncate">{mod.name}</span>
+                          {modSelected ? <CheckSquare className="mt-0.5 h-3 w-3 shrink-0 text-primary" /> : <Square className="mt-0.5 h-3 w-3 shrink-0" />}
+                          <span className="leading-relaxed">{mod.name}</span>
                         </button>
                       );
                     })}

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLevel } from "@/contexts/level-context";
 import { useStudyProgress } from "@/contexts/study-progress-context";
 import { getTopicsForLevel } from "@/lib/cfa-topics";
 import { TopicSelector } from "@/components/estudo/topic-selector";
 import { LOSSearch, LOSFilter } from "@/components/estudo/los-search";
 import { ModuleChecklist } from "@/components/estudo/module-checklist";
+import { ModuleNav } from "@/components/estudo/module-nav";
 import { GraduationCap } from "lucide-react";
 
 export default function EstudoPage() {
@@ -15,8 +16,10 @@ export default function EstudoPage() {
   const topics = getTopicsForLevel(level);
 
   const [activeTopic, setActiveTopic] = useState<string>(topics[0]?.id ?? "");
+  const [activeModuleId, setActiveModuleId] = useState<string | null>(topics[0]?.modules[0]?.id ?? null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<LOSFilter>("all");
+  const moduleRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const selectedTopic = topics.find((t) => t.id === activeTopic);
   const topicProgress = getTopicProgress(activeTopic, level);
@@ -24,8 +27,19 @@ export default function EstudoPage() {
     ? Math.round((topicProgress.studied / topicProgress.total) * 100)
     : 0;
 
+  const handleTopicSelect = (topicId: string) => {
+    const topic = topics.find((t) => t.id === topicId);
+    setActiveTopic(topicId);
+    setActiveModuleId(topic?.modules[0]?.id ?? null);
+  };
+
+  const handleSelectModule = (moduleId: string) => {
+    setActiveModuleId(moduleId);
+    moduleRefs.current[moduleId]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5">
+    <div className="mx-auto flex max-w-7xl flex-col gap-5">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
@@ -40,7 +54,7 @@ export default function EstudoPage() {
       </div>
 
       {/* Topic selector */}
-      <TopicSelector activeTopic={activeTopic} onSelect={setActiveTopic} />
+      <TopicSelector activeTopic={activeTopic} onSelect={handleTopicSelect} />
 
       {/* Active topic progress bar */}
       {selectedTopic && (
@@ -85,19 +99,33 @@ export default function EstudoPage() {
         onFilterChange={setFilter}
       />
 
-      {/* Modules list */}
       {selectedTopic && (
-        <div className="flex flex-col gap-3">
-          {selectedTopic.modules.map((mod, index) => (
-            <ModuleChecklist
-              key={mod.id}
-              module={mod}
-              topicId={selectedTopic.id}
-              searchQuery={searchQuery}
-              filter={filter}
-              defaultExpanded={index === 0 && !searchQuery}
-            />
-          ))}
+        <div className="flex gap-5">
+          <ModuleNav
+            modules={selectedTopic.modules}
+            activeModuleId={activeModuleId}
+            onSelectModule={handleSelectModule}
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            {selectedTopic.modules.map((mod, index) => (
+              <div
+                key={mod.id}
+                ref={(node) => {
+                  moduleRefs.current[mod.id] = node;
+                }}
+                className="scroll-mt-24"
+              >
+                <ModuleChecklist
+                  module={mod}
+                  topicId={selectedTopic.id}
+                  searchQuery={searchQuery}
+                  filter={filter}
+                  defaultExpanded={(activeModuleId === mod.id || index === 0) && !searchQuery}
+                  forceExpanded={activeModuleId === mod.id}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -60,6 +60,7 @@ export async function apiGenerateStudyPlan(params: {
   level: string;
   examDate: string;
   weeklyHours: number;
+  studyDays: string[];
   weakTopics: { topicId: string; topicName: string; score: number }[];
   topicsList: { topicId: string; topicName: string; weightRange: string }[];
 }): Promise<{ blocks: StudyPlanBlock[] }> {

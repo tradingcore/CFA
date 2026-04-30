@@ -15,6 +15,7 @@ interface ModuleChecklistProps {
   searchQuery: string;
   filter: LOSFilter;
   defaultExpanded?: boolean;
+  forceExpanded?: boolean;
 }
 
 /**
@@ -26,7 +27,7 @@ interface ModuleChecklistProps {
  * @param defaultExpanded - Whether to start expanded
  * @returns Module checklist card
  */
-export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultExpanded = false }: ModuleChecklistProps) {
+export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultExpanded = false, forceExpanded = false }: ModuleChecklistProps) {
   const { toggleLOS, isLOSStudied, getLOSDate, getModuleProgress } = useStudyProgress();
   const [expanded, setExpanded] = useState(defaultExpanded);
 
@@ -48,6 +49,7 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
   if (searchQuery && !hasSearchMatch) return null;
 
   const shouldAutoExpand = searchQuery.length > 0 && filteredLOS.length > 0;
+  const isOpen = expanded || shouldAutoExpand || forceExpanded;
 
   return (
     <Card className={cn(
@@ -60,7 +62,7 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
           className="flex w-full items-center gap-3 p-4 text-left"
         >
           <div className="flex h-7 w-7 items-center justify-center">
-            {expanded || shouldAutoExpand ? (
+            {isOpen ? (
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             ) : (
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -92,7 +94,7 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
         </button>
       </CardHeader>
 
-      {(expanded || shouldAutoExpand) && (
+      {isOpen && (
         <CardContent className="border-t border-border px-4 pb-4 pt-3">
           <div className="flex flex-col gap-1">
             {filteredLOS.map((item) => {

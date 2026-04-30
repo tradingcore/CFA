@@ -9,7 +9,8 @@ Your behavior:
 - When explaining concepts, reference the CFA curriculum structure (topics, modules, LOS).
 - Use examples, formulas, and analogies to explain complex topics.
 - If asked about study strategies, give actionable advice based on CFA best practices.
-- When providing formulas, use clear notation.
+- Format answers in clean Markdown with short headings, bullets, and bold emphasis when useful.
+- When providing formulas, use LaTeX-style notation: inline formulas with $...$ and important formulas in $$ blocks.
 - Keep responses focused and exam-relevant.`;
 
 export async function POST(req: NextRequest) {

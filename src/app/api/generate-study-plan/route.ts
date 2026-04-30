@@ -3,19 +3,22 @@ import { openai, MODEL } from "@/lib/openai-server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { level, examDate, weeklyHours, weakTopics, topicsList } = await req.json();
+    const { level, examDate, weeklyHours, studyDays, weakTopics, topicsList } = await req.json();
 
-    if (!level || !examDate || !weeklyHours || !topicsList?.length) {
-      return NextResponse.json({ error: "level, examDate, weeklyHours, and topicsList are required" }, { status: 400 });
+    if (!level || !examDate || !weeklyHours || !studyDays?.length || !topicsList?.length) {
+      return NextResponse.json({ error: "level, examDate, weeklyHours, studyDays, and topicsList are required" }, { status: 400 });
     }
 
     const currentDate = new Date().toISOString().split("T")[0];
+    const hoursPerStudyDay = Math.round((weeklyHours / studyDays.length) * 10) / 10;
 
     const prompt = `You are a CFA study plan generator. Create a detailed weekly study plan for a CFA Level ${level} candidate.
 
 Today: ${currentDate}
 Exam date: ${examDate}
 Weekly study hours: ${weeklyHours}
+Available study days: ${studyDays.join(", ")}
+Approximate target per study day: ${hoursPerStudyDay} hours
 
 Topics and weights:
 ${topicsList.map((t: { topicName: string; weightRange: string }) => `- ${t.topicName} (${t.weightRange})`).join("\n")}
@@ -26,6 +29,9 @@ Rules:
 - Prioritize weak and high-weight topics.
 - 3 block types: "reading", "practice", "review". Each 30-90 minutes.
 - Generate blocks for the next 14 days only.
+- Schedule study blocks ONLY on the available study days listed above.
+- Keep the total scheduled time near ${weeklyHours} hours per week.
+- Keep each study day near ${hoursPerStudyDay} hours total, split into multiple blocks if needed.
 - Balance variety — don't study the same topic all day.
 
 Return ONLY a raw JSON array (no markdown, no code fences):

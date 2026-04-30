@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { useLevel } from "@/contexts/level-context";
 import { updateUserProfile } from "@/lib/firestore";
 import { CFALevel } from "@/lib/cfa-topics";
+import { DEFAULT_STUDY_DAYS, normalizeStudyDays, StudyDay } from "@/lib/study-availability";
+import { StudyDaysSelector } from "@/components/study/study-days-selector";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import {
@@ -30,6 +32,9 @@ export default function PerfilPage() {
   const [cfaLevel, setCfaLevel] = useState<CFALevel>(profile?.cfaLevel || "I");
   const [examDate, setExamDate] = useState(profile?.examDate || "");
   const [weeklyHours, setWeeklyHours] = useState(profile?.weeklyHoursGoal || 15);
+  const [studyDays, setStudyDays] = useState<StudyDay[]>(
+    normalizeStudyDays(profile?.studyDays ?? DEFAULT_STUDY_DAYS)
+  );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -41,6 +46,7 @@ export default function PerfilPage() {
       setCfaLevel(profile.cfaLevel);
       setExamDate(profile.examDate);
       setWeeklyHours(profile.weeklyHoursGoal);
+      setStudyDays(normalizeStudyDays(profile.studyDays));
     }
   }, [profile]);
 
@@ -52,6 +58,7 @@ export default function PerfilPage() {
         cfaLevel,
         examDate,
         weeklyHoursGoal: weeklyHours,
+        studyDays,
       });
       setLevel(cfaLevel);
       await refreshProfile();
@@ -165,6 +172,12 @@ export default function PerfilPage() {
             />
           </div>
 
+          <StudyDaysSelector
+            selectedDays={studyDays}
+            weeklyHours={weeklyHours}
+            onChange={setStudyDays}
+          />
+
           {mounted && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Theme</label>
@@ -191,7 +204,7 @@ export default function PerfilPage() {
 
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || studyDays.length === 0}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {saving ? (

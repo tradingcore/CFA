@@ -15,6 +15,11 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { CFALevel } from "./cfa-topics";
+import {
+  DEFAULT_STUDY_DAYS,
+  StudyDay,
+  WeeklyStudyAvailabilityOverride,
+} from "./study-availability";
 
 // ─── User Profile ───────────────────────────────────────────────────────────
 
@@ -26,6 +31,8 @@ export interface UserProfile {
   cfaLevel: CFALevel;
   examDate: string;
   weeklyHoursGoal: number;
+  studyDays?: StudyDay[];
+  studyAvailabilityOverrides?: Record<string, WeeklyStudyAvailabilityOverride>;
   onboardingCompleted: boolean;
   studyStreak: number;
   lastStudyDate: string;
@@ -42,6 +49,8 @@ export async function createUserProfile(uid: string, data: Partial<UserProfile>)
     cfaLevel: "I",
     examDate: "",
     weeklyHoursGoal: 15,
+    studyDays: DEFAULT_STUDY_DAYS,
+    studyAvailabilityOverrides: {},
     onboardingCompleted: false,
     studyStreak: 0,
     lastStudyDate: "",
@@ -193,6 +202,8 @@ export interface StudyPlanDoc {
   }[];
   createdAt: string;
   level: CFALevel;
+  studyDays?: StudyDay[];
+  weeklyHoursGoal?: number;
 }
 
 export async function saveStudyPlan(uid: string, plan: StudyPlanDoc): Promise<string> {

@@ -10,8 +10,15 @@ import {
   saveStudyPlan,
   updateStudyPlanBlock,
   getTopicScores,
+  updateUserProfile,
   StudyPlanDoc,
 } from "@/lib/firestore";
+import { StudyDaysSelector } from "@/components/study/study-days-selector";
+import {
+  getWeekStartDate,
+  normalizeStudyDays,
+  StudyDay,
+} from "@/lib/study-availability";
 import { StudyCalendar } from "@/components/plano/study-calendar";
 import { StudyTimeline } from "@/components/plano/study-timeline";
 import { GoalTracker } from "@/components/plano/goal-tracker";
@@ -25,6 +32,10 @@ export default function PlanoPage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [completedBlocks, setCompletedBlocks] = useState(0);
+  const [weeklyHours, setWeeklyHours] = useState(profile?.weeklyHoursGoal || 15);
+  const [studyDays, setStudyDays] = useState<StudyDay[]>(normalizeStudyDays(profile?.studyDays));
+
+  const weekStart = getWeekStartDate();
 
   useEffect(() => {
     if (user) {
@@ -41,6 +52,26 @@ export default function PlanoPage() {
     }
   }, [user, level]);
 
+  useEffect(() => {
+    if (!profile) return;
+    const weeklyOverride = profile.studyAvailabilityOverrides?.[weekStart];
+    setWeeklyHours(weeklyOverride?.weeklyHoursGoal ?? profile.weeklyHoursGoal);
+    setStudyDays(normalizeStudyDays(weeklyOverride?.studyDays ?? profile.studyDays));
+  }, [profile, weekStart]);
+
+  const handleSaveAvailability = async () => {
+    if (!user || !profile || studyDays.length === 0) return;
+    await updateUserProfile(user.uid, {
+      studyAvailabilityOverrides: {
+        ...(profile.studyAvailabilityOverrides || {}),
+        [weekStart]: {
+          studyDays,
+          weeklyHoursGoal: weeklyHours,
+        },
+      },
+    });
+  };
+
   const handleGenerate = async () => {
     if (!user || !profile) return;
     setGenerating(true);
@@ -55,7 +86,8 @@ export default function PlanoPage() {
       const { blocks } = await apiGenerateStudyPlan({
         level,
         examDate: profile.examDate,
-        weeklyHours: profile.weeklyHoursGoal,
+        weeklyHours,
+        studyDays,
         weakTopics,
         topicsList: topics.map((t) => ({ topicId: t.id, topicName: t.name, weightRange: t.weightRange })),
       });
@@ -73,6 +105,8 @@ export default function PlanoPage() {
         })),
         createdAt: new Date().toISOString(),
         level,
+        studyDays,
+        weeklyHoursGoal: weeklyHours,
       };
 
       const planId = await saveStudyPlan(user.uid, newPlan);
@@ -113,7 +147,7 @@ export default function PlanoPage() {
 
         <button
           onClick={handleGenerate}
-          disabled={generating}
+          disabled={generating || studyDays.length === 0}
           className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl disabled:opacity-50"
         >
           {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -129,6 +163,43 @@ export default function PlanoPage() {
             &quot;Generate Plan with AI&quot; to create a personalized plan based on your mock exam
             performance and the areas that need more attention.
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="space-y-4 p-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold">Availability this week</p>
+              <p className="text-xs text-muted-foreground">
+                Adjust this week without changing your default profile schedule.
+              </p>
+            </div>
+            <button
+              onClick={handleSaveAvailability}
+              disabled={studyDays.length === 0}
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-40"
+            >
+              Save week override
+            </button>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Weekly hours: {weeklyHours}h</label>
+            <input
+              type="range"
+              min={5}
+              max={40}
+              value={weeklyHours}
+              onChange={(e) => setWeeklyHours(Number(e.target.value))}
+              className="w-full accent-primary"
+            />
+          </div>
+          <StudyDaysSelector
+            selectedDays={studyDays}
+            weeklyHours={weeklyHours}
+            onChange={setStudyDays}
+            compact
+          />
         </CardContent>
       </Card>
 

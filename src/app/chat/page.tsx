@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Sparkles, ImagePlus, X, Plus, MessageCircle, Trash2, Loader2 } from "lucide-react";
+import { Send, Sparkles, X, Plus, MessageCircle, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 import { useLevel } from "@/contexts/level-context";
 import { apiChat } from "@/lib/api";
+import { MarkdownMessage } from "@/components/chat/markdown-message";
 import {
   saveChatSession,
   getChatSessions,
@@ -151,7 +152,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="mx-auto flex h-full max-w-4xl">
+    <div className="mx-auto flex h-full w-full max-w-7xl">
       {/* Sessions sidebar */}
       {showSidebar && (
         <div className="w-64 shrink-0 border-r border-border bg-card overflow-y-auto">
@@ -209,7 +210,7 @@ export default function ChatPage() {
             </div>
           )}
 
-          <div className="flex flex-col gap-6 px-2 sm:px-4">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-2 sm:px-6">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -234,13 +235,19 @@ export default function ChatPage() {
                 </div>
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                    "rounded-2xl px-4 py-3 text-sm leading-relaxed",
                     msg.role === "user"
-                      ? "rounded-tr-md bg-primary text-primary-foreground"
-                      : "rounded-tl-md bg-card border border-border"
+                      ? "max-w-[78%] rounded-tr-md bg-primary text-primary-foreground"
+                      : "w-full max-w-4xl rounded-tl-md border border-border bg-card"
                   )}
                 >
-                  {msg.content && <p className="whitespace-pre-wrap">{msg.content}</p>}
+                  {msg.content && (
+                    msg.role === "assistant" ? (
+                      <MarkdownMessage content={msg.content} />
+                    ) : (
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    )
+                  )}
                 </div>
               </div>
             ))}
@@ -266,7 +273,7 @@ export default function ChatPage() {
 
         {/* Input area */}
         <div className="sticky bottom-0 border-t border-border bg-background px-2 py-4 sm:px-4">
-          <form onSubmit={handleSubmit} className="relative flex items-end gap-2">
+          <form onSubmit={handleSubmit} className="relative mx-auto flex max-w-5xl items-end gap-2">
             <button
               type="button"
               onClick={() => setShowSidebar(!showSidebar)}
