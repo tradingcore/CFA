@@ -1,32 +1,3 @@
-import { auth } from "./firebase";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-async function getAuthToken(): Promise<string> {
-  const user = auth.currentUser;
-  if (!user) throw new Error("Not authenticated");
-  return user.getIdToken();
-}
-
-async function apiFetch<T>(path: string, body: Record<string, unknown>): Promise<T> {
-  const token = await getAuthToken();
-  const res = await fetch(`${API_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || `API error: ${res.status}`);
-  }
-
-  return res.json();
-}
-
 export interface GeneratedQuestion {
   id: string;
   topicId: string;
@@ -46,6 +17,21 @@ export interface StudyPlanBlock {
   type: "reading" | "practice" | "review";
   completed: boolean;
   description: string;
+}
+
+async function apiFetch<T>(path: string, body: Record<string, unknown>): Promise<T> {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `API error: ${res.status}`);
+  }
+
+  return res.json();
 }
 
 export async function apiChat(params: {
