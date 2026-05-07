@@ -3,6 +3,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { cn } from "@/lib/utils";
+import { ChartRenderer, parseChartSpec } from "@/components/chat/chart-renderer";
 import "katex/dist/katex.min.css";
 
 interface MarkdownMessageProps {
@@ -17,11 +18,8 @@ interface MarkdownMessageProps {
  */
 function normalizeMathDelimiters(text: string): string {
   let result = text;
-  // \[...\] → $$...$$
   result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => `$$${math}$$`);
-  // \(...\) → $...$
   result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => `$${math}$`);
-  // Bare [ ... ] containing LaTeX commands (e.g. \text, \times, \frac)
   result = result.replace(/\[\s*((?:[^[\]]*\\(?:text|times|frac|sqrt|cdot|sum|int|left|right|displaystyle|begin|end|mathrm|mathbf)[^[\]]*?))\s*\]/g,
     (_, math) => `$$${math}$$`
   );
@@ -55,11 +53,24 @@ export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
               <code className={className}>{children}</code>
             );
           },
-          pre: ({ children }) => (
-            <pre className="my-3 overflow-x-auto rounded-xl border border-border bg-muted/60 p-4 text-xs">
-              {children}
-            </pre>
-          ),
+          pre: ({ children }) => {
+            const codeEl = children as React.ReactElement<{ className?: string; children?: string }>;
+            const codeText = typeof codeEl?.props?.children === "string" ? codeEl.props.children : "";
+            const lang = codeEl?.props?.className || "";
+
+            if (lang.includes("chart") || lang.includes("json")) {
+              const spec = parseChartSpec(codeText.trim());
+              if (spec) {
+                return <ChartRenderer spec={spec} />;
+              }
+            }
+
+            return (
+              <pre className="my-3 overflow-x-auto rounded-xl border border-border bg-muted/60 p-4 text-xs">
+                {children}
+              </pre>
+            );
+          },
         }}
       >
         {normalized}
