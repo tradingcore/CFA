@@ -9,6 +9,7 @@ import { StudyProgressProvider } from "@/contexts/study-progress-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { AppShell } from "@/components/layout/app-shell";
+import { PageTracker } from "@/components/analytics/page-tracker";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -44,6 +45,7 @@ export default function RootLayout({
                 <StudyProgressProvider>
                   <SidebarProvider>
                     <ProtectedRoute>
+                      <PageTracker />
                       <AppShell>
                         {children}
                       </AppShell>
