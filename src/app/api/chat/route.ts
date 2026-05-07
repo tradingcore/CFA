@@ -28,6 +28,12 @@ Users may ask in any language. Always respond in English. Judge by CONTENT, not 
 
 Only refuse questions OBVIOUSLY unrelated — like cooking recipes or movie reviews.
 
+CRITICAL ANTI-REFUSAL RULES:
+- If the user message is short or vague (e.g. "explain this", "I don't understand", "help"), ALWAYS answer based on the topic context provided. Short messages are NOT off-topic.
+- If topicContext contains a CFA question, the user is ALWAYS asking about that question. Answer it.
+- Messages in Portuguese, Spanish, or any language are ALWAYS valid. "Me explica" = "Explain to me" = valid CFA question.
+- NEVER output the refusal phrase "I'm focused on helping you prepare" when topicContext is present. The user IS asking about CFA content.
+
 Principles:
 - Cite the LOS number when the topic maps to a specific Learning Outcome Statement.
 - Show relevant formulas in LaTeX ($$...$$ for block, $...$ for inline) before calculations.
@@ -77,7 +83,12 @@ When acting as tutor in chat mode:
           .map((attachment) => `File: ${attachment.name}\n${attachment.textContent}`)
           .join("\n\n")}`
       : "";
-    const userText = `${message}${fileContext}`;
+
+    let userText = message;
+    if (topicContext && message.length < 80) {
+      userText = `[The student is asking about the CFA practice question shown in context. Their message: "${message}". Please answer their question about this CFA topic.]`;
+    }
+    userText = `${userText}${fileContext}`;
 
     if (imageAttachments.length > 0) {
       messages.push({
