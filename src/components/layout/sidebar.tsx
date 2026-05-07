@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatSession, getChatSessions, deleteChatSession } from "@/lib/firestore";
+import { useSubscription } from "@/hooks/use-subscription";
+import { FREE_LIMITS } from "@/lib/usage-limits";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -36,7 +38,15 @@ export function Sidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { user, profile } = useAuth();
+  const { isSubscribed: isSub, remainingChat, remainingQuiz } = useSubscription();
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+
+  const getBadge = (href: string): string | null => {
+    if (isSub) return null;
+    if (href === "/simulado") return `${Math.min(remainingQuiz, FREE_LIMITS.quizQuestions)}/${FREE_LIMITS.quizQuestions}`;
+    if (href.startsWith("/chat")) return `${Math.min(remainingChat, FREE_LIMITS.chatMessages)}/${FREE_LIMITS.chatMessages}`;
+    return null;
+  };
 
 
   const loadChatSessions = useCallback(() => {
@@ -91,7 +101,24 @@ export function Sidebar() {
                   )}
                 />
               </div>
-              {(!collapsed || mobileOpen) && <span>{item.label}</span>}
+              {(!collapsed || mobileOpen) && (
+                <span className="flex flex-1 items-center justify-between">
+                  <span>{item.label}</span>
+                  {(() => {
+                    const badge = getBadge(item.href);
+                    if (!badge) return null;
+                    const isLow = badge.startsWith("0") || badge.startsWith("1/");
+                    return (
+                      <span className={cn(
+                        "rounded-full px-1.5 py-0.5 text-[9px] font-mono font-semibold",
+                        isLow ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"
+                      )}>
+                        {badge}
+                      </span>
+                    );
+                  })()}
+                </span>
+              )}
             </Link>
           );
 

@@ -28,6 +28,11 @@ import {
 
 // ─── User Profile ───────────────────────────────────────────────────────────
 
+export interface FreeUsage {
+  chatMessages: number;
+  quizQuestions: number;
+}
+
 export interface UserProfile {
   email: string;
   displayName: string;
@@ -43,6 +48,11 @@ export interface UserProfile {
   lastStudyDate: string;
   losStatsBuiltAt?: Partial<Record<CFALevel, string>>;
   notes?: string;
+  stripeCustomerId?: string;
+  subscriptionStatus?: "trialing" | "active" | "past_due" | "cancelled" | "none";
+  subscriptionId?: string;
+  currentPeriodEnd?: string;
+  freeUsage?: FreeUsage;
 }
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
@@ -550,4 +560,37 @@ async function updateStudyStreak(uid: string): Promise<void> {
     studyStreak: newStreak,
     lastStudyDate: today,
   });
+}
+
+// ─── Free Usage Tracking ─────────────────────────────────────────────────────
+
+/**
+ * Increments the chat message counter for a free user.
+ * @param uid - Firebase user ID
+ */
+export async function incrementChatUsage(uid: string): Promise<void> {
+  const profile = await getUserProfile(uid);
+  const current = profile?.freeUsage?.chatMessages ?? 0;
+  await updateUserProfile(uid, {
+    freeUsage: {
+      chatMessages: current + 1,
+      quizQuestions: profile?.freeUsage?.quizQuestions ?? 0,
+    },
+  } as Partial<UserProfile>);
+}
+
+/**
+ * Increments the quiz question counter for a free user.
+ * @param uid - Firebase user ID
+ * @param count - Number of questions to add
+ */
+export async function incrementQuizUsage(uid: string, count: number): Promise<void> {
+  const profile = await getUserProfile(uid);
+  const current = profile?.freeUsage?.quizQuestions ?? 0;
+  await updateUserProfile(uid, {
+    freeUsage: {
+      chatMessages: profile?.freeUsage?.chatMessages ?? 0,
+      quizQuestions: current + count,
+    },
+  } as Partial<UserProfile>);
 }

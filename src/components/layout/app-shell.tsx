@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 
-const NO_SHELL_PATHS = ["/", "/login", "/registro", "/onboarding"];
+const NO_SHELL_PATHS = ["/", "/login", "/registro", "/onboarding", "/pricing"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();

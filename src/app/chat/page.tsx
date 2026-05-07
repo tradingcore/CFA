@@ -12,10 +12,14 @@ import {
   saveChatSession,
   getChatSessions,
   getChatSession,
+  incrementChatUsage,
   ChatAttachment,
   ChatSession,
   ChatMessage,
 } from "@/lib/firestore";
+import { useSubscription } from "@/hooks/use-subscription";
+import { UpgradeWall, UsageCounter } from "@/components/layout/upgrade-wall";
+import { FREE_LIMITS } from "@/lib/usage-limits";
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
@@ -76,6 +80,7 @@ async function readTextFile(file: File): Promise<string> {
 export default function ChatPage() {
   const { user } = useAuth();
   const { level } = useLevel();
+  const { canChat, remainingChat, isSubscribed: isSub } = useSubscription();
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
@@ -176,6 +181,11 @@ export default function ChatPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!input.trim() && attachments.length === 0) || isTyping) return;
+    if (!canChat) return;
+
+    if (!isSub && user) {
+      await incrementChatUsage(user.uid);
+    }
 
     const query = input.trim() || "Please analyze the attached image for CFA-relevant content.";
 
@@ -639,9 +649,26 @@ export default function ChatPage() {
               {attachmentError || voiceError}
             </p>
           )}
-          <p className="mt-2 text-center text-[10px] text-muted-foreground">
-            AI-generated answers — may contain inaccuracies.
-          </p>
+          {!canChat ? (
+            <div className="mt-4">
+              <UpgradeWall
+                title="Limite de mensagens atingido"
+                description="Assine para ter conversas ilimitadas com a IA e tirar todas as suas dúvidas sobre o CFA."
+                usedCount={FREE_LIMITS.chatMessages}
+                limitCount={FREE_LIMITS.chatMessages}
+                unit="mensagens"
+              />
+            </div>
+          ) : (
+            <>
+              <div className="mt-2 flex items-center justify-center gap-2">
+                <p className="text-[10px] text-muted-foreground">
+                  AI-generated answers — may contain inaccuracies.
+                </p>
+                <UsageCounter remaining={remainingChat} total={FREE_LIMITS.chatMessages} unit="msgs" />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -23,6 +23,10 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, ArrowLeft, MessageCircle, Send, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useSubscription } from "@/hooks/use-subscription";
+import { UpgradeWall, UsageCounter } from "@/components/layout/upgrade-wall";
+import { FREE_LIMITS } from "@/lib/usage-limits";
+import { incrementQuizUsage } from "@/lib/firestore";
 
 type QuizState = "config" | "loading" | "running" | "finished";
 type ConfigTab = "start" | "history";
@@ -30,6 +34,7 @@ type ConfigTab = "start" | "history";
 function SimuladoInner() {
   const { level } = useLevel();
   const { user } = useAuth();
+  const { canQuiz, remainingQuiz, isSubscribed: isSub } = useSubscription();
   const searchParams = useSearchParams();
   const topics = getTopicsForLevel(level);
   const examFormat = EXAM_FORMAT[level];
@@ -453,6 +458,9 @@ function SimuladoInner() {
 
     try {
       await saveQuizResult(user.uid, result);
+      if (!isSub) {
+        await incrementQuizUsage(user.uid, questions.length);
+      }
     } catch (err) {
       console.error("Failed to save quiz result:", err);
       window.alert(
@@ -628,20 +636,38 @@ function SimuladoInner() {
             </p>
           </div>
         ) : (
-        <SimuladoConfig
-          selectedTopics={selectedTopics}
-          selectedModules={selectedModules}
-          onToggleTopic={handleToggleTopic}
-          onToggleModule={handleToggleModule}
-          onToggleAll={handleToggleAll}
-          questionCount={questionCount}
-          onSetCount={setQuestionCount}
-          mode={mode}
-          onSetMode={setMode}
-          onStart={handleStart}
-          onStartOfficialFull={handleStartOfficialFull}
-          availableQuestionCount={questionCount}
-        />
+        <>
+          {!canQuiz && (
+            <div className="mx-auto mb-6 max-w-2xl">
+              <UpgradeWall
+                title="Limite de questões atingido"
+                description="Assine para ter simulados ilimitados com questões geradas por IA e condições reais da prova."
+                usedCount={FREE_LIMITS.quizQuestions}
+                limitCount={FREE_LIMITS.quizQuestions}
+                unit="questões"
+              />
+            </div>
+          )}
+          {canQuiz && !isSub && (
+            <div className="mx-auto mb-3 flex max-w-2xl justify-end">
+              <UsageCounter remaining={remainingQuiz} total={FREE_LIMITS.quizQuestions} unit="questões" />
+            </div>
+          )}
+          <SimuladoConfig
+            selectedTopics={selectedTopics}
+            selectedModules={selectedModules}
+            onToggleTopic={handleToggleTopic}
+            onToggleModule={handleToggleModule}
+            onToggleAll={handleToggleAll}
+            questionCount={questionCount}
+            onSetCount={setQuestionCount}
+            mode={mode}
+            onSetMode={setMode}
+            onStart={canQuiz ? handleStart : () => {}}
+            onStartOfficialFull={canQuiz ? handleStartOfficialFull : () => {}}
+            availableQuestionCount={questionCount}
+          />
+        </>
         )}
       </>
     );

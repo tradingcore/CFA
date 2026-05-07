@@ -4,7 +4,8 @@ import { useLevel } from "@/contexts/level-context";
 import { useAuth } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { CFALevel } from "@/lib/cfa-topics";
-import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle } from "lucide-react";
+import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles } from "lucide-react";
+import { useSubscription } from "@/hooks/use-subscription";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import {
@@ -23,6 +24,7 @@ export function Header() {
   const { level, setLevel } = useLevel();
   const { user, profile, signOut } = useAuth();
   const { setMobileOpen } = useSidebar();
+  const { isSubscribed: isSub } = useSubscription();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -87,6 +89,21 @@ export function Header() {
       </DropdownMenu>
 
       <div className="flex items-center gap-2 sm:gap-3">
+        {!isSub && user && (
+          <Link
+            href="/pricing"
+            className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-primary to-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition-all hover:opacity-90 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Upgrade</span>
+            <span className="sm:hidden">Pro</span>
+          </Link>
+        )}
+        {isSub && (
+          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary">
+            PRO
+          </span>
+        )}
         <Link
           href="/help"
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary transition-colors hover:bg-accent"
