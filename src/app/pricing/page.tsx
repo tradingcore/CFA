@@ -155,7 +155,7 @@ export default function PricingPage() {
           loadingPriceId={loadingPriceId}
         />
         <PlanCard
-          name="Semestral"
+          name="6-Month"
           price="$250"
           period="6 months"
           priceId={YEARLY_PRICE_ID}
