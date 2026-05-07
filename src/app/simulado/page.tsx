@@ -58,7 +58,8 @@ function SimuladoInner() {
     topics.filter(t => activeTids.includes(t.id)).forEach(t => t.modules.forEach(m => allMods.add(m.id)));
     return allMods;
   });
-  const [questionCount, setQuestionCount] = useState(10);
+  const freeMaxQuestions = FREE_LIMITS.quizQuestions;
+  const [questionCount, setQuestionCount] = useState(isSub ? 10 : freeMaxQuestions);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -691,7 +692,7 @@ function SimuladoInner() {
             onToggleModule={handleToggleModule}
             onToggleAll={handleToggleAll}
             questionCount={questionCount}
-            onSetCount={setQuestionCount}
+            onSetCount={(n) => setQuestionCount(isSub ? n : Math.min(n, freeMaxQuestions))}
             mode={mode}
             onSetMode={setMode}
             onStart={canQuiz ? handleStart : () => {}}
