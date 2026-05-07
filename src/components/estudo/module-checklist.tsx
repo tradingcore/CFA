@@ -145,7 +145,7 @@ export function ModuleChecklist({ module, topicId, searchQuery, filter, defaultE
 
           <div className="mt-3 flex items-center justify-end">
             <Link
-              href={`/simulado?topic=${topicId}`}
+              href={`/mock-exam?topic=${topicId}`}
               className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <Play className="h-3 w-3" />

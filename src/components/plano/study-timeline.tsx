@@ -241,7 +241,7 @@ export function StudyTimeline({ blocks, dailyBudgetMin = 120, onBlockToggle, onR
                     practiceParams.set("topic", block.topicId);
                     if (block.moduleId) practiceParams.set("module", block.moduleId);
                   }
-                  const practiceLink = `/simulado?${practiceParams.toString()}`;
+                  const practiceLink = `/mock-exam?${practiceParams.toString()}`;
 
                   const moduleLabel = block.moduleId ? resolvedModule(block.moduleId) : null;
                   const topicLabel = resolvedTopic(block.topicId);

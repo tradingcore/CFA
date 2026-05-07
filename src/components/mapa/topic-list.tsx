@@ -223,7 +223,7 @@ export function TopicList() {
                   </div>
                 </button>
                 <Link
-                  href={`/simulado?topic=${topic.topicId}`}
+                  href={`/mock-exam?topic=${topic.topicId}`}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-primary/5 text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
                   title="Practice"
                 >

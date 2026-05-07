@@ -136,7 +136,7 @@ export function NextStudy() {
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Link href={`/simulado?topic=${topic.topicId}`}>
+                <Link href={`/mock-exam?topic=${topic.topicId}`}>
                   <Badge
                     variant="secondary"
                     className="cursor-pointer gap-1 text-[10px] transition-colors hover:bg-primary hover:text-primary-foreground"
