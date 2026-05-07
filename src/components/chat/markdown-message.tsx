@@ -10,12 +10,32 @@ interface MarkdownMessageProps {
   className?: string;
 }
 
+/**
+ * Normalizes LaTeX delimiters so remarkMath/rehypeKatex can render them.
+ * Converts \[...\] to $$...$$ and \(...\) to $...$, and also
+ * bare [ ... ] blocks that contain LaTeX commands.
+ */
+function normalizeMathDelimiters(text: string): string {
+  let result = text;
+  // \[...\] → $$...$$
+  result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => `$$${math}$$`);
+  // \(...\) → $...$
+  result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => `$${math}$`);
+  // Bare [ ... ] containing LaTeX commands (e.g. \text, \times, \frac)
+  result = result.replace(/\[\s*((?:[^[\]]*\\(?:text|times|frac|sqrt|cdot|sum|int|left|right|displaystyle|begin|end|mathrm|mathbf)[^[\]]*?))\s*\]/g,
+    (_, math) => `$$${math}$$`
+  );
+  return result;
+}
+
 export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
+  const normalized = normalizeMathDelimiters(content);
+
   return (
     <div className={cn("markdown-cfa text-sm leading-relaxed text-foreground", className)}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: true }]]}
+        rehypePlugins={[[rehypeKatex, { strict: false, throwOnError: false }]]}
         components={{
           h1: ({ children }) => <h1 className="mb-2 mt-4 text-lg font-bold">{children}</h1>,
           h2: ({ children }) => <h2 className="mb-2 mt-4 text-base font-semibold">{children}</h2>,
@@ -42,7 +62,7 @@ export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
           ),
         }}
       >
-        {content}
+        {normalized}
       </ReactMarkdown>
     </div>
   );
