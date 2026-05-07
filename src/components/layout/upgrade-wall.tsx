@@ -1,7 +1,18 @@
 "use client";
 
-import { Lock, Sparkles, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Lock, Sparkles, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
+
+function getTimeUntilMidnight(): string {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diff = midnight.getTime() - now.getTime();
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  return `${hours}h ${minutes}m`;
+}
 
 interface UpgradeWallProps {
   title: string;
@@ -11,17 +22,14 @@ interface UpgradeWallProps {
   unit: string;
 }
 
-/**
- * Inline upgrade prompt shown when a free user hits their usage limit.
- * Designed to be inviting rather than blocking - shows what the user gains.
- * @param title - Headline (e.g. "Limite de mensagens atingido")
- * @param description - Supporting text
- * @param usedCount - How many the user used
- * @param limitCount - The free limit
- * @param unit - Unit label (e.g. "mensagens", "questões")
- * @returns Upgrade wall component
- */
 export function UpgradeWall({ title, description, usedCount, limitCount, unit }: UpgradeWallProps) {
+  const [timeLeft, setTimeLeft] = useState(getTimeUntilMidnight());
+
+  useEffect(() => {
+    const interval = setInterval(() => setTimeLeft(getTimeUntilMidnight()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col items-center gap-5 rounded-2xl border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent p-8 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
@@ -33,9 +41,13 @@ export function UpgradeWall({ title, description, usedCount, limitCount, unit }:
         <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <div className="flex items-center gap-2 rounded-full bg-muted px-4 py-1.5">
-        <span className="text-xs font-medium text-muted-foreground">
-          {usedCount}/{limitCount} {unit} usadas
+      <div className="flex items-center gap-3">
+        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-4 py-1.5 text-xs font-medium text-muted-foreground">
+          {usedCount}/{limitCount} {unit} used
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+          <Clock className="h-3 w-3" />
+          Resets in {timeLeft}
         </span>
       </div>
 
@@ -45,24 +57,17 @@ export function UpgradeWall({ title, description, usedCount, limitCount, unit }:
           className="flex items-center gap-2 rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
         >
           <Sparkles className="h-4 w-4" />
-          Assinar agora
+          Subscribe now
           <ArrowRight className="h-4 w-4" />
         </Link>
         <p className="text-[10px] text-muted-foreground">
-          Acesso ilimitado a todos os recursos. Cancele quando quiser.
+          Unlimited access to all features. Cancel anytime.
         </p>
       </div>
     </div>
   );
 }
 
-/**
- * Small inline counter showing remaining free uses.
- * @param remaining - Number of uses left
- * @param total - Total free limit
- * @param unit - Unit label
- * @returns Counter badge or null if subscribed (remaining is Infinity)
- */
 export function UsageCounter({ remaining, total, unit }: { remaining: number; total: number; unit: string }) {
   if (remaining === Infinity) return null;
 

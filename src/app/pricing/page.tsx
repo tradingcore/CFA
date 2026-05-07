@@ -10,14 +10,14 @@ const MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY!;
 const YEARLY_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY!;
 
 const features = [
-  "Simulados ilimitados (Oficial + Treinamento)",
-  "Questões geradas por IA com explicações",
-  "Chat com IA para tirar dúvidas",
-  "Progresso detalhado por LOS",
-  "Plano de estudos personalizado por IA",
-  "Mapa de desempenho completo",
-  "Todos os níveis CFA (I, II, III)",
-  "Curriculum oficial 2026 completo",
+  "Unlimited mock exams (Official + Training)",
+  "AI-generated questions with explanations",
+  "AI chat tutor for any CFA topic",
+  "Detailed progress tracking by LOS",
+  "Personalized AI study plan",
+  "Full performance map",
+  "All CFA levels (I, II, III)",
+  "Complete 2026 curriculum coverage",
 ];
 
 interface PlanCardProps {
@@ -76,14 +76,14 @@ function PlanCard({ name, price, period, priceId, badge, savings, isPopular, onS
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <>
-            Assinar agora
+            Subscribe now
             <ArrowRight className="h-4 w-4" />
           </>
         )}
       </button>
 
       <p className="mt-3 text-center text-[10px] text-muted-foreground">
-        Cancele quando quiser.
+        Cancel anytime.
       </p>
     </div>
   );
@@ -132,26 +132,23 @@ export default function PricingPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col items-center gap-10 py-12 px-4">
-      {/* Header */}
       <div className="flex flex-col items-center gap-4 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
           <Sparkles className="h-7 w-7 text-primary" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Escolha seu plano
+          Choose your plan
         </h1>
         <p className="max-w-lg text-base text-muted-foreground">
-          Acesso completo a todos os recursos da plataforma.
-          Cancele a qualquer momento.
+          Full access to every feature on the platform. Cancel anytime.
         </p>
       </div>
 
-      {/* Plans */}
       <div className="grid w-full max-w-2xl grid-cols-1 gap-6 sm:grid-cols-2">
         <PlanCard
-          name="Mensal"
-          price="$40"
-          period="mês"
+          name="Monthly"
+          price="$50"
+          period="month"
           priceId={MONTHLY_PRICE_ID}
           onSubscribe={handleSubscribe}
           loading={loading}
@@ -159,11 +156,11 @@ export default function PricingPage() {
         />
         <PlanCard
           name="Semestral"
-          price="$200"
-          period="semestre"
+          price="$250"
+          period="6 months"
           priceId={YEARLY_PRICE_ID}
-          badge="Mais popular"
-          savings="Economize $40/semestre (17% off)"
+          badge="Most popular"
+          savings="Save $50 vs monthly (17% off)"
           isPopular
           onSubscribe={handleSubscribe}
           loading={loading}
@@ -171,10 +168,9 @@ export default function PricingPage() {
         />
       </div>
 
-      {/* Features */}
       <div className="w-full max-w-lg">
         <h2 className="mb-4 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Tudo incluído em ambos os planos
+          Everything included in both plans
         </h2>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {features.map((feature) => (
@@ -188,10 +184,9 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* Trust */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Shield className="h-4 w-4" />
-        <span>Pagamento seguro via Stripe. PIX e cartão aceitos. Cancele quando quiser.</span>
+        <span>Secure payment via Stripe. Credit card and PIX accepted. Cancel anytime.</span>
       </div>
     </div>
   );

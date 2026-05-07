@@ -654,11 +654,11 @@ export default function ChatPage() {
           {!canChat ? (
             <div className="mt-4">
               <UpgradeWall
-                title="Limite de mensagens atingido"
-                description="Assine para ter conversas ilimitadas com a IA e tirar todas as suas dúvidas sobre o CFA."
+                title="Daily message limit reached"
+                description="Subscribe for unlimited AI conversations and get all your CFA questions answered."
                 usedCount={FREE_LIMITS.chatMessages}
                 limitCount={FREE_LIMITS.chatMessages}
-                unit="mensagens"
+                unit="messages"
               />
             </div>
           ) : (

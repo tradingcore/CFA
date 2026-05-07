@@ -641,17 +641,17 @@ function SimuladoInner() {
           {!canQuiz && (
             <div className="mx-auto mb-6 max-w-2xl">
               <UpgradeWall
-                title="Limite de questões atingido"
-                description="Assine para ter simulados ilimitados com questões geradas por IA e condições reais da prova."
+                title="Daily question limit reached"
+                description="Subscribe for unlimited mock exams with AI-generated questions and real exam conditions."
                 usedCount={FREE_LIMITS.quizQuestions}
                 limitCount={FREE_LIMITS.quizQuestions}
-                unit="questões"
+                unit="questions"
               />
             </div>
           )}
           {canQuiz && !isSub && (
             <div className="mx-auto mb-3 flex max-w-2xl justify-end">
-              <UsageCounter remaining={remainingQuiz} total={FREE_LIMITS.quizQuestions} unit="questões" />
+              <UsageCounter remaining={remainingQuiz} total={FREE_LIMITS.quizQuestions} unit="questions" />
             </div>
           )}
           <SimuladoConfig
