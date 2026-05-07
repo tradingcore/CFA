@@ -71,7 +71,7 @@ export function QuizReview({ questions, answers, totalTimeSeconds, discussions, 
                 <span className="text-[10px] text-muted-foreground">Time</span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <Trophy className="h-5 w-5 text-amber-500" />
+                <XCircle className="h-5 w-5 text-red-500" />
                 <span className="text-xl font-bold font-mono">{questions.length - correctCount}</span>
                 <span className="text-[10px] text-muted-foreground">Errors</span>
               </div>
