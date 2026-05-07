@@ -596,6 +596,7 @@ export async function incrementChatUsage(uid: string): Promise<void> {
       chatMessages: isNewDay ? 1 : (profile?.freeUsage?.chatMessages ?? 0) + 1,
       quizQuestions: isNewDay ? 0 : (profile?.freeUsage?.quizQuestions ?? 0),
       date: today,
+      feedbackGivenToday: isNewDay ? false : (profile?.freeUsage?.feedbackGivenToday ?? false),
     },
   } as Partial<UserProfile>);
 }
@@ -614,6 +615,7 @@ export async function incrementQuizUsage(uid: string, count: number): Promise<vo
       chatMessages: isNewDay ? 0 : (profile?.freeUsage?.chatMessages ?? 0),
       quizQuestions: isNewDay ? count : (profile?.freeUsage?.quizQuestions ?? 0) + count,
       date: today,
+      feedbackGivenToday: isNewDay ? false : (profile?.freeUsage?.feedbackGivenToday ?? false),
     },
   } as Partial<UserProfile>);
 }
