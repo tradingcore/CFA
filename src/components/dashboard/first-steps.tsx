@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { getQuizHistory, getLatestStudyPlan, getChatSessions } from "@/lib/firestore";
 import { useLevel } from "@/contexts/level-context";
 import { Card, CardContent } from "@/components/ui/card";
-import { CalendarDays, FileQuestion, MessageCircle, CheckCircle2, Circle, X } from "lucide-react";
+import { CalendarDays, FileQuestion, MessageCircle, CheckCircle2, Circle, X, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Step {
@@ -22,6 +22,7 @@ export function FirstSteps() {
   const { user } = useAuth();
   const { level } = useLevel();
   const [steps, setSteps] = useState<Step[] | null>(null);
+  const [allDone, setAllDone] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -37,8 +38,8 @@ export function FirstSteps() {
       const hasChat = chats.length > 0;
 
       if (hasPlan && hasQuiz && hasChat) {
-        setSteps(null);
-        return;
+        setAllDone(true);
+        setTimeout(() => setDismissed(true), 5000);
       }
 
       setSteps([
@@ -72,11 +73,37 @@ export function FirstSteps() {
 
   if (!steps || dismissed) return null;
 
+  if (allDone) {
+    return (
+      <Card className="border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-transparent">
+        <CardContent className="flex items-center gap-4 p-5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10">
+            <PartyPopper className="h-6 w-6 text-emerald-500" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold">You're all set!</p>
+            <p className="text-xs text-muted-foreground">You've completed all the first steps. Happy studying!</p>
+          </div>
+          <button onClick={() => setDismissed(true)} className="ml-auto rounded p-1 text-muted-foreground/50 hover:text-foreground">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const doneCount = steps.filter((s) => s.done).length;
+
   return (
     <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-transparent">
       <CardContent className="p-5">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-semibold">Get started</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold">Get started</p>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              {doneCount}/{steps.length}
+            </span>
+          </div>
           <button
             onClick={() => setDismissed(true)}
             className="rounded p-1 text-muted-foreground/50 transition-colors hover:bg-accent hover:text-foreground"
