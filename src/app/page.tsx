@@ -283,7 +283,7 @@ export default function LandingPage() {
               </ul>
               <Link
                 href="/register"
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 text-sm font-semibold transition-colors hover:bg-accent"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 Start Now <ArrowRight className="h-4 w-4" />
               </Link>
