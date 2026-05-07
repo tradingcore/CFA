@@ -197,13 +197,13 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {/* Free */}
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="flex flex-col rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-bold">Free</h3>
               <div className="mt-2 mb-5">
                 <span className="text-3xl font-bold">$0</span>
                 <span className="text-sm text-muted-foreground"> forever</span>
               </div>
-              <ul className="mb-6 flex flex-col gap-2.5">
+              <ul className="mb-6 flex flex-1 flex-col gap-2.5">
                 {[
                   "1 mock exam/day (5 questions)",
                   "3 AI chat messages/day",
@@ -226,13 +226,13 @@ export default function LandingPage() {
             </div>
 
             {/* Monthly */}
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="flex flex-col rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-bold">Monthly</h3>
               <div className="mt-2 mb-5">
                 <span className="text-3xl font-bold">$50</span>
                 <span className="text-sm text-muted-foreground">/month</span>
               </div>
-              <ul className="mb-6 flex flex-col gap-2.5">
+              <ul className="mb-6 flex flex-1 flex-col gap-2.5">
                 {[
                   "Unlimited mock exams",
                   "Unlimited AI chat",
@@ -256,7 +256,7 @@ export default function LandingPage() {
             </div>
 
             {/* 6-Month */}
-            <div className="relative rounded-2xl border-2 border-primary bg-card p-6 shadow-xl">
+            <div className="relative flex flex-col rounded-2xl border-2 border-primary bg-card p-6 shadow-xl">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="rounded-full bg-primary px-4 py-1 text-xs font-bold text-primary-foreground">
                   Most popular
@@ -268,7 +268,7 @@ export default function LandingPage() {
                 <span className="text-sm text-muted-foreground">/6 months</span>
               </div>
               <p className="mb-5 text-xs text-emerald-500 font-semibold">Save $50 vs monthly</p>
-              <ul className="mb-6 flex flex-col gap-2.5">
+              <ul className="mb-6 flex flex-1 flex-col gap-2.5">
                 {[
                   "Everything in Monthly",
                   "Best value for exam prep",
