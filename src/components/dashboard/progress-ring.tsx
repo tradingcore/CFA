@@ -83,7 +83,10 @@ export function ProgressRing() {
     ? Math.round((stats.correctAnswers / stats.questionsAnswered) * 100)
     : 0;
 
-  const evidenceCoverage = Math.round(readiness.evidenceCoverage * 100);
+  const coveredLos = readiness.coveredLos ?? 0;
+  const totalLos = readiness.totalLos ?? 365;
+  const coveragePct = Math.round(readiness.evidenceCoverage * 100);
+  const lowData = coveredLos < 5;
 
   return (
     <Card>
@@ -94,47 +97,43 @@ export function ProgressRing() {
             content={
               <>
                 <HintBlock>
-                  Estimate of how the real CFA exam would go for you today, 0%–100%. Topics with
-                  more weight on the real exam (Ethics, FRA) push this number more.
+                  Your accuracy on LOS you have practiced (3+ questions each). Only counts LOS
+                  with enough data to be meaningful.
                 </HintBlock>
                 <HintBlock title="Reference">
-                  ≥80% comfortable · 65–75% pass zone · &lt;50% far from ready
-                </HintBlock>
-                <HintBlock title="Read with Coverage">
-                  Only counts topics you have practiced. Hover the Readiness ring below for
-                  examples.
+                  70%+ with good coverage = pass zone · Need ~2,500 questions total for reliable score
                 </HintBlock>
               </>
             }
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          0% to 100%. Around 70% is the typical pass zone. Always read it together with Coverage — hint below.
+          Based on LOS with 3+ questions answered. {coveredLos}/{totalLos} LOS covered.
         </p>
       </CardHeader>
       <CardContent className="flex items-center justify-around pb-6">
         <CircularProgress
           value={readiness.readinessPct}
           label="Readiness"
-          sublabel={`${readiness.totalSampleSize} answers · ${evidenceCoverage}% of topics practiced`}
+          sublabel={lowData
+            ? `${readiness.totalSampleSize} questions · Not enough data yet`
+            : `${readiness.totalSampleSize} questions · ${coveredLos}/${totalLos} LOS covered`
+          }
           hint={
             <>
-              <HintBlock title="What is Coverage">
-                How much of the program already has practice data. Coverage 30% means the Readiness
-                number reflects only 30% of what you will face on exam day.
-              </HintBlock>
-              <HintBlock title="Examples">
-                • Studied only Ethics 80% → Readiness ~80%, Coverage ~15% (1 topic of 10).<br />
-                • 1 mock 60/90 right → Readiness ~67%, Coverage ~95% — trustworthy.<br />
-                • Readiness 75%, Coverage 60% → 4 untouched topics could drag real score to ~55%.
+              <HintBlock title="How it works">
+                Readiness = your accuracy across all LOS where you answered 3+ questions.
+                A LOS with only 1-2 answers is not counted — too few to be reliable.
               </HintBlock>
               <HintBlock title="Your numbers">
                 {readiness.totalSampleSize === 0
-                  ? "0 answers. Do a mock with 30+ questions to make this meaningful."
-                  : `${readiness.readinessPct}% over ${readiness.totalSampleSize} answers, ${evidenceCoverage}% of topics have data.${
-                      evidenceCoverage < 80
-                        ? " Many topics untested — practice more topics for accurate readiness."
-                        : " Good coverage — readiness score is reliable."
+                  ? "No questions answered yet. Start a mock exam to begin tracking."
+                  : `${readiness.readinessPct}% accuracy over ${coveredLos} LOS (${coveragePct}% of program). ${readiness.totalSampleSize} total questions answered.${
+                      coveredLos < 20
+                        ? " Keep practicing — you need more LOS covered for a reliable score."
+                        : coveragePct < 50
+                        ? " Good start — aim to cover at least 50% of LOS."
+                        : " Solid coverage — this score is getting reliable."
                     }`}
               </HintBlock>
             </>

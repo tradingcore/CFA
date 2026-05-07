@@ -50,14 +50,14 @@ const scenarios: Scenario[] = [
   {
     title: "I only studied Ethics this week",
     setup: "You answered 30 questions on Ethics, got 24 right (80%). You did not touch the other 9 topics.",
-    result: "Readiness shows ~80%. Coverage shows ~15% (only Ethics is measured).",
-    reading: "The number is mathematically right, but it only represents 1 topic. The remaining 85% of the program is unknown. Pass odds in real life are still very low. Action: practice another topic next so Coverage grows.",
+    result: "Readiness shows ~80%, but only 5/365 LOS are covered. The number only reflects Ethics.",
+    reading: "You need to practice many more LOS across all topics. With only 5 LOS covered, this score means almost nothing for real exam readiness. Action: practice other topics to build real coverage.",
   },
   {
-    title: "I took 1 mock with 90 questions and got 60 right",
-    setup: "Your mock had questions across all 10 topics. Score: 60/90 = 67%. Topics ended with 4–12 attempts each.",
-    result: "Readiness lands around 65–70%, Coverage jumps to ~95%, several topics show Strong, a few still In progress, none yet Mastered.",
-    reading: "This is exactly the right mix to start a study cycle: enough Coverage to trust the number, enough gaps to know where to focus. Action: open Recommended Focus and drill the weakest 3 topics.",
+    title: "I answered 500 questions across all topics",
+    setup: "Your 500 questions spread across ~80 LOS (3+ questions each). Average accuracy 65%.",
+    result: "Readiness shows ~65%, 80/365 LOS covered (22% of program).",
+    reading: "Getting more reliable. You have real data on 80 LOS. Keep going — aim for 150+ LOS covered and 2,500 total questions for a confident readiness score.",
   },
   {
     title: "Last week Readiness was 60%, this week it dropped to 56%",
@@ -250,8 +250,8 @@ const metrics = [
   },
   {
     name: "Exam readiness",
-    formula: "Σ (accuracy × weight) ÷ Σ weight",
-    notes: "Sum is over topics with data. Coverage badge tells how much of the curriculum we already measured.",
+    formula: "accuracy across LOS with 3+ questions",
+    notes: "Only counts LOS where you answered 3+ questions. Coverage = X/365 LOS covered. Need ~2,500 total questions for reliable readiness.",
   },
   {
     name: "Recommended focus score",

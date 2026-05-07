@@ -231,8 +231,12 @@ export interface LevelReadiness {
   readinessPct: number;
   evidenceCoverage: number;
   totalSampleSize: number;
+  totalLos: number;
+  coveredLos: number;
   byTopic: TopicReadiness[];
 }
+
+const MIN_LOS_QUESTIONS = 3;
 
 export function levelReadiness(
   level: CFALevel,
@@ -240,23 +244,35 @@ export function levelReadiness(
 ): LevelReadiness {
   const topics = getTopicsForLevel(level);
   const byTopic = topics.map((t) => aggregateTopicReadiness(t, statsByLos));
-  const totalWeight = byTopic.reduce((s, t) => s + t.weight, 0);
-  const weightedAccuracy = byTopic.reduce(
-    (s, t) => s + (t.sampleSize > 0 ? t.accuracy * t.weight : 0),
-    0
-  );
-  const evidenceWeight = byTopic.reduce(
-    (s, t) => s + (t.sampleSize > 0 ? t.weight : 0),
-    0
-  );
-  const readinessPct = totalWeight > 0 ? Math.round((weightedAccuracy / totalWeight) * 100) : 0;
-  const evidenceCoverage = totalWeight > 0 ? evidenceWeight / totalWeight : 0;
+
+  let totalLos = 0;
+  let coveredLos = 0;
+  let coveredCorrect = 0;
+  let coveredTotal = 0;
+
+  for (const topic of byTopic) {
+    for (const module of topic.modules) {
+      for (const lm of module.losMasteries) {
+        totalLos++;
+        if (lm.mastery.sampleSize >= MIN_LOS_QUESTIONS) {
+          coveredLos++;
+          coveredCorrect += lm.mastery.accuracy * lm.mastery.sampleSize;
+          coveredTotal += lm.mastery.sampleSize;
+        }
+      }
+    }
+  }
+
+  const readinessPct = coveredTotal > 0 ? Math.round((coveredCorrect / coveredTotal) * 100) : 0;
+  const evidenceCoverage = totalLos > 0 ? coveredLos / totalLos : 0;
   const totalSampleSize = byTopic.reduce((s, t) => s + t.sampleSize, 0);
 
   return {
     readinessPct,
     evidenceCoverage,
     totalSampleSize,
+    totalLos,
+    coveredLos,
     byTopic,
   };
 }
