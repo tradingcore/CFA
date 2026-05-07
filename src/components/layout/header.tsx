@@ -4,8 +4,10 @@ import { useLevel } from "@/contexts/level-context";
 import { useAuth } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { CFALevel } from "@/lib/cfa-topics";
-import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles, Shield } from "lucide-react";
+import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles, Shield, MessageSquarePlus } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
+import { FeedbackModal } from "@/components/layout/feedback-modal";
+import { saveFeedback } from "@/lib/firestore";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import {
@@ -29,6 +31,7 @@ export function Header() {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -108,6 +111,14 @@ export function Header() {
             PRO
           </span>
         )}
+        <button
+          onClick={() => setFeedbackOpen(true)}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary transition-colors hover:bg-accent"
+          aria-label="Give feedback"
+          title="Give feedback"
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+        </button>
         <Link
           href="/help"
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary transition-colors hover:bg-accent"
@@ -158,6 +169,14 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <FeedbackModal
+        open={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        onSubmit={async (rating, comment) => {
+          if (!user) return;
+          await saveFeedback({ uid: user.uid, email: user.email || "", rating, comment, createdAt: new Date().toISOString(), source: "daily_prompt" });
+        }}
+      />
     </header>
   );
 }
