@@ -33,6 +33,7 @@ export async function GET(req: Request) {
         isNewVisitor: d.isNewVisitor || false,
         timestamp: d.timestamp || "",
         userAgent: (d.userAgent || "").slice(0, 100),
+        country: d.country || "unknown",
       };
     });
 
@@ -76,6 +77,16 @@ export async function GET(req: Request) {
     const loggedIn = views.filter((v) => v.userId).length;
     const anonymous = views.length - loggedIn;
 
+    const countryCounts: Record<string, number> = {};
+    for (const v of views) {
+      const c = (v as unknown as { country?: string }).country || "unknown";
+      countryCounts[c] = (countryCounts[c] || 0) + 1;
+    }
+    const topCountries = Object.entries(countryCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([country, count]) => ({ country, count }));
+
     return NextResponse.json({
       totalViews: views.length,
       todayViews: todayViews.length,
@@ -84,6 +95,7 @@ export async function GET(req: Request) {
       uniqueTotal,
       topPages,
       topReferrers,
+      topCountries,
       deviceCounts,
       dailyChart,
       loggedIn,

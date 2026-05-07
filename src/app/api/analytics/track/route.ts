@@ -14,10 +14,22 @@ export interface PageViewData {
   timestamp: string;
 }
 
+async function getCountryFromIP(ip: string): Promise<string> {
+  if (!ip || ip === "127.0.0.1" || ip === "::1") return "local";
+  try {
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode`, { signal: AbortSignal.timeout(2000) });
+    if (res.ok) {
+      const data = await res.json();
+      return data.countryCode || "unknown";
+    }
+  } catch {}
+  return "unknown";
+}
+
 /**
  * POST /api/analytics/track
  * Records a page view from any visitor (anonymous or logged in).
- * No auth required - accepts any request.
+ * Derives country from visitor IP via ip-api.com (free, no key needed).
  */
 export async function POST(req: NextRequest) {
   try {
@@ -26,6 +38,10 @@ export async function POST(req: NextRequest) {
     if (!data.path || !data.sessionId) {
       return NextResponse.json({ ok: false }, { status: 400 });
     }
+
+    const forwarded = req.headers.get("x-forwarded-for");
+    const ip = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip") || "";
+    const country = await getCountryFromIP(ip);
 
     const record = {
       path: data.path,
@@ -38,6 +54,7 @@ export async function POST(req: NextRequest) {
       userId: data.userId || null,
       isNewVisitor: data.isNewVisitor ?? false,
       timestamp: data.timestamp || new Date().toISOString(),
+      country,
     };
 
     await adminDb.collection("pageViews").add(record);

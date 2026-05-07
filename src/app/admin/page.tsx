@@ -28,11 +28,12 @@ interface AnalyticsData {
   uniqueTotal: number;
   topPages: { path: string; count: number }[];
   topReferrers: { source: string; count: number }[];
+  topCountries: { country: string; count: number }[];
   deviceCounts: Record<string, number>;
   dailyChart: { date: string; views: number }[];
   loggedIn: number;
   anonymous: number;
-  recentViews: { path: string; referrer: string; device: string; sessionId: string; userId: string | null; timestamp: string; language: string }[];
+  recentViews: { path: string; referrer: string; device: string; sessionId: string; userId: string | null; timestamp: string; language: string; country?: string }[];
 }
 
 export default function AdminPage() {
@@ -207,7 +208,7 @@ export default function AdminPage() {
                     </CardContent>
                   </Card>
 
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
                     {/* Top pages */}
                     <Card>
                       <CardHeader><CardTitle className="text-sm">Top Pages</CardTitle></CardHeader>
@@ -234,6 +235,22 @@ export default function AdminPage() {
                             <span className="font-bold tabular-nums">{r.count}</span>
                           </div>
                         ))}
+                      </CardContent>
+                    </Card>
+
+                    {/* Countries */}
+                    <Card>
+                      <CardHeader><CardTitle className="text-sm">Top Countries</CardTitle></CardHeader>
+                      <CardContent className="flex flex-col gap-1">
+                        {analytics.topCountries.map((c) => (
+                          <div key={c.country} className="flex items-center justify-between rounded px-2 py-1.5 text-xs hover:bg-accent/50">
+                            <span className="font-medium">{c.country === "unknown" ? "Unknown" : c.country}</span>
+                            <span className="font-bold tabular-nums">{c.count}</span>
+                          </div>
+                        ))}
+                        {analytics.topCountries.length === 0 && (
+                          <p className="text-xs text-muted-foreground py-2">No data yet</p>
+                        )}
                       </CardContent>
                     </Card>
 
@@ -276,23 +293,25 @@ export default function AdminPage() {
                     <CardHeader><CardTitle className="text-base">Recent Visits ({analytics.recentViews.length})</CardTitle></CardHeader>
                     <CardContent>
                       <div className="overflow-x-auto">
-                        <div className="grid grid-cols-6 gap-2 border-b border-border px-2 py-2 text-[10px] font-semibold uppercase text-muted-foreground min-w-[600px]">
+                        <div className="grid grid-cols-7 gap-2 border-b border-border px-2 py-2 text-[10px] font-semibold uppercase text-muted-foreground min-w-[700px]">
                           <span>Time</span>
                           <span>Page</span>
                           <span>Referrer</span>
+                          <span>Country</span>
                           <span>Device</span>
                           <span>Language</span>
                           <span>User</span>
                         </div>
                         {analytics.recentViews.slice(0, 30).map((v, i) => (
-                          <div key={i} className="grid grid-cols-6 gap-2 px-2 py-1.5 text-xs hover:bg-accent/30 min-w-[600px]">
+                          <div key={i} className="grid grid-cols-7 gap-2 px-2 py-1.5 text-xs hover:bg-accent/30 min-w-[700px]">
                             <span className="text-muted-foreground">
                               {new Date(v.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                             </span>
                             <span className="font-mono truncate">{v.path}</span>
                             <span className="truncate text-muted-foreground">
-                              {v.referrer ? new URL(v.referrer).hostname.replace("www.", "") : "direct"}
+                              {v.referrer ? (() => { try { return new URL(v.referrer).hostname.replace("www.", ""); } catch { return v.referrer; } })() : "direct"}
                             </span>
+                            <span className="font-medium">{v.country || "—"}</span>
                             <span className="capitalize">{v.device}</span>
                             <span>{v.language}</span>
                             <span>
