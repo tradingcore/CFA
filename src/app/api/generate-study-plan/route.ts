@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { openai, MODEL } from "@/lib/openai-server";
+import { getSystemPrompt } from "@/lib/cfa-knowledge";
 
 interface TopicListItem {
   topicId: string;
@@ -111,7 +112,11 @@ export async function POST(req: NextRequest) {
       ? `The student wants extra focus on these modules: ${(targetModuleIds as string[]).join(", ")}. Spend proportionally more time on them, but still follow the sequential order.`
       : "";
 
-    const prompt = `You are a CFA Level ${level} study plan generator. Create a structured, sequential plan.
+    const behaviorPrompt = getSystemPrompt("plan");
+
+    const prompt = `${behaviorPrompt || "You are a CFA study plan generator."}
+
+Create a structured, sequential plan for CFA Level ${level}.
 
 ## Context
 Today: ${currentDate}

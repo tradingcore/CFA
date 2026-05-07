@@ -1,25 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { openai, MODEL } from "@/lib/openai-server";
+import { buildContextForQuery, getSystemPrompt } from "@/lib/cfa-knowledge";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-
-const SYSTEM_PROMPT = `You are an expert CFA exam tutor. You help candidates preparing for the CFA exam.
-
-Your behavior:
-- Always respond in English.
-- Be encouraging but precise. CFA requires accuracy.
-- When explaining concepts, reference the CFA curriculum structure (topics, modules, LOS).
-- Use examples, formulas, and analogies to explain complex topics.
-- If the user attaches an image, analyze it carefully as a CFA tutor. It may contain a question, formula, chart, table, or screenshot.
-- If the user attaches a text file, use its contents as supporting context and cite the relevant parts in your explanation.
-- If an image is unclear or cropped, say exactly what is unreadable and ask for a clearer image.
-- If asked about study strategies, give actionable advice based on CFA best practices.
-- Format answers in clean Markdown with short headings, bullets, and bold emphasis when useful.
-- Use at most ### headings. Do not use #### or deeper headings.
-- When providing formulas, use valid KaTeX-compatible LaTeX.
-- Use inline formulas with $...$.
-- Use block formulas with $$ on their own line before and after the formula.
-- Do not escape LaTeX backslashes unnecessarily and do not wrap formulas in code blocks.
-- Keep responses focused and exam-relevant.`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,9 +11,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "message and level are required" }, { status: 400 });
     }
 
-    let systemPrompt = SYSTEM_PROMPT + `\n\nThe user is studying for CFA Level ${level}.`;
+    const knowledgeContext = buildContextForQuery(message, level);
+    const basePrompt = getSystemPrompt("chat");
+
+    let systemPrompt = (basePrompt || "You are an expert CFA exam tutor.") + `\n\nThe user is studying for CFA Level ${level}.`;
     if (topicContext) {
       systemPrompt += `\n\nCurrent topic context: ${topicContext}`;
+    }
+    if (knowledgeContext) {
+      systemPrompt += `\n\n${knowledgeContext}`;
     }
 
     const messages: ChatCompletionMessageParam[] = [

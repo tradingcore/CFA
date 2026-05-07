@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { openai, MODEL } from "@/lib/openai-server";
+import { buildContextForQuery, getSystemPrompt } from "@/lib/cfa-knowledge";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,22 +12,20 @@ export async function POST(req: NextRequest) {
 
     const letters = ["A", "B", "C", "D"];
 
-    const prompt = `You are a CFA tutor. The student answered a question incorrectly. Explain why the correct answer is correct and why their chosen answer is wrong.
+    const context = buildContextForQuery(question, "I");
 
-Respond in English. Be clear, educational, and encouraging.
+    const behaviorPrompt = getSystemPrompt("explain");
 
+    const prompt = `${behaviorPrompt || "You are a CFA tutor."}
+
+${context ? `## Reference Material\n${context}\n` : ""}
 Question: ${question}
 
 Options:
 ${options.map((o: string, i: number) => `${letters[i]}. ${o}`).join("\n")}
 
 Student's answer: ${letters[selectedIndex]} (${options[selectedIndex]})
-Correct answer: ${letters[correctIndex]} (${options[correctIndex]})
-
-Provide:
-1. Why the correct answer is right (cite relevant CFA concepts).
-2. Why the student's answer is wrong (common misconception).
-3. A quick tip to remember this concept.`;
+Correct answer: ${letters[correctIndex]} (${options[correctIndex]})`;
 
     const completion = await openai.chat.completions.create({
       model: MODEL,

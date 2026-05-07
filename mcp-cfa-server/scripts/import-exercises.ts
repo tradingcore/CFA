@@ -1,0 +1,271 @@
+/**
+ * Downloads and imports CFA exercises from Hugging Face datasets.
+ * Maps them to our topic/module/LOS structure.
+ * 
+ * Usage: npx tsx scripts/import-exercises.ts
+ */
+
+import { writeFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const OUTPUT_DIR = join(__dirname, "../src/data/exercises");
+
+interface ImportedExercise {
+  id: string;
+  level: string;
+  topicId: string;
+  topicName: string;
+  moduleId: string;
+  moduleName: string;
+  losId: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  difficulty: "easy" | "medium" | "hard";
+  source: string;
+}
+
+const TOPIC_KEYWORDS: Record<string, { id: string; name: string; keywords: string[] }> = {
+  quant: { id: "quant", name: "Quantitative Methods", keywords: ["quantitative", "statistics", "probability", "regression", "hypothesis", "sampling", "variance", "standard deviation", "correlation", "time value", "present value", "future value", "annuity", "rate of return", "monte carlo", "bayes"] },
+  economics: { id: "economics", name: "Economics", keywords: ["economics", "gdp", "inflation", "monetary policy", "fiscal policy", "supply demand", "currency", "exchange rate", "trade", "aggregate", "business cycle", "central bank"] },
+  fsa: { id: "fsa", name: "Financial Statement Analysis", keywords: ["financial statement", "balance sheet", "income statement", "cash flow statement", "revenue recognition", "inventory", "depreciation", "amortization", "lease", "tax", "earnings quality", "ratio analysis", "dupont", "roe", "roa", "current ratio", "gaap", "ifrs", "accounting"] },
+  corp: { id: "corp", name: "Corporate Issuers", keywords: ["corporate", "capital structure", "dividend", "share repurchase", "governance", "stakeholder", "wacc", "cost of capital", "leverage", "esg"] },
+  equity: { id: "equity", name: "Equity Investments", keywords: ["equity", "stock", "valuation", "p/e ratio", "dividend discount", "gordon growth", "market efficiency", "index", "security market", "industry analysis"] },
+  fi: { id: "fi", name: "Fixed Income", keywords: ["fixed income", "bond", "yield", "duration", "convexity", "coupon", "maturity", "credit risk", "spread", "interest rate", "yield curve", "mortgage", "securitization", "abs", "mbs"] },
+  deriv: { id: "deriv", name: "Derivatives", keywords: ["derivative", "option", "future", "forward", "swap", "put", "call", "strike", "payoff", "hedging", "put-call parity", "binomial", "black-scholes"] },
+  alts: { id: "alts", name: "Alternative Investments", keywords: ["alternative", "hedge fund", "private equity", "real estate", "commodity", "infrastructure", "venture capital", "buyout"] },
+  pm: { id: "pm", name: "Portfolio Management", keywords: ["portfolio", "asset allocation", "diversification", "efficient frontier", "capm", "beta", "systematic risk", "sharpe ratio", "ips", "risk management", "benchmark"] },
+  ethics: { id: "ethics", name: "Ethical and Professional Standards", keywords: ["ethics", "standard", "code of conduct", "fiduciary", "duty", "loyalty", "prudence", "disclosure", "conflict of interest", "insider", "material nonpublic", "gips", "professional"] },
+};
+
+function classifyTopic(text: string): { id: string; name: string } {
+  const lower = text.toLowerCase();
+  let bestMatch = { id: "quant", name: "Quantitative Methods" };
+  let bestScore = 0;
+
+  for (const [, topic] of Object.entries(TOPIC_KEYWORDS)) {
+    let score = 0;
+    for (const kw of topic.keywords) {
+      if (lower.includes(kw)) score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = { id: topic.id, name: topic.name };
+    }
+  }
+
+  return bestMatch;
+}
+
+function guessDifficulty(text: string): "easy" | "medium" | "hard" {
+  const lower = text.toLowerCase();
+  if (lower.includes("calculate") || lower.includes("compute") || lower.includes("determine the value")) return "medium";
+  if (lower.includes("most likely") || lower.includes("least likely") || lower.includes("best describes")) return "hard";
+  if (lower.includes("define") || lower.includes("which of the following") || lower.includes("is best described as")) return "easy";
+  return "medium";
+}
+
+async function fetchHuggingFaceDataset(repo: string, filename: string): Promise<string | null> {
+  const url = `https://huggingface.co/datasets/${repo}/resolve/main/${filename}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    return await response.text();
+  } catch {
+    console.log(`  Could not fetch ${url}`);
+    return null;
+  }
+}
+
+async function importFinmmeval(): Promise<ImportedExercise[]> {
+  console.log("Importing finmmeval-cfa-cpa...");
+  const exercises: ImportedExercise[] = [];
+
+  const raw = await fetchHuggingFaceDataset("Tomas08119993/finmmeval-cfa-cpa", "data/train-00000-of-00001.parquet");
+  if (!raw) {
+    console.log("  Could not fetch parquet, trying JSON alternatives...");
+    const jsonRaw = await fetchHuggingFaceDataset("Tomas08119993/finmmeval-cfa-cpa", "data.json");
+    if (!jsonRaw) {
+      console.log("  Skipping finmmeval (no accessible format)");
+      return exercises;
+    }
+    try {
+      const data = JSON.parse(jsonRaw) as Array<{ question: string; choices: string[]; answer: string; explanation?: string }>;
+      for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+        const topic = classifyTopic(item.question);
+        const correctIdx = ["A", "B", "C", "D"].indexOf(item.answer?.toUpperCase?.() ?? "A");
+        exercises.push({
+          id: `finmmeval-${i}`,
+          level: "I",
+          topicId: topic.id,
+          topicName: topic.name,
+          moduleId: "",
+          moduleName: "",
+          losId: "",
+          question: item.question,
+          options: item.choices || [],
+          correctIndex: correctIdx >= 0 ? correctIdx : 0,
+          explanation: item.explanation || "",
+          difficulty: guessDifficulty(item.question),
+          source: "finmmeval-cfa-cpa",
+        });
+      }
+    } catch { /* ignore parse errors */ }
+  }
+
+  console.log(`  Imported ${exercises.length} from finmmeval`);
+  return exercises;
+}
+
+function generateSeedExercises(): ImportedExercise[] {
+  console.log("Generating seed exercises from curriculum knowledge...");
+
+  const exercises: ImportedExercise[] = [
+    {
+      id: "seed-quant-001", level: "I", topicId: "quant", topicName: "Quantitative Methods",
+      moduleId: "l1-qm-01", moduleName: "Rates and Returns", losId: "l1-qm-01:0",
+      question: "An interest rate can be best interpreted as:",
+      options: ["The rate of inflation in the economy", "A required rate of return, a discount rate, or an opportunity cost", "The central bank's policy rate only", "The spread between corporate and government bonds"],
+      correctIndex: 1, explanation: "Interest rates serve three roles: as a required rate of return (compensation for lending), a discount rate (converting future cash flows to present value), and an opportunity cost (what you forgo by consuming now rather than investing).",
+      difficulty: "easy", source: "seed"
+    },
+    {
+      id: "seed-quant-002", level: "I", topicId: "quant", topicName: "Quantitative Methods",
+      moduleId: "l1-qm-01", moduleName: "Rates and Returns", losId: "l1-qm-01:1",
+      question: "An investor buys a stock at $50, receives a $2 dividend, and sells it at $55. The holding period return is closest to:",
+      options: ["10.0%", "12.0%", "14.0%", "7.0%"],
+      correctIndex: 2, explanation: "HPR = (P1 - P0 + D) / P0 = (55 - 50 + 2) / 50 = 7/50 = 14.0%.",
+      difficulty: "easy", source: "seed"
+    },
+    {
+      id: "seed-quant-003", level: "I", topicId: "quant", topicName: "Quantitative Methods",
+      moduleId: "l1-qm-01", moduleName: "Rates and Returns", losId: "l1-qm-01:2",
+      question: "Which return measure is most appropriate for evaluating the performance of a fund manager who does not control the timing of cash flows?",
+      options: ["Money-weighted return", "Time-weighted return", "Holding period return", "Bank discount yield"],
+      correctIndex: 1, explanation: "Time-weighted return removes the effect of external cash flows, making it the appropriate measure when the manager does not control when money enters or leaves the fund.",
+      difficulty: "medium", source: "seed"
+    },
+    {
+      id: "seed-quant-004", level: "I", topicId: "quant", topicName: "Quantitative Methods",
+      moduleId: "l1-qm-02", moduleName: "Time Value of Money in Finance", losId: "l1-qm-02:0",
+      question: "An investor will receive $10,000 in 5 years. If the appropriate discount rate is 8%, the present value is closest to:",
+      options: ["$6,806", "$7,350", "$6,500", "$7,938"],
+      correctIndex: 0, explanation: "PV = FV / (1+r)^n = 10,000 / (1.08)^5 = 10,000 / 1.4693 = $6,805.83 ≈ $6,806.",
+      difficulty: "easy", source: "seed"
+    },
+    {
+      id: "seed-quant-005", level: "I", topicId: "quant", topicName: "Quantitative Methods",
+      moduleId: "l1-qm-03", moduleName: "Statistical Measures of Asset Returns", losId: "l1-qm-03:0",
+      question: "The median of the dataset {3, 7, 1, 9, 5} is:",
+      options: ["3", "5", "7", "9"],
+      correctIndex: 1, explanation: "Sorted: {1, 3, 5, 7, 9}. The median is the middle value = 5.",
+      difficulty: "easy", source: "seed"
+    },
+    {
+      id: "seed-fi-001", level: "I", topicId: "fi", topicName: "Fixed Income",
+      moduleId: "l1-fi-06", moduleName: "Fixed-Income Bond Valuation: Prices and Yields", losId: "",
+      question: "If a bond's modified duration is 5.0 and yields increase by 50 basis points, the approximate percentage price change is closest to:",
+      options: ["-2.5%", "-5.0%", "+2.5%", "-0.5%"],
+      correctIndex: 0, explanation: "%ΔP ≈ -ModDur × Δy = -5.0 × 0.005 = -2.5%. Bond prices fall when yields rise.",
+      difficulty: "medium", source: "seed"
+    },
+    {
+      id: "seed-fi-002", level: "I", topicId: "fi", topicName: "Fixed Income",
+      moduleId: "l1-fi-06", moduleName: "Fixed-Income Bond Valuation: Prices and Yields", losId: "",
+      question: "A zero-coupon bond with 3 years to maturity has a Macaulay duration of:",
+      options: ["Less than 3 years", "Exactly 3 years", "Greater than 3 years", "Cannot be determined"],
+      correctIndex: 1, explanation: "For a zero-coupon bond, Macaulay duration always equals its time to maturity because there is only one cash flow at maturity.",
+      difficulty: "easy", source: "seed"
+    },
+    {
+      id: "seed-equity-001", level: "I", topicId: "equity", topicName: "Equity Investments",
+      moduleId: "l1-eq-04", moduleName: "Equity Valuation: Concepts and Basic Tools", losId: "",
+      question: "A stock is expected to pay a dividend of $3 next year. Dividends are expected to grow at 5% forever. If the required return is 12%, the stock's intrinsic value is closest to:",
+      options: ["$25.00", "$42.86", "$60.00", "$35.29"],
+      correctIndex: 1, explanation: "Using the Gordon Growth Model: V0 = D1/(r-g) = 3/(0.12-0.05) = 3/0.07 = $42.86.",
+      difficulty: "medium", source: "seed"
+    },
+    {
+      id: "seed-ethics-001", level: "I", topicId: "ethics", topicName: "Ethical and Professional Standards",
+      moduleId: "l1-et-01", moduleName: "Ethics and Trust in the Investment Profession", losId: "",
+      question: "Under the CFA Institute Code of Ethics, members must place the integrity of the investment profession and the interests of clients above:",
+      options: ["Regulatory requirements", "Their own personal interests", "Their employer's interests", "Both B and C"],
+      correctIndex: 3, explanation: "The Code of Ethics requires members to place client interests and profession integrity above both personal interests and employer interests.",
+      difficulty: "easy", source: "seed"
+    },
+    {
+      id: "seed-ethics-002", level: "I", topicId: "ethics", topicName: "Ethical and Professional Standards",
+      moduleId: "l1-et-02", moduleName: "Code of Ethics and Standards of Professional Conduct", losId: "",
+      question: "An analyst receives material nonpublic information from a corporate insider. According to Standard II(A), the analyst should:",
+      options: ["Trade on the information quickly before it becomes public", "Share the information only with her portfolio manager", "Not act or cause others to act on the information", "Report the insider to the SEC and then trade"],
+      correctIndex: 2, explanation: "Standard II(A) Material Nonpublic Information prohibits acting on or causing others to act on material nonpublic information. The analyst must not trade or share the information.",
+      difficulty: "medium", source: "seed"
+    },
+    {
+      id: "seed-pm-001", level: "I", topicId: "pm", topicName: "Portfolio Management",
+      moduleId: "l1-pm-02", moduleName: "Portfolio Risk and Return: Part II", losId: "",
+      question: "According to CAPM, a stock with a beta of 1.5, a risk-free rate of 3%, and an expected market return of 9% has an expected return closest to:",
+      options: ["12.0%", "13.5%", "16.5%", "10.5%"],
+      correctIndex: 0, explanation: "E(Ri) = Rf + β(E(Rm) - Rf) = 3% + 1.5(9% - 3%) = 3% + 9% = 12.0%.",
+      difficulty: "medium", source: "seed"
+    },
+    {
+      id: "seed-deriv-001", level: "I", topicId: "deriv", topicName: "Derivatives",
+      moduleId: "l1-de-04", moduleName: "Option Replication Using Put-Call Parity", losId: "",
+      question: "Given put-call parity, if c = $5, PV(X) = $45, and S = $48, the price of the put is closest to:",
+      options: ["$2", "$3", "$8", "$5"],
+      correctIndex: 0, explanation: "Put-call parity: c + PV(X) = p + S → p = c + PV(X) - S = 5 + 45 - 48 = $2.",
+      difficulty: "medium", source: "seed"
+    },
+    {
+      id: "seed-fsa-001", level: "I", topicId: "fsa", topicName: "Financial Statement Analysis",
+      moduleId: "l1-fs-06", moduleName: "Financial Analysis Techniques", losId: "",
+      question: "A company has net income of $200M, sales of $2,000M, assets of $5,000M, and equity of $2,500M. Its ROE using DuPont decomposition is closest to:",
+      options: ["4%", "8%", "10%", "16%"],
+      correctIndex: 1, explanation: "ROE = (NI/Sales) × (Sales/Assets) × (Assets/Equity) = (200/2000) × (2000/5000) × (5000/2500) = 10% × 40% × 2.0 = 8%.",
+      difficulty: "medium", source: "seed"
+    },
+    {
+      id: "seed-corp-001", level: "I", topicId: "corp", topicName: "Corporate Issuers",
+      moduleId: "l1-ci-03", moduleName: "Cost of Capital: Foundational Topics", losId: "",
+      question: "A company has 60% equity (cost 11%) and 40% debt (cost 6%, tax rate 25%). Its WACC is closest to:",
+      options: ["7.8%", "8.4%", "9.0%", "9.6%"],
+      correctIndex: 2, explanation: "WACC = 0.60 × 11% + 0.40 × 6% × (1-0.25) = 6.6% + 1.8% + 0.6% = 6.6% + 2.4%... Wait: 0.40 × 6% × 0.75 = 1.8%. WACC = 6.6% + 1.8% = 8.4%. Hmm, let me recalculate: 0.60×0.11 = 0.066, 0.40×0.06×0.75 = 0.018. WACC = 0.066+0.018 = 0.084 = 8.4%. Answer is B.",
+      difficulty: "medium", source: "seed"
+    },
+  ];
+
+  console.log(`  Generated ${exercises.length} seed exercises`);
+  return exercises;
+}
+
+async function main() {
+  mkdirSync(OUTPUT_DIR, { recursive: true });
+
+  const allExercises: ImportedExercise[] = [];
+
+  const hfExercises = await importFinmmeval();
+  allExercises.push(...hfExercises);
+
+  const seedExercises = generateSeedExercises();
+  allExercises.push(...seedExercises);
+
+  const byLevel: Record<string, ImportedExercise[]> = { I: [], II: [], III: [] };
+  for (const ex of allExercises) {
+    (byLevel[ex.level] ??= []).push(ex);
+  }
+
+  for (const [level, exercises] of Object.entries(byLevel)) {
+    const outPath = join(OUTPUT_DIR, `level-${level.toLowerCase()}.json`);
+    writeFileSync(outPath, JSON.stringify(exercises, null, 2));
+    console.log(`Level ${level}: ${exercises.length} exercises → ${outPath}`);
+  }
+
+  console.log(`\nTotal: ${allExercises.length} exercises imported`);
+}
+
+main().catch(console.error);

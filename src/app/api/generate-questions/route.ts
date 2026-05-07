@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { openai, MODEL } from "@/lib/openai-server";
+import { fetchExercises, searchConcepts, getSystemPrompt } from "@/lib/cfa-knowledge";
 
 interface LosInput {
   id: string;
@@ -55,7 +56,27 @@ export async function POST(req: NextRequest) {
       .map((entry, index) => `${index + 1}. losId="${entry.id}" :: ${entry.description}`)
       .join("\n");
 
-    const prompt = `You are a CFA exam question writer. Generate exactly ${questionCount} multiple-choice questions for CFA Level ${level}.
+    const existingExercises = fetchExercises({ level, topicId, moduleId, count: 5 });
+    const conceptContext = searchConcepts({
+      query: losInputs.map((l) => l.description).join(" "),
+      level,
+      topicId,
+      limit: 3,
+    });
+
+    const referenceBlock = existingExercises.length > 0
+      ? `\nReference examples (use similar style and difficulty but do NOT copy these):\n${existingExercises.map((e) => `Q: ${e.question}\nA: ${e.options[e.correctIndex]}`).join("\n\n")}\n`
+      : "";
+
+    const conceptBlock = conceptContext.length > 0
+      ? `\nCurriculum context:\n${conceptContext.map((c) => `${c.number}: ${c.summary}`).join("\n")}\n`
+      : "";
+
+    const behaviorPrompt = getSystemPrompt("questions");
+
+    const prompt = `${behaviorPrompt || "You are a CFA exam question writer."}
+
+Generate exactly ${questionCount} multiple-choice questions for CFA Level ${level}.
 
 Topic: ${topicName}
 ${moduleName ? `Module: ${moduleName}` : ""}
@@ -64,16 +85,8 @@ Learning Outcome Statements (LOS), each tagged with a losId you must reuse:
 ${losBlock}
 
 ${difficultyGuide}
-
-Requirements:
-- Each question targets exactly one of the LOS above.
-- Each question must include the losId of the LOS you targeted (use the exact string after losId=).
-- Each question must have exactly 4 options (A, B, C, D).
-- Only one correct answer per question.
-- Include a clear explanation for the correct answer.
-- Mimic actual CFA Institute exam style and phrasing.
-- Write questions and options in English (CFA exam language).
-- Explanations: concise, 2-4 sentences.
+${referenceBlock}${conceptBlock}
+Each question must include the losId of the LOS it targets (use the exact string after losId=).
 
 Return ONLY a raw JSON array (no markdown, no code fences):
 [{"losId":"...","question":"...","options":["A. ...","B. ...","C. ...","D. ..."],"correctIndex":0,"explanation":"..."}]`;
