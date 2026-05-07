@@ -13,12 +13,15 @@ import {
   getChatSessions,
   getChatSession,
   incrementChatUsage,
+  saveFeedback,
+  resetDailyUsage,
   ChatAttachment,
   ChatSession,
   ChatMessage,
 } from "@/lib/firestore";
 import { useSubscription } from "@/hooks/use-subscription";
 import { UpgradeWall, UsageCounter } from "@/components/layout/upgrade-wall";
+import { FeedbackModal } from "@/components/layout/feedback-modal";
 import { FREE_LIMITS } from "@/lib/usage-limits";
 
 const WELCOME_MESSAGE: ChatMessage = {
@@ -80,7 +83,8 @@ async function readTextFile(file: File): Promise<string> {
 export default function ChatPage() {
   const { user, refreshProfile } = useAuth();
   const { level } = useLevel();
-  const { canChat, remainingChat, isSubscribed: isSub } = useSubscription();
+  const { canChat, remainingChat, isSubscribed: isSub, canFeedback } = useSubscription();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
@@ -653,12 +657,35 @@ export default function ChatPage() {
           )}
           {!canChat ? (
             <div className="mt-4">
-              <UpgradeWall
-                title="Daily message limit reached"
-                description="Subscribe for unlimited AI conversations and get all your CFA questions answered."
-                usedCount={FREE_LIMITS.chatMessages}
-                limitCount={FREE_LIMITS.chatMessages}
-                unit="messages"
+              {canFeedback ? (
+                <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-6 text-center">
+                  <p className="text-sm font-semibold">Daily limit reached</p>
+                  <p className="text-xs text-muted-foreground">Share quick feedback to unlock +3 chat messages and +5 quiz questions for today.</p>
+                  <button
+                    onClick={() => setFeedbackOpen(true)}
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90"
+                  >
+                    Give feedback & continue
+                  </button>
+                </div>
+              ) : (
+                <UpgradeWall
+                  title="Daily message limit reached"
+                  description="Subscribe for unlimited AI conversations and get all your CFA questions answered."
+                  usedCount={FREE_LIMITS.chatMessages}
+                  limitCount={FREE_LIMITS.chatMessages}
+                  unit="messages"
+                />
+              )}
+              <FeedbackModal
+                open={feedbackOpen}
+                onClose={() => setFeedbackOpen(false)}
+                onSubmit={async (rating, comment) => {
+                  if (!user) return;
+                  await saveFeedback({ uid: user.uid, email: user.email || "", rating, comment, createdAt: new Date().toISOString(), source: "limit_hit" });
+                  await resetDailyUsage(user.uid);
+                  await refreshProfile();
+                }}
               />
             </div>
           ) : (

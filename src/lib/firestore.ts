@@ -32,6 +32,17 @@ export interface FreeUsage {
   chatMessages: number;
   quizQuestions: number;
   date: string;
+  feedbackGivenToday?: boolean;
+}
+
+export interface Feedback {
+  id?: string;
+  uid: string;
+  email: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  source: "limit_hit" | "daily_prompt";
 }
 
 export interface UserProfile {
@@ -604,4 +615,34 @@ export async function incrementQuizUsage(uid: string, count: number): Promise<vo
       date: today,
     },
   } as Partial<UserProfile>);
+}
+
+// ─── Feedback ────────────────────────────────────────────────────────────────
+
+export async function saveFeedback(feedback: Omit<Feedback, "id">): Promise<string> {
+  const ref = await addDoc(collection(db, "feedbacks"), feedback);
+  return ref.id;
+}
+
+export async function resetDailyUsage(uid: string): Promise<void> {
+  const today = new Date().toISOString().split("T")[0];
+  await updateUserProfile(uid, {
+    freeUsage: {
+      chatMessages: 0,
+      quizQuestions: 0,
+      date: today,
+      feedbackGivenToday: true,
+    },
+  } as Partial<UserProfile>);
+}
+
+export async function getAllFeedbacks(limitCount = 50): Promise<Feedback[]> {
+  const q = query(collection(db, "feedbacks"), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Feedback));
+}
+
+export async function getAllUsers(): Promise<(UserProfile & { uid: string })[]> {
+  const snap = await getDocs(collection(db, "users"));
+  return snap.docs.map((d) => ({ uid: d.id, ...d.data() } as UserProfile & { uid: string }));
 }

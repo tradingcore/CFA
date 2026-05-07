@@ -25,8 +25,9 @@ import { ArrowRight, ArrowLeft, MessageCircle, Send, Loader2 } from "lucide-reac
 import { useSearchParams } from "next/navigation";
 import { useSubscription } from "@/hooks/use-subscription";
 import { UpgradeWall, UsageCounter } from "@/components/layout/upgrade-wall";
+import { FeedbackModal } from "@/components/layout/feedback-modal";
 import { FREE_LIMITS } from "@/lib/usage-limits";
-import { incrementQuizUsage } from "@/lib/firestore";
+import { incrementQuizUsage, saveFeedback, resetDailyUsage } from "@/lib/firestore";
 
 type QuizState = "config" | "loading" | "running" | "finished";
 type ConfigTab = "start" | "history";
@@ -34,7 +35,8 @@ type ConfigTab = "start" | "history";
 function SimuladoInner() {
   const { level } = useLevel();
   const { user, refreshProfile } = useAuth();
-  const { canQuiz, remainingQuiz, isSubscribed: isSub } = useSubscription();
+  const { canQuiz, remainingQuiz, isSubscribed: isSub, canFeedback } = useSubscription();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const searchParams = useSearchParams();
   const topics = getTopicsForLevel(level);
   const examFormat = EXAM_FORMAT[level];
@@ -640,12 +642,35 @@ function SimuladoInner() {
         <>
           {!canQuiz && (
             <div className="mx-auto mb-6 max-w-2xl">
-              <UpgradeWall
-                title="Daily question limit reached"
-                description="Subscribe for unlimited mock exams with AI-generated questions and real exam conditions."
-                usedCount={FREE_LIMITS.quizQuestions}
-                limitCount={FREE_LIMITS.quizQuestions}
-                unit="questions"
+              {canFeedback ? (
+                <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-6 text-center">
+                  <p className="text-sm font-semibold">Daily limit reached</p>
+                  <p className="text-xs text-muted-foreground">Share quick feedback to unlock +3 chat messages and +5 quiz questions for today.</p>
+                  <button
+                    onClick={() => setFeedbackOpen(true)}
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90"
+                  >
+                    Give feedback & continue
+                  </button>
+                </div>
+              ) : (
+                <UpgradeWall
+                  title="Daily question limit reached"
+                  description="Subscribe for unlimited mock exams with AI-generated questions and real exam conditions."
+                  usedCount={FREE_LIMITS.quizQuestions}
+                  limitCount={FREE_LIMITS.quizQuestions}
+                  unit="questions"
+                />
+              )}
+              <FeedbackModal
+                open={feedbackOpen}
+                onClose={() => setFeedbackOpen(false)}
+                onSubmit={async (rating, comment) => {
+                  if (!user) return;
+                  await saveFeedback({ uid: user.uid, email: user.email || "", rating, comment, createdAt: new Date().toISOString(), source: "limit_hit" });
+                  await resetDailyUsage(user.uid);
+                  await refreshProfile();
+                }}
               />
             </div>
           )}

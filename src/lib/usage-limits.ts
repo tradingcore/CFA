@@ -9,6 +9,7 @@ export interface FreeUsage {
   chatMessages: number;
   quizQuestions: number;
   date: string;
+  feedbackGivenToday?: boolean;
 }
 
 /**
@@ -73,4 +74,10 @@ export function getRemainingQuiz(profile: UserProfile | null): number {
   if (!isToday(profile?.freeUsage?.date)) return FREE_LIMITS.quizQuestions;
   const used = profile?.freeUsage?.quizQuestions ?? 0;
   return Math.max(0, FREE_LIMITS.quizQuestions - used);
+}
+
+export function canGiveFeedback(profile: UserProfile | null): boolean {
+  if (isSubscribed(profile)) return false;
+  if (!isToday(profile?.freeUsage?.date)) return true;
+  return !profile?.freeUsage?.feedbackGivenToday;
 }

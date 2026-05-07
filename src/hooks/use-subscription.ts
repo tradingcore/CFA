@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
-import { isSubscribed, canUseChat, canUseQuiz, getRemainingChat, getRemainingQuiz } from "@/lib/usage-limits";
+import { isSubscribed, canUseChat, canUseQuiz, getRemainingChat, getRemainingQuiz, canGiveFeedback } from "@/lib/usage-limits";
 
 /**
  * Hook that exposes subscription status and usage limits derived from the user profile.
@@ -18,5 +18,6 @@ export function useSubscription() {
     remainingChat: getRemainingChat(profile),
     remainingQuiz: getRemainingQuiz(profile),
     subscriptionStatus: profile?.subscriptionStatus ?? "none",
+    canFeedback: canGiveFeedback(profile),
   };
 }
