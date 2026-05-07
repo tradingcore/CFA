@@ -8,9 +8,10 @@ interface FeedbackModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (rating: number, comment: string) => Promise<void>;
+  bonus?: boolean;
 }
 
-export function FeedbackModal({ open, onClose, onSubmit }: FeedbackModalProps) {
+export function FeedbackModal({ open, onClose, onSubmit, bonus = false }: FeedbackModalProps) {
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [comment, setComment] = useState("");
@@ -64,13 +65,13 @@ export function FeedbackModal({ open, onClose, onSubmit }: FeedbackModalProps) {
               <Star className="h-7 w-7 text-emerald-500" fill="currentColor" />
             </div>
             <p className="text-sm text-muted-foreground">
-              Your daily limits have been reset. Keep studying!
+              {bonus ? "Your daily limits have been reset. Keep studying!" : "Thanks for helping us improve!"}
             </p>
           </div>
         ) : (
           <div className="flex flex-col gap-5 p-5">
             <p className="text-sm text-muted-foreground">
-              Share your feedback and get bonus questions for today.
+              {bonus ? "Share your feedback and get bonus questions for today." : "Your feedback helps us improve Trading Core."}
             </p>
 
             {/* Star rating */}
@@ -120,7 +121,7 @@ export function FeedbackModal({ open, onClose, onSubmit }: FeedbackModalProps) {
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-40"
               >
                 <Send className="h-4 w-4" />
-                {submitting ? "Submitting..." : "Submit & get +3 chat, +5 quiz"}
+                {submitting ? "Submitting..." : bonus ? "Submit & get +3 chat, +5 quiz" : "Submit feedback"}
               </button>
               <button
                 onClick={onClose}

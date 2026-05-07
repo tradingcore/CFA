@@ -642,29 +642,28 @@ function SimuladoInner() {
         <>
           {!canQuiz && (
             <div className="mx-auto mb-6 max-w-2xl">
-              {canFeedback ? (
-                <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-6 text-center">
-                  <p className="text-sm font-semibold">Daily limit reached</p>
-                  <p className="text-xs text-muted-foreground">Share quick feedback to unlock +3 chat messages and +5 quiz questions for today.</p>
+              <UpgradeWall
+                title="Daily question limit reached"
+                description="Subscribe for unlimited mock exams with AI-generated questions and real exam conditions."
+                usedCount={FREE_LIMITS.quizQuestions}
+                limitCount={FREE_LIMITS.quizQuestions}
+                unit="questions"
+              />
+              {canFeedback && (
+                <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-border bg-card p-3">
+                  <p className="text-xs text-muted-foreground">Or</p>
                   <button
                     onClick={() => setFeedbackOpen(true)}
-                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90"
+                    className="rounded-lg bg-secondary px-4 py-2 text-xs font-medium transition-colors hover:bg-accent"
                   >
-                    Give feedback & continue
+                    Give feedback & get +5 questions today
                   </button>
                 </div>
-              ) : (
-                <UpgradeWall
-                  title="Daily question limit reached"
-                  description="Subscribe for unlimited mock exams with AI-generated questions and real exam conditions."
-                  usedCount={FREE_LIMITS.quizQuestions}
-                  limitCount={FREE_LIMITS.quizQuestions}
-                  unit="questions"
-                />
               )}
               <FeedbackModal
                 open={feedbackOpen}
                 onClose={() => setFeedbackOpen(false)}
+                bonus
                 onSubmit={async (rating, comment) => {
                   if (!user) return;
                   await saveFeedback({ uid: user.uid, email: user.email || "", rating, comment, createdAt: new Date().toISOString(), source: "limit_hit" });
