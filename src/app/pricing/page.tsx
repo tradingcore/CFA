@@ -158,12 +158,12 @@ export default function PricingPage() {
           loadingPriceId={loadingPriceId}
         />
         <PlanCard
-          name="Anual"
+          name="Semestral"
           price="$200"
-          period="ano"
+          period="semestre"
           priceId={YEARLY_PRICE_ID}
           badge="Mais popular"
-          savings="Economize $280/ano (58% off)"
+          savings="Economize $40/semestre (17% off)"
           isPopular
           onSubscribe={handleSubscribe}
           loading={loading}
