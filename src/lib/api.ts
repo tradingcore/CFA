@@ -113,6 +113,7 @@ export async function apiExplainQuestion(params: {
   options: string[];
   selectedIndex: number;
   correctIndex: number;
+  level?: string;
 }): Promise<{ explanation: string }> {
   return apiFetch("/api/explain-question", params);
 }

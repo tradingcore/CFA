@@ -4,7 +4,7 @@ import { buildContextForQuery, getSystemPrompt } from "@/lib/cfa-knowledge";
 
 export async function POST(req: NextRequest) {
   try {
-    const { question, options, selectedIndex, correctIndex } = await req.json();
+    const { question, options, selectedIndex, correctIndex, level = "I" } = await req.json();
 
     if (question == null || !options?.length || selectedIndex == null || correctIndex == null) {
       return NextResponse.json({ error: "question, options, selectedIndex, and correctIndex are required" }, { status: 400 });
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     const letters = ["A", "B", "C", "D"];
 
-    const context = buildContextForQuery(question, "I");
+    const context = buildContextForQuery(question, level);
 
     const behaviorPrompt = getSystemPrompt("explain");
 

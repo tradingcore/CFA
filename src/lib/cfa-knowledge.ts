@@ -281,8 +281,14 @@ function getDocSections(): DocSection[] {
   return docSectionsCache;
 }
 
-function searchDocSections(query: string, limit = 5): DocSection[] {
-  const sections = getDocSections();
+function searchDocSections(query: string, limit = 5, level?: string): DocSection[] {
+  let sections = getDocSections();
+
+  if (level) {
+    const levelFolder = `level-${level.toLowerCase()}`;
+    sections = sections.filter((s) => s.category.startsWith(levelFolder) || s.category === "system");
+  }
+
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
 
   return sections
@@ -307,7 +313,7 @@ function searchDocSections(query: string, limit = 5): DocSection[] {
 export function buildContextForQuery(query: string, level: string): string {
   const concepts = searchConcepts({ query, level, limit: 5 });
   const formulas = fetchFormulas({ query });
-  const docs = searchDocSections(query, 3);
+  const docs = searchDocSections(query, 3, level);
 
   const parts: string[] = [];
 
