@@ -33,7 +33,7 @@ type ConfigTab = "start" | "history";
 
 function SimuladoInner() {
   const { level } = useLevel();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const { canQuiz, remainingQuiz, isSubscribed: isSub } = useSubscription();
   const searchParams = useSearchParams();
   const topics = getTopicsForLevel(level);
@@ -460,6 +460,7 @@ function SimuladoInner() {
       await saveQuizResult(user.uid, result);
       if (!isSub) {
         await incrementQuizUsage(user.uid, questions.length);
+        await refreshProfile();
       }
     } catch (err) {
       console.error("Failed to save quiz result:", err);

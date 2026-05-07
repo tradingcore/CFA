@@ -31,6 +31,7 @@ import {
 export interface FreeUsage {
   chatMessages: number;
   quizQuestions: number;
+  date: string;
 }
 
 export interface UserProfile {
@@ -501,9 +502,15 @@ export interface ChatSession {
 }
 
 export async function saveChatSession(uid: string, session: ChatSession): Promise<string> {
+  const cleanMessages = session.messages.map((m) => {
+    const clean: Record<string, unknown> = { role: m.role, content: m.content, timestamp: m.timestamp };
+    if (m.attachments && m.attachments.length > 0) clean.attachments = m.attachments;
+    return clean;
+  });
+
   if (session.id) {
     await updateDoc(doc(db, "users", uid, "chatSessions", session.id), {
-      messages: session.messages,
+      messages: cleanMessages,
       updatedAt: new Date().toISOString(),
     });
     return session.id;
@@ -511,7 +518,7 @@ export async function saveChatSession(uid: string, session: ChatSession): Promis
   const ref = await addDoc(collection(db, "users", uid, "chatSessions"), {
     title: session.title,
     level: session.level,
-    messages: session.messages,
+    messages: cleanMessages,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
@@ -570,11 +577,13 @@ async function updateStudyStreak(uid: string): Promise<void> {
  */
 export async function incrementChatUsage(uid: string): Promise<void> {
   const profile = await getUserProfile(uid);
-  const current = profile?.freeUsage?.chatMessages ?? 0;
+  const today = new Date().toISOString().split("T")[0];
+  const isNewDay = profile?.freeUsage?.date !== today;
   await updateUserProfile(uid, {
     freeUsage: {
-      chatMessages: current + 1,
-      quizQuestions: profile?.freeUsage?.quizQuestions ?? 0,
+      chatMessages: isNewDay ? 1 : (profile?.freeUsage?.chatMessages ?? 0) + 1,
+      quizQuestions: isNewDay ? 0 : (profile?.freeUsage?.quizQuestions ?? 0),
+      date: today,
     },
   } as Partial<UserProfile>);
 }
@@ -586,11 +595,13 @@ export async function incrementChatUsage(uid: string): Promise<void> {
  */
 export async function incrementQuizUsage(uid: string, count: number): Promise<void> {
   const profile = await getUserProfile(uid);
-  const current = profile?.freeUsage?.quizQuestions ?? 0;
+  const today = new Date().toISOString().split("T")[0];
+  const isNewDay = profile?.freeUsage?.date !== today;
   await updateUserProfile(uid, {
     freeUsage: {
-      chatMessages: profile?.freeUsage?.chatMessages ?? 0,
-      quizQuestions: current + count,
+      chatMessages: isNewDay ? 0 : (profile?.freeUsage?.chatMessages ?? 0),
+      quizQuestions: isNewDay ? count : (profile?.freeUsage?.quizQuestions ?? 0) + count,
+      date: today,
     },
   } as Partial<UserProfile>);
 }

@@ -8,6 +8,7 @@ export const FREE_LIMITS = {
 export interface FreeUsage {
   chatMessages: number;
   quizQuestions: number;
+  date: string;
 }
 
 /**
@@ -26,8 +27,14 @@ export function isSubscribed(profile: UserProfile | null): boolean {
  * @param profile - User profile
  * @returns true if chat is available
  */
+function isToday(dateStr?: string): boolean {
+  if (!dateStr) return false;
+  return dateStr === new Date().toISOString().split("T")[0];
+}
+
 export function canUseChat(profile: UserProfile | null): boolean {
   if (isSubscribed(profile)) return true;
+  if (!isToday(profile?.freeUsage?.date)) return true;
   const used = profile?.freeUsage?.chatMessages ?? 0;
   return used < FREE_LIMITS.chatMessages;
 }
@@ -39,6 +46,7 @@ export function canUseChat(profile: UserProfile | null): boolean {
  */
 export function canUseQuiz(profile: UserProfile | null): boolean {
   if (isSubscribed(profile)) return true;
+  if (!isToday(profile?.freeUsage?.date)) return true;
   const used = profile?.freeUsage?.quizQuestions ?? 0;
   return used < FREE_LIMITS.quizQuestions;
 }
@@ -50,6 +58,7 @@ export function canUseQuiz(profile: UserProfile | null): boolean {
  */
 export function getRemainingChat(profile: UserProfile | null): number {
   if (isSubscribed(profile)) return Infinity;
+  if (!isToday(profile?.freeUsage?.date)) return FREE_LIMITS.chatMessages;
   const used = profile?.freeUsage?.chatMessages ?? 0;
   return Math.max(0, FREE_LIMITS.chatMessages - used);
 }
@@ -61,6 +70,7 @@ export function getRemainingChat(profile: UserProfile | null): number {
  */
 export function getRemainingQuiz(profile: UserProfile | null): number {
   if (isSubscribed(profile)) return Infinity;
+  if (!isToday(profile?.freeUsage?.date)) return FREE_LIMITS.quizQuestions;
   const used = profile?.freeUsage?.quizQuestions ?? 0;
   return Math.max(0, FREE_LIMITS.quizQuestions - used);
 }

@@ -349,13 +349,9 @@ export function buildContextForQuery(query: string, level: string): string {
 
 type PromptMode = "chat" | "questions" | "explain" | "plan";
 
-let behaviorCache: string | null = null;
-
 function loadBehavior(): string {
-  if (behaviorCache) return behaviorCache;
   if (!existsSync(BEHAVIOR_FILE)) return "";
-  behaviorCache = readFileSync(BEHAVIOR_FILE, "utf-8");
-  return behaviorCache;
+  return readFileSync(BEHAVIOR_FILE, "utf-8");
 }
 
 const MODE_SECTION_MAP: Record<PromptMode, string> = {

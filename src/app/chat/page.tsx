@@ -78,7 +78,7 @@ async function readTextFile(file: File): Promise<string> {
 }
 
 export default function ChatPage() {
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const { level } = useLevel();
   const { canChat, remainingChat, isSubscribed: isSub } = useSubscription();
   const searchParams = useSearchParams();
@@ -185,6 +185,7 @@ export default function ChatPage() {
 
     if (!isSub && user) {
       await incrementChatUsage(user.uid);
+      await refreshProfile();
     }
 
     const query = input.trim() || "Please analyze the attached image for CFA-relevant content.";
@@ -226,9 +227,10 @@ export default function ChatPage() {
       await saveCurrentSession(finalMessages);
     } catch (err) {
       console.error("Chat error:", err);
+      const errMsg = err instanceof Error ? err.message : "Unknown error";
       const errorMessage: ChatMessage = {
         role: "assistant",
-        content: "Sorry, an error occurred while processing your message. Please try again.",
+        content: `Something went wrong: ${errMsg}. Please try again.`,
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, errorMessage]);
