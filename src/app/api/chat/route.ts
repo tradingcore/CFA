@@ -54,7 +54,7 @@ When acting as tutor in chat mode:
 - Analyze attached images carefully.
 - Keep responses 150-400 words unless more depth is needed.`;
 
-    let systemPrompt = (basePrompt || HARDCODED_FALLBACK) + `\n\nThe user is studying for CFA Level ${level}.`;
+    let systemPrompt = HARDCODED_FALLBACK + (basePrompt ? `\n\n${basePrompt}` : "") + `\n\nThe user is studying for CFA Level ${level}.`;
     if (topicContext) {
       systemPrompt += `\n\nCurrent topic context: ${topicContext}`;
     }
