@@ -17,6 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ActiveUsersBadge } from "@/components/layout/active-users-badge";
 
 const levels: CFALevel[] = ["I", "II", "III"];
 
@@ -66,6 +67,9 @@ export function Header() {
             </span>
           </div>
         </Link>
+        <div className="hidden sm:block">
+          <ActiveUsersBadge />
+        </div>
       </div>
 
       <DropdownMenu>

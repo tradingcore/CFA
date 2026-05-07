@@ -2,6 +2,7 @@
 
 import { TrendingUp, Brain, Target, BarChart3, MessageCircle, CalendarDays, CheckCircle2, ArrowRight, BookOpen, Zap, Database, Shield } from "lucide-react";
 import Link from "next/link";
+import { ActiveUsersBadge } from "@/components/layout/active-users-badge";
 
 const FEATURES = [
   {
@@ -83,9 +84,12 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 px-6 pt-16 pb-12 text-center sm:pt-24 sm:pb-16">
-        <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
-          <Brain className="h-3.5 w-3.5" />
-          The most complete CFA-focused AI on the market
+        <div className="flex items-center gap-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
+            <Brain className="h-3.5 w-3.5" />
+            The most complete CFA-focused AI on the market
+          </div>
+          <ActiveUsersBadge />
         </div>
         <h1 className="max-w-4xl text-4xl font-bold tracking-tight sm:text-6xl">
           Your <span className="text-primary">best CFA buddy</span> — powered by AI
