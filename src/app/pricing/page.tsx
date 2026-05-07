@@ -21,6 +21,7 @@ const proFeatures = [
   { feature: "Unlimited mock exams (Official + Training)", pro: true },
   { feature: "Unlimited AI chat messages", pro: true },
   { feature: "Unlimited question discussions", pro: true },
+  { feature: "AI-generated charts & visual explanations", pro: true },
   { feature: "Full mock exam history & review", pro: true },
   { feature: "All CFA levels (I, II, III)", pro: true },
   { feature: "Complete 2026 curriculum coverage", pro: true },
