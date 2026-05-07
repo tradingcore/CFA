@@ -226,12 +226,7 @@ export default function LandingPage() {
             </div>
 
             {/* Monthly */}
-            <div className="relative rounded-2xl border-2 border-primary bg-card p-6 shadow-xl">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="rounded-full bg-primary px-4 py-1 text-xs font-bold text-primary-foreground">
-                  Most popular
-                </span>
-              </div>
+            <div className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-bold">Monthly</h3>
               <div className="mt-2 mb-5">
                 <span className="text-3xl font-bold">$50</span>
@@ -261,7 +256,12 @@ export default function LandingPage() {
             </div>
 
             {/* 6-Month */}
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="relative rounded-2xl border-2 border-primary bg-card p-6 shadow-xl">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="rounded-full bg-primary px-4 py-1 text-xs font-bold text-primary-foreground">
+                  Most popular
+                </span>
+              </div>
               <h3 className="text-lg font-bold">6-Month</h3>
               <div className="mt-2">
                 <span className="text-3xl font-bold">$250</span>
