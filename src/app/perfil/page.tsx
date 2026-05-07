@@ -7,6 +7,8 @@ import { updateUserProfile } from "@/lib/firestore";
 import { CFALevel } from "@/lib/cfa-topics";
 import { DEFAULT_STUDY_DAYS, normalizeStudyDays, StudyDay } from "@/lib/study-availability";
 import { StudyDaysSelector } from "@/components/study/study-days-selector";
+import { useSubscription } from "@/hooks/use-subscription";
+import { FREE_LIMITS } from "@/lib/usage-limits";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import {
@@ -20,12 +22,20 @@ import {
   Loader2,
   GraduationCap,
   Flame,
+  Crown,
+  MessageCircle,
+  FileQuestion,
+  Sparkles,
+  CreditCard,
+  ArrowRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function PerfilPage() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const { setLevel } = useLevel();
+  const { isSubscribed: isSub, subscriptionStatus, remainingChat, remainingQuiz } = useSubscription();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
 
@@ -76,9 +86,36 @@ export default function PerfilPage() {
     router.replace("/login");
   };
 
+  const handleManageSubscription = async () => {
+    if (!profile?.stripeCustomerId) return;
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId: profile.stripeCustomerId }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      console.error("Portal error:", err);
+    }
+  };
+
   const daysUntilExam = examDate
     ? Math.ceil((new Date(examDate).getTime() - Date.now()) / 86400000)
     : null;
+
+  const planLabel = subscriptionStatus === "trialing" ? "Trial (3 days)"
+    : subscriptionStatus === "active" ? "Pro"
+    : subscriptionStatus === "past_due" ? "Past Due"
+    : subscriptionStatus === "cancelled" ? "Cancelled"
+    : "Free";
+
+  const planColor = subscriptionStatus === "active" || subscriptionStatus === "trialing"
+    ? "text-emerald-500"
+    : subscriptionStatus === "past_due"
+    ? "text-amber-500"
+    : "text-muted-foreground";
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -120,6 +157,102 @@ export default function PerfilPage() {
           </Card>
         )}
       </div>
+
+      {/* Subscription card */}
+      <Card className={isSub ? "border-emerald-500/30 bg-emerald-500/5" : "border-primary/30"}>
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Crown className={`h-5 w-5 ${isSub ? "text-emerald-500" : "text-muted-foreground"}`} />
+              <span className="text-sm font-semibold">Subscription</span>
+            </div>
+            <span className={`text-sm font-bold ${planColor}`}>
+              {planLabel}
+            </span>
+          </div>
+
+          {isSub ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4 text-emerald-500" />
+                  <span className="text-sm">Unlimited chat</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FileQuestion className="h-4 w-4 text-emerald-500" />
+                  <span className="text-sm">Unlimited mock exams</span>
+                </div>
+              </div>
+              {profile?.currentPeriodEnd && (
+                <p className="text-xs text-muted-foreground">
+                  {subscriptionStatus === "trialing" ? "Trial ends" : "Renews"}: {new Date(profile.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                </p>
+              )}
+              {profile?.stripeCustomerId && (
+                <button
+                  onClick={handleManageSubscription}
+                  className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Manage Subscription
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Chat messages</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-20 rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all"
+                        style={{ width: `${((FREE_LIMITS.chatMessages - remainingChat) / FREE_LIMITS.chatMessages) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono tabular-nums text-muted-foreground">
+                      {FREE_LIMITS.chatMessages - remainingChat}/{FREE_LIMITS.chatMessages}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileQuestion className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Quiz questions</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-20 rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all"
+                        style={{ width: `${((FREE_LIMITS.quizQuestions - remainingQuiz) / FREE_LIMITS.quizQuestions) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono tabular-nums text-muted-foreground">
+                      {FREE_LIMITS.quizQuestions - remainingQuiz}/{FREE_LIMITS.quizQuestions}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href="/pricing"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-emerald-600 py-3 text-sm font-semibold text-white shadow transition-all hover:opacity-90 hover:shadow-lg"
+              >
+                <Sparkles className="h-4 w-4" />
+                Upgrade to Pro — 3 days free
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+
+              <p className="text-center text-[10px] text-muted-foreground">
+                Unlimited chat, mock exams, AI study plans, and full LOS tracking.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Edit form */}
       <Card>
