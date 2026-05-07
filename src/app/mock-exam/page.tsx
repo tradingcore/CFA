@@ -42,6 +42,7 @@ function SimuladoInner() {
   const examFormat = EXAM_FORMAT[level];
 
   const preselectedTopic = searchParams.get("topic");
+  const preselectedModule = searchParams.get("module");
 
   const [state, setState] = useState<QuizState>("config");
   const [configTab, setConfigTab] = useState<ConfigTab>("start");
@@ -53,13 +54,18 @@ function SimuladoInner() {
     return new Set(topics.map((t) => t.id));
   });
   const [selectedModules, setSelectedModules] = useState<Set<string>>(() => {
+    if (preselectedModule) {
+      return new Set([preselectedModule]);
+    }
     const allMods = new Set<string>();
     const activeTids = preselectedTopic ? [preselectedTopic] : topics.map(t => t.id);
     topics.filter(t => activeTids.includes(t.id)).forEach(t => t.modules.forEach(m => allMods.add(m.id)));
     return allMods;
   });
   const freeMaxQuestions = FREE_LIMITS.quizQuestions;
-  const [questionCount, setQuestionCount] = useState(isSub ? 10 : freeMaxQuestions);
+  const [questionCount, setQuestionCount] = useState(
+    preselectedModule ? 5 : isSub ? 10 : freeMaxQuestions
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [showAnswer, setShowAnswer] = useState(false);
