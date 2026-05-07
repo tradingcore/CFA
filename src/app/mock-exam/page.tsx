@@ -637,7 +637,7 @@ function SimuladoInner() {
         </div>
         {configTab === "history" ? (
           user ? (
-            <MockHistory uid={user.uid} />
+            <MockHistory uid={user.uid} isFreeUser={!isSub} />
           ) : (
             <div className="mx-auto max-w-2xl rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
               Sign in to see your mock exam history.

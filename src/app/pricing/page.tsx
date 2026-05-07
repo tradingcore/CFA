@@ -9,15 +9,23 @@ import { useRouter } from "next/navigation";
 const MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY!;
 const YEARLY_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY!;
 
-const features = [
-  "Unlimited mock exams (Official + Training)",
-  "AI-generated questions with explanations",
-  "AI chat tutor for any CFA topic",
-  "Detailed progress tracking by LOS",
-  "Personalized AI study plan",
-  "Full performance map",
-  "All CFA levels (I, II, III)",
-  "Complete 2026 curriculum coverage",
+const freeFeatures = [
+  { feature: "1 mock exam per day (5 questions)", free: true },
+  { feature: "3 AI chat messages per day", free: true },
+  { feature: "Study plan generation", free: true },
+  { feature: "Study progress tracking", free: true },
+  { feature: "2 discussion messages per question", free: true },
+];
+
+const proFeatures = [
+  { feature: "Unlimited mock exams (Official + Training)", pro: true },
+  { feature: "Unlimited AI chat messages", pro: true },
+  { feature: "Unlimited question discussions", pro: true },
+  { feature: "Full mock exam history & review", pro: true },
+  { feature: "All CFA levels (I, II, III)", pro: true },
+  { feature: "Complete 2026 curriculum coverage", pro: true },
+  { feature: "Personalized AI study plan", pro: true },
+  { feature: "Full performance analytics", pro: true },
 ];
 
 interface PlanCardProps {
@@ -168,19 +176,38 @@ export default function PricingPage() {
         />
       </div>
 
-      <div className="w-full max-w-lg">
-        <h2 className="mb-4 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Everything included in both plans
-        </h2>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {features.map((feature) => (
-            <div key={feature} className="flex items-center gap-2.5">
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
-                <Check className="h-3 w-3 text-emerald-500" />
-              </div>
-              <span className="text-sm">{feature}</span>
+      <div className="w-full max-w-2xl">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+          <div>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Free plan
+            </h2>
+            <div className="flex flex-col gap-2">
+              {freeFeatures.map((f) => (
+                <div key={f.feature} className="flex items-center gap-2.5">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
+                    <Check className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">{f.feature}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+          <div>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+              Pro plan
+            </h2>
+            <div className="flex flex-col gap-2">
+              {proFeatures.map((f) => (
+                <div key={f.feature} className="flex items-center gap-2.5">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
+                    <Check className="h-3 w-3 text-emerald-500" />
+                  </div>
+                  <span className="text-sm">{f.feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

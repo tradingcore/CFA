@@ -5,16 +5,18 @@ import { getQuizHistory, QuizResult } from "@/lib/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Clock, FileQuestion, Target, MessageCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, FileQuestion, Target, MessageCircle, Lock, Sparkles, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { MarkdownMessage } from "@/components/chat/markdown-message";
 
 interface MockHistoryProps {
   uid: string;
+  isFreeUser?: boolean;
 }
 
 const optionLetters = ["A", "B", "C", "D"];
 
-export function MockHistory({ uid }: MockHistoryProps) {
+export function MockHistory({ uid, isFreeUser = false }: MockHistoryProps) {
   const [history, setHistory] = useState<QuizResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -63,9 +65,25 @@ export function MockHistory({ uid }: MockHistoryProps) {
     );
   }
 
+  const visibleHistory = isFreeUser ? history.slice(0, 1) : history;
+  const lockedCount = isFreeUser ? Math.max(0, history.length - 1) : 0;
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
-      {history.map((result) => {
+      {isFreeUser && (
+        <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-amber-500" />
+            <span className="text-xs text-muted-foreground">
+              Free plan: view your latest mock only. <span className="font-medium text-foreground">Subscribe for full history.</span>
+            </span>
+          </div>
+          <Link href="/pricing" className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-[10px] font-semibold text-primary-foreground hover:opacity-90">
+            <Sparkles className="h-3 w-3" /> Upgrade
+          </Link>
+        </div>
+      )}
+      {visibleHistory.map((result) => {
         const isOpen = expandedResultId === result.id;
         const minutes = Math.round(result.timeSpentSeconds / 60);
         const topicSummary = result.topicBreakdown
@@ -229,6 +247,12 @@ export function MockHistory({ uid }: MockHistoryProps) {
           </Card>
         );
       })}
+      {lockedCount > 0 && (
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border py-6 text-sm text-muted-foreground">
+          <Lock className="h-4 w-4" />
+          {lockedCount} more mock{lockedCount > 1 ? "s" : ""} locked — upgrade to Pro to review all
+        </div>
+      )}
     </div>
   );
 }
