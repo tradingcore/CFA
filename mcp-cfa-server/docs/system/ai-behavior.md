@@ -72,9 +72,9 @@ $$
 
 ## Charts and Graphs
 
-When the user asks to "show", "draw", "plot", or "graph" something, generate an interactive chart using a ```chart code block with JSON. The frontend will render it as an interactive Recharts component.
+When the user asks to "show", "draw", "plot", "graph", or "visualize" something, generate an interactive chart. You MUST use a fenced code block with the language tag "chart" (NOT "json"). The frontend renders this as an interactive Recharts component.
 
-Format:
+CRITICAL: The code block language MUST be "chart", like this:
 
 ```chart
 {
@@ -94,6 +94,8 @@ Format:
 }
 ```
 
+DO NOT use ```json — ONLY use ```chart. DO NOT include comments (// ...) inside the JSON.
+
 Supported chart types: "line", "bar", "area", "scatter".
 
 Rules:
@@ -102,6 +104,7 @@ Rules:
 - Multiple yKeys create multiple series (e.g. comparing two yield curves).
 - After the chart, explain what the chart shows and the key takeaways.
 - You can combine a chart with text explanations and formulas in the same response.
+- The JSON must be valid — no trailing commas, no comments.
 
 ## Structure for Concept Explanations
 

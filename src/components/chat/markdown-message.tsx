@@ -1,3 +1,4 @@
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -11,11 +12,6 @@ interface MarkdownMessageProps {
   className?: string;
 }
 
-/**
- * Normalizes LaTeX delimiters so remarkMath/rehypeKatex can render them.
- * Converts \[...\] to $$...$$ and \(...\) to $...$, and also
- * bare [ ... ] blocks that contain LaTeX commands.
- */
 function normalizeMathDelimiters(text: string): string {
   let result = text;
   result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => `$$${math}$$`);
@@ -26,8 +22,29 @@ function normalizeMathDelimiters(text: string): string {
   return result;
 }
 
+function extractTextFromChildren(children: React.ReactNode): string {
+  if (typeof children === "string") return children;
+  if (Array.isArray(children)) return children.map(extractTextFromChildren).join("");
+  if (React.isValidElement(children)) {
+    const props = children.props as { children?: React.ReactNode };
+    return extractTextFromChildren(props.children);
+  }
+  return String(children ?? "");
+}
+
+/**
+ * Pre-processes the raw markdown to convert chart JSON blocks that the AI
+ * might emit without the "chart" language tag into proper ```chart blocks.
+ */
+function normalizeChartBlocks(text: string): string {
+  return text.replace(/```(?:json|JSON)?\s*\n(\s*\{[\s\S]*?"type"\s*:\s*"(?:line|bar|area|scatter)"[\s\S]*?"data"\s*:\s*\[[\s\S]*?\]\s*\})\s*\n```/g,
+    (_, json) => "```chart\n" + json + "\n```"
+  );
+}
+
 export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
-  const normalized = normalizeMathDelimiters(content);
+  const step1 = normalizeMathDelimiters(content);
+  const normalized = normalizeChartBlocks(step1);
 
   return (
     <div className={cn("markdown-cfa text-sm leading-relaxed text-foreground", className)}>
@@ -54,15 +71,18 @@ export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
             );
           },
           pre: ({ children }) => {
-            const codeEl = children as React.ReactElement<{ className?: string; children?: string }>;
-            const codeText = typeof codeEl?.props?.children === "string" ? codeEl.props.children : "";
-            const lang = codeEl?.props?.className || "";
+            const codeText = extractTextFromChildren(children);
+            const trimmed = codeText.trim();
 
-            if (lang.includes("chart") || lang.includes("json")) {
-              const spec = parseChartSpec(codeText.trim());
-              if (spec) {
-                return <ChartRenderer spec={spec} />;
-              }
+            const spec = parseChartSpec(trimmed);
+            if (spec) {
+              return <ChartRenderer spec={spec} />;
+            }
+
+            const commentCleaned = trimmed.replace(/\/\/[^\n]*/g, "").trim();
+            const specRetry = parseChartSpec(commentCleaned);
+            if (specRetry) {
+              return <ChartRenderer spec={specRetry} />;
             }
 
             return (
