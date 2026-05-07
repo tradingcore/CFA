@@ -105,7 +105,7 @@ export default function PerfilPage() {
     ? Math.ceil((new Date(examDate).getTime() - Date.now()) / 86400000)
     : null;
 
-  const planLabel = subscriptionStatus === "trialing" ? "Trial (3 days)"
+  const planLabel = subscriptionStatus === "trialing" ? "Pro"
     : subscriptionStatus === "active" ? "Pro"
     : subscriptionStatus === "past_due" ? "Past Due"
     : subscriptionStatus === "cancelled" ? "Cancelled"
@@ -185,7 +185,7 @@ export default function PerfilPage() {
               </div>
               {profile?.currentPeriodEnd && (
                 <p className="text-xs text-muted-foreground">
-                  {subscriptionStatus === "trialing" ? "Trial ends" : "Renews"}: {new Date(profile.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  Renews: {new Date(profile.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                 </p>
               )}
               {profile?.stripeCustomerId && (
@@ -242,7 +242,7 @@ export default function PerfilPage() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-emerald-600 py-3 text-sm font-semibold text-white shadow transition-all hover:opacity-90 hover:shadow-lg"
               >
                 <Sparkles className="h-4 w-4" />
-                Upgrade to Pro — 3 days free
+                Upgrade to Pro
                 <ArrowRight className="h-4 w-4" />
               </Link>
 

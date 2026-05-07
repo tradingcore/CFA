@@ -45,11 +45,11 @@ export function UpgradeWall({ title, description, usedCount, limitCount, unit }:
           className="flex items-center gap-2 rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
         >
           <Sparkles className="h-4 w-4" />
-          Começar trial de 3 dias grátis
+          Assinar agora
           <ArrowRight className="h-4 w-4" />
         </Link>
         <p className="text-[10px] text-muted-foreground">
-          Acesso completo a todos os recursos. Cancele quando quiser.
+          Acesso ilimitado a todos os recursos. Cancele quando quiser.
         </p>
       </div>
     </div>

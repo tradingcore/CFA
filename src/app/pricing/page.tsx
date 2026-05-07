@@ -76,14 +76,14 @@ function PlanCard({ name, price, period, priceId, badge, savings, isPopular, onS
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <>
-            Começar trial de 3 dias
+            Assinar agora
             <ArrowRight className="h-4 w-4" />
           </>
         )}
       </button>
 
       <p className="mt-3 text-center text-[10px] text-muted-foreground">
-        3 dias grátis, depois {price}/{period}. Cancele quando quiser.
+        Cancele quando quiser.
       </p>
     </div>
   );
@@ -141,7 +141,7 @@ export default function PricingPage() {
           Escolha seu plano
         </h1>
         <p className="max-w-lg text-base text-muted-foreground">
-          Comece com 3 dias grátis. Acesso completo a todos os recursos da plataforma.
+          Acesso completo a todos os recursos da plataforma.
           Cancele a qualquer momento.
         </p>
       </div>

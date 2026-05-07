@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
-        trial_period_days: 3,
         metadata: { userId, firebaseUid: userId },
       },
       customer_email: userEmail || undefined,
