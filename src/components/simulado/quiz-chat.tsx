@@ -20,6 +20,8 @@ interface QuizChatProps {
   onClose: () => void;
   messages: QuizChatMessage[];
   onMessagesChange: (messages: QuizChatMessage[]) => void;
+  isFreeUser?: boolean;
+  maxFreeMessages?: number;
 }
 
 export function QuizChat({
@@ -29,10 +31,14 @@ export function QuizChat({
   onClose,
   messages,
   onMessagesChange,
+  isFreeUser = false,
+  maxFreeMessages = 2,
 }: QuizChatProps) {
   const { level } = useLevel();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const userMessageCount = messages.filter((m) => m.role === "user").length;
+  const limitReached = isFreeUser && userMessageCount >= maxFreeMessages;
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,7 +46,7 @@ export function QuizChat({
   }, [messages, loading]);
 
   const handleSend = async () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || limitReached) return;
     const userMessage: QuizChatMessage = { role: "user", content: input.trim() };
     const nextMessages = [...messages, userMessage];
     onMessagesChange(nextMessages);
@@ -130,27 +136,38 @@ export function QuizChat({
         </div>
       </div>
 
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          handleSend();
-        }}
-        className="flex gap-2 border-t border-border p-3"
-      >
-        <input
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask a question..."
-          className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-xs outline-none ring-ring focus:ring-2"
-        />
-        <button
-          type="submit"
-          disabled={!input.trim() || loading}
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-30"
+      {limitReached ? (
+        <div className="border-t border-border p-3 text-center">
+          <p className="text-[11px] text-muted-foreground">
+            Discussion limit reached ({maxFreeMessages}/{maxFreeMessages}). Subscribe for unlimited discussions.
+          </p>
+        </div>
+      ) : (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleSend();
+          }}
+          className="flex gap-2 border-t border-border p-3"
         >
-          {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-        </button>
-      </form>
+          <input
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="Ask a question..."
+            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-xs outline-none ring-ring focus:ring-2"
+          />
+          <button
+            type="submit"
+            disabled={!input.trim() || loading}
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-30"
+          >
+            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+          </button>
+          {isFreeUser && (
+            <span className="self-center text-[9px] text-muted-foreground">{userMessageCount}/{maxFreeMessages}</span>
+          )}
+        </form>
+      )}
     </div>
   );
 }

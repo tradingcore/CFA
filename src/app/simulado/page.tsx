@@ -966,6 +966,8 @@ function SimuladoInner() {
           onMessagesChange={(next) =>
             setDiscussions((prev) => ({ ...prev, [currentQuestion.id]: next }))
           }
+          isFreeUser={!isSub}
+          maxFreeMessages={2}
         />
       )}
     </div>
