@@ -7,7 +7,8 @@ import { SimuladoMode, EXAM_FORMAT } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Shield, BookOpen, ChevronDown, ChevronRight, CheckSquare, Square } from "lucide-react";
+import { ArrowRight, Shield, BookOpen, ChevronDown, ChevronRight, CheckSquare, Square, Lock } from "lucide-react";
+import Link from "next/link";
 
 const QUANTITY_PRESETS = [5, 10, 15, 20];
 
@@ -24,6 +25,7 @@ interface SimuladoConfigProps {
   onStart: () => void;
   onStartOfficialFull: () => void;
   availableQuestionCount: number;
+  isSubscribed?: boolean;
 }
 
 /**
@@ -42,6 +44,7 @@ export function SimuladoConfig({
   onStart,
   onStartOfficialFull,
   availableQuestionCount,
+  isSubscribed = false,
 }: SimuladoConfigProps) {
   const { level } = useLevel();
   const topics = getTopicsForLevel(level);
@@ -73,19 +76,38 @@ export function SimuladoConfig({
 
       {/* Mode selection */}
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <button
-          onClick={() => onSetMode("official")}
-          className={cn(
-            "flex flex-col items-center gap-2 rounded-xl border-2 p-5 text-center transition-all",
-            mode === "official" ? "border-primary bg-primary/10" : "border-border hover:border-primary/30"
-          )}
-        >
-          <Shield className={cn("h-8 w-8", mode === "official" ? "text-primary" : "text-muted-foreground")} />
-          <span className="text-sm font-semibold">Official Exam</span>
-          <span className="text-[11px] text-muted-foreground leading-tight">
-            Countdown timer ({examFormat.secondsPerQuestion}s/question), no feedback, free navigation. Real exam conditions.
-          </span>
-        </button>
+        {isSubscribed ? (
+          <button
+            onClick={() => onSetMode("official")}
+            className={cn(
+              "flex flex-col items-center gap-2 rounded-xl border-2 p-5 text-center transition-all",
+              mode === "official" ? "border-primary bg-primary/10" : "border-border hover:border-primary/30"
+            )}
+          >
+            <Shield className={cn("h-8 w-8", mode === "official" ? "text-primary" : "text-muted-foreground")} />
+            <span className="text-sm font-semibold">Official Exam</span>
+            <span className="text-[11px] text-muted-foreground leading-tight">
+              Countdown timer ({examFormat.secondsPerQuestion}s/question), no feedback, free navigation. Real exam conditions.
+            </span>
+          </button>
+        ) : (
+          <Link
+            href="/pricing"
+            className="flex flex-col items-center gap-2 rounded-xl border-2 border-border bg-muted/30 p-5 text-center transition-all hover:border-primary/30"
+          >
+            <div className="relative">
+              <Shield className="h-8 w-8 text-muted-foreground/50" />
+              <Lock className="absolute -bottom-1 -right-1 h-4 w-4 text-amber-500" />
+            </div>
+            <span className="text-sm font-semibold text-muted-foreground">Official Exam</span>
+            <span className="text-[11px] text-muted-foreground leading-tight">
+              Available for Pro subscribers. Real exam conditions with countdown timer.
+            </span>
+            <span className="mt-1 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-semibold text-primary">
+              Upgrade to unlock
+            </span>
+          </Link>
+        )}
         <button
           onClick={() => onSetMode("training")}
           className={cn(
@@ -101,7 +123,7 @@ export function SimuladoConfig({
         </button>
       </div>
 
-      {mode === "official" && (
+      {mode === "official" && isSubscribed && (
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
