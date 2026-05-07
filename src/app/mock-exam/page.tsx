@@ -621,18 +621,12 @@ function SimuladoInner() {
             Start Mock
           </button>
           <button
-            onClick={() => {
-              if (!isSub) {
-                window.location.href = "/pricing";
-                return;
-              }
-              setConfigTab("history");
-            }}
+            onClick={() => setConfigTab("history")}
             className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               configTab === "history" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"
             }`}
           >
-            History {!isSub && <span className="ml-1 text-[9px] text-amber-500">PRO</span>}
+            History
           </button>
         </div>
         {configTab === "history" ? (

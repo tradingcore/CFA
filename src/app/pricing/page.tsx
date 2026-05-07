@@ -214,7 +214,7 @@ export default function PricingPage() {
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Shield className="h-4 w-4" />
-        <span>Secure payment via Stripe. Credit card and PIX accepted. Cancel anytime.</span>
+        <span>Secure payment via Stripe. Cancel anytime.</span>
       </div>
     </div>
   );
