@@ -4,6 +4,7 @@ import type { GeneratedQuestion } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { MarkdownMessage } from "@/components/chat/markdown-message";
 
 interface QuizCardProps {
   question: GeneratedQuestion;
@@ -80,7 +81,7 @@ export function QuizCard({ question, selectedIndex, showAnswer, onSelect }: Quiz
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
               Explanation
             </p>
-            <p className="text-sm leading-relaxed">{question.explanation}</p>
+            <MarkdownMessage content={question.explanation} className="text-sm" />
           </div>
         )}
       </CardContent>

@@ -166,7 +166,7 @@ export function QuizReview({ questions, answers, totalTimeSeconds, discussions, 
                   </div>
                   <div className="rounded-lg bg-muted/50 border border-border p-3">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Explanation</p>
-                    <p className="text-sm leading-relaxed">{q.explanation}</p>
+                    <MarkdownMessage content={q.explanation} className="text-sm" />
                   </div>
                   {discussions?.[q.id]?.length ? (
                     <div className="mt-4 rounded-xl border border-border bg-card p-3">
