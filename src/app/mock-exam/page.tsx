@@ -138,7 +138,7 @@ function SimuladoInner() {
       const anchor = target?.closest("a");
       if (!(anchor instanceof HTMLAnchorElement)) return;
       const href = anchor.getAttribute("href") || "";
-      if (!href || href.startsWith("#") || href.startsWith("/simulado")) return;
+      if (!href || href.startsWith("#") || href.startsWith("/mock-exam")) return;
       if (anchor.target === "_blank") return;
       const ok = window.confirm(
         "You are in the middle of a mock exam. Your progress is auto-saved, but are you sure you want to leave this page?"

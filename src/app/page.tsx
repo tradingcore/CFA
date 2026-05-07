@@ -74,7 +74,7 @@ export default function LandingPage() {
             Sign In
           </Link>
           <Link
-            href="/registro"
+            href="/register"
             className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             Start Free
@@ -101,7 +101,7 @@ export default function LandingPage() {
         </p>
         <div className="flex flex-col items-center gap-3 pt-2">
           <Link
-            href="/registro"
+            href="/register"
             className="flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
           >
             Start Studying Now <ArrowRight className="h-5 w-5" />
@@ -220,7 +220,7 @@ export default function LandingPage() {
               ))}
             </ul>
             <Link
-              href="/registro"
+              href="/register"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
               Start Studying Now <ArrowRight className="h-5 w-5" />
@@ -238,7 +238,7 @@ export default function LandingPage() {
           Join the smartest way to prepare for the CFA exam.
         </p>
         <Link
-          href="/registro"
+          href="/register"
           className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90"
         >
           Get Started <ArrowRight className="h-5 w-5" />

@@ -153,7 +153,7 @@ export function Header() {
               <p className="text-sm font-medium">{displayName}</p>
               <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
-            <DropdownMenuItem onClick={() => router.push("/perfil")}>
+            <DropdownMenuItem onClick={() => router.push("/profile")}>
               <Settings className="mr-2 h-4 w-4" />
               My Profile
             </DropdownMenuItem>

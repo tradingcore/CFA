@@ -144,7 +144,7 @@ export function NextStudy() {
                     Practice <ArrowRight className="h-3 w-3" />
                   </Badge>
                 </Link>
-                <Link href="/estudo">
+                <Link href="/study">
                   <Badge
                     variant="outline"
                     className="cursor-pointer gap-1 text-[10px] transition-colors hover:bg-primary hover:text-primary-foreground"

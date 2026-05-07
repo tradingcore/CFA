@@ -97,7 +97,7 @@ export default function PricingPage() {
 
   const handleSubscribe = async (priceId: string) => {
     if (!user) {
-      router.push("/registro");
+      router.push("/register");
       return;
     }
 

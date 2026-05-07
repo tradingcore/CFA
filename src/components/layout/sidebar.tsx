@@ -28,9 +28,9 @@ import { FREE_LIMITS } from "@/lib/usage-limits";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/simulado", label: "Mock Exam", icon: FileQuestion },
-  { href: "/estudo", label: "Study Progress", icon: GraduationCap },
-  { href: "/plano", label: "Study Plan", icon: CalendarDays },
+  { href: "/mock-exam", label: "Mock Exam", icon: FileQuestion },
+  { href: "/study", label: "Study Progress", icon: GraduationCap },
+  { href: "/plan", label: "Study Plan", icon: CalendarDays },
   { href: "/chat?new=1", label: "Chat", icon: MessageCircle },
 ];
 
@@ -43,7 +43,7 @@ export function Sidebar() {
 
   const getBadge = (href: string): string | null => {
     if (isSub) return null;
-    if (href === "/simulado") return `${Math.min(remainingQuiz, FREE_LIMITS.quizQuestions)}/${FREE_LIMITS.quizQuestions}`;
+    if (href === "/mock-exam") return `${Math.min(remainingQuiz, FREE_LIMITS.quizQuestions)}/${FREE_LIMITS.quizQuestions}`;
     if (href.startsWith("/chat")) return `${Math.min(remainingChat, FREE_LIMITS.chatMessages)}/${FREE_LIMITS.chatMessages}`;
     return null;
   };
@@ -177,7 +177,7 @@ export function Sidebar() {
       <div className="border-t border-border p-3 hidden md:block">
         {!collapsed && (
           <Link
-            href="/perfil"
+            href="/profile"
             className="flex items-center gap-3 rounded-lg px-3 py-2 mb-2 transition-colors hover:bg-sidebar-accent"
           >
             <Avatar className="h-7 w-7">

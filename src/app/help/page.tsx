@@ -145,7 +145,7 @@ const flow: FlowStep[] = [
     title: "Take a baseline mock",
     description:
       "Run a 30–60 question mock that covers most topics so we collect enough signal to estimate readiness.",
-    link: { href: "/simulado", label: "Open Mock Exam" },
+    link: { href: "/mock-exam", label: "Open Mock Exam" },
     icon: BookOpen,
   },
   {
@@ -153,7 +153,7 @@ const flow: FlowStep[] = [
     title: "Read the Performance Map",
     description:
       "Look at the states (not the raw %) per topic and module. Mastered requires real evidence, so trust the badge over a percent.",
-    link: { href: "/mapa", label: "Open Performance Map" },
+    link: { href: "/map", label: "Open Performance Map" },
     icon: MapIcon,
   },
   {
@@ -161,7 +161,7 @@ const flow: FlowStep[] = [
     title: "Generate your Study Plan",
     description:
       "Tell the AI what you want to focus on, pick a few modules and let it schedule reading + practice + review for the next 7–30 days.",
-    link: { href: "/plano", label: "Open Study Plan" },
+    link: { href: "/plan", label: "Open Study Plan" },
     icon: CalendarDays,
   },
   {
@@ -169,7 +169,7 @@ const flow: FlowStep[] = [
     title: "Practice in short, targeted sets",
     description:
       "From any topic in the map, click Practice to drill it. Discuss tricky questions in the in-mock chat — it gets saved with the result.",
-    link: { href: "/simulado", label: "Practice now" },
+    link: { href: "/mock-exam", label: "Practice now" },
     icon: Target,
   },
   {
