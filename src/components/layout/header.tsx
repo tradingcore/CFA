@@ -4,7 +4,7 @@ import { useLevel } from "@/contexts/level-context";
 import { useAuth } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { CFALevel } from "@/lib/cfa-topics";
-import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles } from "lucide-react";
+import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles, Shield } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
@@ -145,6 +145,12 @@ export function Header() {
               <Settings className="mr-2 h-4 w-4" />
               My Profile
             </DropdownMenuItem>
+            {["danielzf1818@gmail.com", "fleischmann606@gmail.com"].includes(user?.email || "") && (
+              <DropdownMenuItem onClick={() => router.push("/admin")}>
+                <Shield className="mr-2 h-4 w-4" />
+                Admin Dashboard
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={handleLogout} className="text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
