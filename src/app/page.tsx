@@ -187,44 +187,107 @@ export default function LandingPage() {
 
       {/* Pricing */}
       <section className="px-6 py-20 sm:px-12">
-        <div className="mx-auto max-w-md">
+        <div className="mx-auto max-w-3xl">
           <h2 className="mb-4 text-center text-2xl font-bold sm:text-3xl">
-            Simple pricing. Serious results.
+            Start free. Upgrade when ready.
           </h2>
           <p className="mb-10 text-center text-muted-foreground">
-            Full access to everything. No hidden fees. Cancel anytime.
+            Try everything with daily limits. Go Pro for unlimited access.
           </p>
 
-          <div className="rounded-2xl border-2 border-primary bg-card p-8 shadow-xl">
-            <div className="mb-2 text-center">
-              <span className="text-5xl font-bold">$40</span>
-              <span className="text-muted-foreground">/month</span>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {/* Free */}
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-bold">Free</h3>
+              <div className="mt-2 mb-5">
+                <span className="text-3xl font-bold">$0</span>
+                <span className="text-sm text-muted-foreground"> forever</span>
+              </div>
+              <ul className="mb-6 flex flex-col gap-2.5">
+                {[
+                  "1 mock exam/day (5 questions)",
+                  "3 AI chat messages/day",
+                  "Study plan generation",
+                  "Study progress tracking",
+                  "All CFA levels (I, II, III)",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/register"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 text-sm font-semibold transition-colors hover:bg-accent"
+              >
+                Start Free <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-            <p className="mb-6 text-center text-xs text-muted-foreground">
-              Less than a single CFA prep book
-            </p>
-            <ul className="mb-8 flex flex-col gap-3">
-              {[
-                "Unlimited AI-generated questions",
-                "Official & training mock exams",
-                "24/7 CFA-specialized AI tutor",
-                "Personalized study plans",
-                "Detailed performance analytics",
-                "LOS-level progress tracking",
-                "Level I, II & III — full 2026 curriculum",
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/register"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              Start Studying Now <ArrowRight className="h-5 w-5" />
-            </Link>
+
+            {/* Monthly */}
+            <div className="relative rounded-2xl border-2 border-primary bg-card p-6 shadow-xl">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="rounded-full bg-primary px-4 py-1 text-xs font-bold text-primary-foreground">
+                  Most popular
+                </span>
+              </div>
+              <h3 className="text-lg font-bold">Monthly</h3>
+              <div className="mt-2 mb-5">
+                <span className="text-3xl font-bold">$50</span>
+                <span className="text-sm text-muted-foreground">/month</span>
+              </div>
+              <ul className="mb-6 flex flex-col gap-2.5">
+                {[
+                  "Unlimited mock exams",
+                  "Unlimited AI chat",
+                  "AI charts & explanations",
+                  "Full mock history & review",
+                  "Complete 2026 curriculum",
+                  "Performance analytics",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2.5 text-sm">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/register"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                Start Now <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {/* 6-Month */}
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-bold">6-Month</h3>
+              <div className="mt-2">
+                <span className="text-3xl font-bold">$250</span>
+                <span className="text-sm text-muted-foreground">/6 months</span>
+              </div>
+              <p className="mb-5 text-xs text-emerald-500 font-semibold">Save $50 vs monthly</p>
+              <ul className="mb-6 flex flex-col gap-2.5">
+                {[
+                  "Everything in Monthly",
+                  "Best value for exam prep",
+                  "Lock in your rate",
+                  "Cancel anytime",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2.5 text-sm">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/register"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 text-sm font-semibold transition-colors hover:bg-accent"
+              >
+                Start Now <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
