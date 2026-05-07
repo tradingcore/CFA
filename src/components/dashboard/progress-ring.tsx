@@ -116,7 +116,7 @@ export function ProgressRing() {
         <CircularProgress
           value={readiness.readinessPct}
           label="Readiness"
-          sublabel={`${readiness.totalSampleSize} answers · ${evidenceCoverage}% of program covered`}
+          sublabel={`${readiness.totalSampleSize} answers · ${evidenceCoverage}% of topics practiced`}
           hint={
             <>
               <HintBlock title="What is Coverage">
@@ -131,10 +131,10 @@ export function ProgressRing() {
               <HintBlock title="Your numbers">
                 {readiness.totalSampleSize === 0
                   ? "0 answers. Do a mock with 30+ questions to make this meaningful."
-                  : `${readiness.readinessPct}% over ${readiness.totalSampleSize} answers, ${evidenceCoverage}% covered.${
+                  : `${readiness.readinessPct}% over ${readiness.totalSampleSize} answers, ${evidenceCoverage}% of topics have data.${
                       evidenceCoverage < 80
-                        ? " Coverage still low — practice missing topics first."
-                        : " Coverage high — number reflects you well."
+                        ? " Many topics untested — practice more topics for accurate readiness."
+                        : " Good coverage — readiness score is reliable."
                     }`}
               </HintBlock>
             </>
