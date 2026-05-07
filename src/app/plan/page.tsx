@@ -37,6 +37,7 @@ export default function PlanoPage() {
   const [plan, setPlan] = useState<StudyPlanDoc | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [genProgress, setGenProgress] = useState(0);
   const [completedBlocks, setCompletedBlocks] = useState(0);
   const [configOpen, setConfigOpen] = useState(false);
   const [generationError, setGenerationError] = useState("");
@@ -74,12 +75,29 @@ export default function PlanoPage() {
               periodDays: ((p.periodDays as 7 | 14 | 30) ?? c.periodDays),
               startFromModuleId: nextModuleId,
             }));
+          } else {
+            setConfigOpen(true);
           }
         })
         .catch(console.error)
         .finally(() => setLoading(false));
     }
   }, [user, level]);
+
+  useEffect(() => {
+    if (!generating) { setGenProgress(0); return; }
+    setGenProgress(5);
+    const interval = setInterval(() => {
+      setGenProgress((prev) => {
+        if (prev >= 95) return 95;
+        if (prev < 20) return prev + 3;
+        if (prev < 50) return prev + 2;
+        if (prev < 80) return prev + 1.5;
+        return prev + 0.5;
+      });
+    }, 500);
+    return () => clearInterval(interval);
+  }, [generating]);
 
   useEffect(() => {
     if (!profile) return;
@@ -507,9 +525,19 @@ export default function PlanoPage() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : generating ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-20">
+        <div className="flex flex-col items-center justify-center gap-4 py-20">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Generating your study plan with AI...</p>
+          <div className="w-full max-w-xs">
+            <div className="h-2 w-full rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${Math.round(genProgress)}%` }} />
+            </div>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              {genProgress < 20 ? "Analyzing your weak areas..." :
+               genProgress < 50 ? "Building study blocks..." :
+               genProgress < 80 ? "Optimizing your schedule..." :
+               "Finalizing plan..."}
+            </p>
+          </div>
         </div>
       ) : totalBlocks === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border py-20">

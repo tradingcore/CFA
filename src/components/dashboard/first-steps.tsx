@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
-import { getQuizHistory, getLatestStudyPlan } from "@/lib/firestore";
+import { getQuizHistory, getLatestStudyPlan, getChatSessions } from "@/lib/firestore";
 import { useLevel } from "@/contexts/level-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarDays, FileQuestion, MessageCircle, CheckCircle2, Circle, X } from "lucide-react";
@@ -30,11 +30,13 @@ export function FirstSteps() {
     Promise.all([
       getLatestStudyPlan(user.uid, level),
       getQuizHistory(user.uid, 1),
-    ]).then(([plan, quizzes]) => {
+      getChatSessions(user.uid, 1),
+    ]).then(([plan, quizzes, chats]) => {
       const hasPlan = !!plan && plan.blocks.length > 0;
       const hasQuiz = quizzes.length > 0;
+      const hasChat = chats.length > 0;
 
-      if (hasPlan && hasQuiz) {
+      if (hasPlan && hasQuiz && hasChat) {
         setSteps(null);
         return;
       }
@@ -46,7 +48,7 @@ export function FirstSteps() {
           description: "Try the AI tutor — ask about any CFA topic and see what it can do.",
           href: "/chat?new=1",
           icon: MessageCircle,
-          done: false,
+          done: hasChat,
         },
         {
           id: "plan",
