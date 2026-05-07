@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Star, Send, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +25,10 @@ export function FeedbackModal({ open, onClose, onSubmit, bonus = false }: Feedba
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  if (!open) return null;
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  useEffect(() => { setPortalTarget(document.body); }, []);
+
+  if (!open || !portalTarget) return null;
 
   const handleSubmit = async () => {
     if (rating === 0) return;
@@ -43,10 +47,10 @@ export function FeedbackModal({ open, onClose, onSubmit, bonus = false }: Feedba
     }
   };
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl">
@@ -133,6 +137,7 @@ export function FeedbackModal({ open, onClose, onSubmit, bonus = false }: Feedba
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    portalTarget
   );
 }

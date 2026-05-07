@@ -113,18 +113,19 @@ export function Header() {
         )}
         <button
           onClick={() => setFeedbackOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary transition-colors hover:bg-accent"
+          className="hidden items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent sm:flex"
           aria-label="Give feedback"
-          title="Give feedback"
         >
-          <MessageSquarePlus className="h-4 w-4" />
+          <MessageSquarePlus className="h-3.5 w-3.5" />
+          Feedback
         </button>
         <Link
           href="/help"
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary transition-colors hover:bg-accent"
-          aria-label="How it works"
+          className="hidden items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent sm:flex"
+          aria-label="Help"
         >
-          <HelpCircle className="h-4 w-4" />
+          <HelpCircle className="h-3.5 w-3.5" />
+          Help
         </Link>
         {mounted && (
           <button
