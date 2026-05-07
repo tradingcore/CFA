@@ -72,9 +72,11 @@ export async function POST(req: NextRequest) {
 
         if (userId && adminDb) {
           const periodEnd = (subscription as unknown as { current_period_end?: number }).current_period_end;
+          const cancelAtPeriodEnd = (subscription as unknown as { cancel_at_period_end?: boolean }).cancel_at_period_end;
           await adminDb.doc(`users/${userId}`).update({
             subscriptionStatus: mappedStatus,
             subscriptionId: subscription.id,
+            cancelAtPeriodEnd: cancelAtPeriodEnd ?? false,
             ...(periodEnd ? { currentPeriodEnd: new Date(periodEnd * 1000).toISOString() } : {}),
           });
         }

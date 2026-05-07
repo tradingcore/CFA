@@ -105,13 +105,17 @@ export default function PerfilPage() {
     ? Math.ceil((new Date(examDate).getTime() - Date.now()) / 86400000)
     : null;
 
-  const planLabel = subscriptionStatus === "trialing" ? "Pro"
+  const isCancelling = profile?.cancelAtPeriodEnd && (subscriptionStatus === "active" || subscriptionStatus === "trialing");
+
+  const planLabel = isCancelling ? "Cancelled"
+    : subscriptionStatus === "trialing" ? "Pro"
     : subscriptionStatus === "active" ? "Pro"
     : subscriptionStatus === "past_due" ? "Past Due"
     : subscriptionStatus === "cancelled" ? "Cancelled"
     : "Free";
 
-  const planColor = subscriptionStatus === "active" || subscriptionStatus === "trialing"
+  const planColor = isCancelling ? "text-amber-500"
+    : subscriptionStatus === "active" || subscriptionStatus === "trialing"
     ? "text-emerald-500"
     : subscriptionStatus === "past_due"
     ? "text-amber-500"
@@ -183,11 +187,20 @@ export default function PerfilPage() {
                   <span className="text-sm">Unlimited mock exams</span>
                 </div>
               </div>
-              {profile?.currentPeriodEnd && (
+              {isCancelling && profile?.currentPeriodEnd ? (
+                <div className="rounded-lg bg-amber-500/10 px-3 py-2">
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    Subscription cancelled — active until {new Date(profile.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    You won&apos;t be charged again. Full access continues until this date.
+                  </p>
+                </div>
+              ) : profile?.currentPeriodEnd ? (
                 <p className="text-xs text-muted-foreground">
                   Renews: {new Date(profile.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                 </p>
-              )}
+              ) : null}
               {profile?.stripeCustomerId && (
                 <button
                   onClick={handleManageSubscription}

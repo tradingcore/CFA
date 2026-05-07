@@ -64,6 +64,7 @@ export interface UserProfile {
   subscriptionStatus?: "trialing" | "active" | "past_due" | "cancelled" | "none";
   subscriptionId?: string;
   currentPeriodEnd?: string;
+  cancelAtPeriodEnd?: boolean;
   freeUsage?: FreeUsage;
 }
 
