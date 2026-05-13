@@ -316,6 +316,10 @@ export default function LandingPage() {
                 a: "Our AI is grounded in the complete 2026 CFA curriculum (official LOS, modules, formula sheet, and a curated question bank). It cites specific LOS, won't hallucinate finance concepts, and stays focused on what you'll actually be tested on.",
               },
               {
+                q: "I already use Schweser, Mark Meldrum or AnalystPrep — is Trading Core still worth it?",
+                a: "Absolutely — and it gets even better. Those are great content sources, but they don't organize your study, track which LOS you're actually weak on, or give you a 24/7 tutor that knows the curriculum. Trading Core sits on top of everything you already have: it builds the schedule, surfaces your weak spots with honest readiness data, generates targeted practice for exactly those LOS, and explains anything you didn't get instantly. Most users tell us it's what finally made their existing materials click.",
+              },
+              {
                 q: "Are the mock exams realistic?",
                 a: "Yes. Our question bank includes the same official CFA Institute questions used by the leading prep providers, plus AI-generated practice mapped to actual Learning Outcome Statements. We mirror the official exam format — timer, free navigation, and item sets — with detailed explanations after each question.",
               },
