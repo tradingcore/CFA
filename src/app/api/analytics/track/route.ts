@@ -12,6 +12,9 @@ export interface PageViewData {
   sessionId: string;
   userId: string | null;
   email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
+  provider?: string | null;
   isNewVisitor: boolean;
   isInternal?: boolean;
   timestamp: string;
@@ -19,34 +22,40 @@ export interface PageViewData {
 
 interface GeoData {
   countryCode: string;
-  countryName: string;
-  continent: string;
-  continentCode: string;
-  asn: string;
-  asName: string;
+  city: string;
+  region: string;
+  postal: string;
+  loc: string;
+  timezone: string;
+  org: string;
+  hostname: string;
 }
 
 const EMPTY_GEO: GeoData = {
   countryCode: "unknown",
-  countryName: "",
-  continent: "",
-  continentCode: "",
-  asn: "",
-  asName: "",
+  city: "",
+  region: "",
+  postal: "",
+  loc: "",
+  timezone: "",
+  org: "",
+  hostname: "",
 };
 
 /**
  * getGeoFromIP
- * Resolves geolocation and ASN info for a visitor IP using the IPinfo Lite API.
+ * Resolves geolocation, ASN/org and reverse-DNS info for a visitor IP using the
+ * standard IPinfo API endpoint (ipinfo.io/{ip}/json), which provides city-level
+ * granularity (city, region, postal, lat/long, timezone, org).
  *
- * @param ip - Caller IP (typically from `x-forwarded-for` / `x-real-ip`).
- * @returns Geo info (country, continent, ASN). Returns sentinel values when the IP
- * cannot be resolved (local IP, missing token, network error, non-200 response).
+ * @param ip - Caller IP (typically derived from `x-forwarded-for` / `x-real-ip`).
+ * @returns Geo info; returns sentinel values when the IP can't be resolved
+ * (local IP, missing token, network error, non-200 response).
  *
  * Notes:
  * - Uses Bearer auth with `IPINFO_TOKEN` env var.
- * - Falls back gracefully to keep the tracking endpoint resilient.
- * - 2s timeout to avoid blocking the request path.
+ * - Resilient by design: 2s timeout and graceful fallback so tracking never breaks.
+ * - Free tier of the standard endpoint is 50k requests/month.
  */
 async function getGeoFromIP(ip: string): Promise<GeoData> {
   if (!ip || ip === "127.0.0.1" || ip === "::1") {
@@ -57,28 +66,32 @@ async function getGeoFromIP(ip: string): Promise<GeoData> {
   if (!token) return EMPTY_GEO;
 
   try {
-    const res = await fetch(`https://api.ipinfo.io/lite/${encodeURIComponent(ip)}`, {
+    const res = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}/json`, {
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(2000),
     });
     if (!res.ok) return EMPTY_GEO;
 
     const d = (await res.json()) as {
-      country_code?: string;
+      city?: string;
+      region?: string;
       country?: string;
-      continent?: string;
-      continent_code?: string;
-      asn?: string;
-      as_name?: string;
+      loc?: string;
+      org?: string;
+      postal?: string;
+      timezone?: string;
+      hostname?: string;
     };
 
     return {
-      countryCode: d.country_code || "unknown",
-      countryName: d.country || "",
-      continent: d.continent || "",
-      continentCode: d.continent_code || "",
-      asn: d.asn || "",
-      asName: d.as_name || "",
+      countryCode: d.country || "unknown",
+      city: d.city || "",
+      region: d.region || "",
+      postal: d.postal || "",
+      loc: d.loc || "",
+      timezone: d.timezone || "",
+      org: d.org || "",
+      hostname: d.hostname || "",
     };
   } catch {
     return EMPTY_GEO;
@@ -86,15 +99,32 @@ async function getGeoFromIP(ip: string): Promise<GeoData> {
 }
 
 /**
+ * extractClientIP
+ * Pulls the visitor IP out of standard proxy headers, in priority order:
+ * `x-forwarded-for` (first hop) → `x-real-ip`. Returns empty string if neither
+ * is present or both are blank.
+ */
+function extractClientIP(req: NextRequest): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return req.headers.get("x-real-ip") || "";
+}
+
+/**
  * POST /api/analytics/track
- * Records a page view from any visitor (anonymous or logged in).
+ * Records a single page view for any visitor (anonymous or authenticated).
  *
- * Request body: see `PageViewData`.
+ * Captured data:
+ * - Visitor: IP, geo (city/region/country/postal/timezone), org/ISP.
+ * - Auth: userId, email, displayName, photoURL, provider (when logged in).
+ * - Session: sessionId, isNewVisitor, device, language, userAgent.
+ *
+ * Privacy note: the persisted record contains PII (email + IP). Treat the
+ * `pageViews` collection as internal/admin-only.
  *
  * Behavior:
- * - Enriches the record with geo info (country, continent, ASN) via IPinfo Lite API.
- * - Determines `isInternal` from the request flag OR from a server-side admin
- *   email check (defense in depth).
+ * - `isInternal` is set to true if the client flagged it OR the email matches
+ *   `ADMIN_EMAILS` (defense in depth).
  * - Always returns `{ ok: true }`; failures are logged but never break tracking.
  */
 export async function POST(req: NextRequest) {
@@ -105,10 +135,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false }, { status: 400 });
     }
 
-    const forwarded = req.headers.get("x-forwarded-for");
-    const ip = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip") || "";
+    const ip = extractClientIP(req);
     const geo = await getGeoFromIP(ip);
-
     const isInternal = !!data.isInternal || isAdminEmail(data.email);
 
     const record = {
@@ -120,15 +148,22 @@ export async function POST(req: NextRequest) {
       device: data.device || "desktop",
       sessionId: data.sessionId,
       userId: data.userId || null,
+      email: data.email || null,
+      displayName: data.displayName || null,
+      photoURL: data.photoURL || null,
+      provider: data.provider || null,
       isNewVisitor: data.isNewVisitor ?? false,
       isInternal,
       timestamp: data.timestamp || new Date().toISOString(),
+      ip,
       country: geo.countryCode,
-      countryName: geo.countryName,
-      continent: geo.continent,
-      continentCode: geo.continentCode,
-      asn: geo.asn,
-      asName: geo.asName,
+      city: geo.city,
+      region: geo.region,
+      postal: geo.postal,
+      loc: geo.loc,
+      timezone: geo.timezone,
+      org: geo.org,
+      hostname: geo.hostname,
     };
 
     await adminDb.collection("pageViews").add(record);

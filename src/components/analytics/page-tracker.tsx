@@ -62,6 +62,9 @@ export function PageTracker() {
         const isInternal =
           isAdminEmail(user?.email) || localStorage.getItem(INTERNAL_FLAG_KEY) === "1";
 
+        const provider =
+          user?.providerData?.[0]?.providerId ?? null;
+
         const data = {
           path: pathname,
           referrer: document.referrer || "",
@@ -72,6 +75,9 @@ export function PageTracker() {
           sessionId,
           userId: user?.uid || null,
           email: user?.email || null,
+          displayName: user?.displayName || null,
+          photoURL: user?.photoURL || null,
+          provider,
           isNewVisitor: isNew,
           isInternal,
           timestamp: new Date().toISOString(),

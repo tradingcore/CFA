@@ -27,7 +27,18 @@ interface AnalyticsData {
   uniqueTotal: number;
   topPages: { path: string; count: number }[];
   topReferrers: { source: string; count: number }[];
-  topCountries: { country: string; name?: string; count: number }[];
+  topCountries: { country: string; count: number }[];
+  topVisitors: {
+    email: string;
+    displayName: string | null;
+    photoURL: string | null;
+    provider: string | null;
+    views: number;
+    lastSeen: string;
+    lastPath: string;
+    lastCountry: string;
+    lastCity: string;
+  }[];
   deviceCounts: Record<string, number>;
   dailyChart: { date: string; views: number }[];
   loggedIn: number;
@@ -40,12 +51,18 @@ interface AnalyticsData {
     device: string;
     sessionId: string;
     userId: string | null;
+    email?: string | null;
+    displayName?: string | null;
+    photoURL?: string | null;
+    provider?: string | null;
     timestamp: string;
     language: string;
+    ip?: string;
     country?: string;
-    countryName?: string;
-    continent?: string;
-    asName?: string;
+    city?: string;
+    region?: string;
+    org?: string;
+    timezone?: string;
     isInternal?: boolean;
   }[];
 }
@@ -286,7 +303,7 @@ export default function AdminPage() {
                           const isUnknown = c.country === "unknown" || c.country === "local";
                           const display = isUnknown
                             ? c.country === "local" ? "Local" : "Unknown"
-                            : c.name && c.name !== c.country ? c.name : c.country;
+                            : c.country;
                           return (
                             <div key={c.country} className="flex items-center justify-between rounded px-2 py-1.5 text-xs hover:bg-accent/50">
                               <div className="flex min-w-0 items-center gap-2">
@@ -341,19 +358,99 @@ export default function AdminPage() {
                     </Card>
                   </div>
 
+                  {/* Top Visitors (logged in) */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Top Logged Visitors ({analytics.topVisitors.length})</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {analytics.topVisitors.length === 0 ? (
+                        <p className="py-6 text-center text-xs text-muted-foreground">
+                          No logged visitors yet in this window.
+                        </p>
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          {analytics.topVisitors.map((v) => {
+                            const initials = (v.displayName || v.email)
+                              .split(/[\s@.]+/)
+                              .map((s) => s[0])
+                              .join("")
+                              .slice(0, 2)
+                              .toUpperCase();
+                            return (
+                              <div
+                                key={v.email}
+                                className="flex items-center gap-3 rounded-lg px-2 py-2 text-xs hover:bg-accent/40"
+                              >
+                                <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-muted">
+                                  {v.photoURL ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                      src={v.photoURL}
+                                      alt={v.email}
+                                      className="h-full w-full object-cover"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  ) : (
+                                    <span className="flex h-full w-full items-center justify-center text-[10px] font-bold text-muted-foreground">
+                                      {initials || "?"}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="truncate font-medium">
+                                      {v.displayName || v.email.split("@")[0]}
+                                    </span>
+                                    {v.provider === "google.com" && (
+                                      <Badge variant="outline" className="text-[9px]">Google</Badge>
+                                    )}
+                                    {v.provider === "password" && (
+                                      <Badge variant="outline" className="text-[9px]">Email</Badge>
+                                    )}
+                                  </div>
+                                  <div className="truncate text-[10px] text-muted-foreground">
+                                    {v.email}
+                                  </div>
+                                </div>
+                                <div className="hidden min-w-0 flex-1 text-[10px] text-muted-foreground sm:block">
+                                  <div className="truncate">
+                                    {[v.lastCity, v.lastCountry].filter(Boolean).join(", ") || "—"}
+                                  </div>
+                                  <div className="truncate font-mono">{v.lastPath}</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-bold tabular-nums">{v.views}</div>
+                                  <div className="text-[10px] text-muted-foreground">
+                                    {new Date(v.lastSeen).toLocaleString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
                   {/* Recent views table */}
                   <Card>
                     <CardHeader><CardTitle className="text-base">Recent Visits ({analytics.recentViews.length})</CardTitle></CardHeader>
                     <CardContent>
                       <div className="overflow-x-auto">
-                        <div className="grid grid-cols-8 gap-2 border-b border-border px-2 py-2 text-[10px] font-semibold uppercase text-muted-foreground min-w-[820px]">
+                        <div className="grid grid-cols-12 gap-2 border-b border-border px-2 py-2 text-[10px] font-semibold uppercase text-muted-foreground min-w-[1000px]">
                           <span>Time</span>
                           <span className="col-span-2">Page</span>
-                          <span>Referrer</span>
-                          <span>Location</span>
-                          <span>Network</span>
+                          <span className="col-span-3">Visitor</span>
+                          <span className="col-span-2">Location</span>
+                          <span className="col-span-2">IP / Org</span>
                           <span>Device</span>
-                          <span>User</span>
+                          <span>Status</span>
                         </div>
                         {analytics.recentViews.slice(0, 30).map((v, i) => {
                           const countryDisplay = v.country === "local"
@@ -361,29 +458,71 @@ export default function AdminPage() {
                             : v.country === "unknown" || !v.country
                               ? "—"
                               : v.country;
+                          const cityRegion = [v.city, v.region].filter(Boolean).join(", ");
+                          const initials = ((v.displayName || v.email || "?")
+                            .split(/[\s@.]+/)
+                            .map((s) => s[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()) || "?";
                           return (
                             <div
                               key={i}
-                              className={`grid grid-cols-8 gap-2 px-2 py-1.5 text-xs min-w-[820px] ${
+                              className={`grid grid-cols-12 gap-2 items-center px-2 py-1.5 text-xs min-w-[1000px] ${
                                 v.isInternal ? "bg-amber-500/5" : "hover:bg-accent/30"
                               }`}
                             >
-                              <span className="text-muted-foreground">
+                              <span className="text-muted-foreground" title={new Date(v.timestamp).toLocaleString()}>
                                 {new Date(v.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                               </span>
                               <span className="col-span-2 font-mono truncate" title={v.path}>{v.path}</span>
-                              <span className="truncate text-muted-foreground">
-                                {v.referrer ? (() => { try { return new URL(v.referrer).hostname.replace("www.", ""); } catch { return v.referrer; } })() : "direct"}
-                              </span>
-                              <span className="truncate font-medium" title={v.countryName || ""}>
-                                {countryDisplay}
-                                {v.countryName && v.country !== "local" && (
-                                  <span className="ml-1 text-muted-foreground">· {v.countryName}</span>
+                              <div className="col-span-3 flex min-w-0 items-center gap-2">
+                                {v.userId ? (
+                                  <>
+                                    <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-muted">
+                                      {v.photoURL ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                          src={v.photoURL}
+                                          alt={v.email || ""}
+                                          className="h-full w-full object-cover"
+                                          referrerPolicy="no-referrer"
+                                        />
+                                      ) : (
+                                        <span className="flex h-full w-full items-center justify-center text-[9px] font-bold text-muted-foreground">
+                                          {initials}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="truncate text-[11px] font-medium" title={v.displayName || ""}>
+                                        {v.displayName || v.email?.split("@")[0]}
+                                      </div>
+                                      <div className="truncate text-[10px] text-muted-foreground" title={v.email || ""}>
+                                        {v.email}
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground italic">anonymous</span>
                                 )}
-                              </span>
-                              <span className="truncate text-muted-foreground" title={v.asName || ""}>
-                                {v.asName || "—"}
-                              </span>
+                              </div>
+                              <div className="col-span-2 min-w-0" title={v.timezone || ""}>
+                                <div className="truncate font-medium">
+                                  {cityRegion || countryDisplay}
+                                </div>
+                                {cityRegion && (
+                                  <div className="truncate text-[10px] text-muted-foreground">
+                                    {countryDisplay}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="col-span-2 min-w-0">
+                                <div className="truncate font-mono text-[10px]">{v.ip || "—"}</div>
+                                <div className="truncate text-[10px] text-muted-foreground" title={v.org || ""}>
+                                  {v.org || "—"}
+                                </div>
+                              </div>
                               <span className="capitalize">{v.device}</span>
                               <span>
                                 {v.isInternal ? (
