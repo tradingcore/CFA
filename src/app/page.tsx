@@ -84,10 +84,10 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 px-6 pt-16 pb-12 text-center sm:pt-24 sm:pb-16">
-        <div className="flex items-center gap-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
-            <Brain className="h-3.5 w-3.5" />
-            The most complete CFA-focused AI on the market
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Free to start — no credit card required
           </div>
           <ActiveUsersBadge />
         </div>
@@ -288,6 +288,62 @@ export default function LandingPage() {
                 Start Now <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-t border-border px-6 py-20 sm:px-12">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-3 text-center text-2xl font-bold sm:text-3xl">
+            Frequently asked questions
+          </h2>
+          <p className="mb-10 text-center text-muted-foreground">
+            Everything you need to know before getting started.
+          </p>
+          <div className="flex flex-col gap-3">
+            {[
+              {
+                q: "Do I need a credit card to try Trading Core?",
+                a: "No. You can sign up and use the platform for free, with daily limits — no credit card required. Upgrade to Pro only when you want unlimited access.",
+              },
+              {
+                q: "What's included in the Free plan?",
+                a: "1 mock exam per day (5 questions), 3 AI chat messages per day, study plan generation, study progress tracking, and access to all CFA levels (I, II, III).",
+              },
+              {
+                q: "How is the AI different from ChatGPT?",
+                a: "Our AI is grounded in the complete 2026 CFA curriculum (Schweser Notes, official LOS, formula sheet, question banks). It cites specific LOS, won't hallucinate finance concepts, and stays focused on what you'll actually be tested on.",
+              },
+              {
+                q: "Are the mock exams realistic?",
+                a: "Yes. Questions are AI-generated against actual CFA Learning Outcome Statements with explanations after each. We mirror the official exam format including timer, free navigation, and item sets.",
+              },
+              {
+                q: "Which levels are covered?",
+                a: "All three CFA levels (I, II, and III) are fully supported with the 2026 curriculum. You can switch levels anytime from your profile.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. Cancel from your profile or via the Stripe portal. You keep full access until the end of your billing period — no further charges.",
+              },
+              {
+                q: "How accurate is the readiness score?",
+                a: "Readiness only counts LOS where you've answered 3+ questions, so it's statistically meaningful. With ~2,500 questions practiced you'll have a very reliable score. We never inflate the number with insufficient data.",
+              },
+              {
+                q: "Where does the content come from?",
+                a: "We use the official 2026 CFA Institute curriculum (LOS, modules, weights), Schweser Notes for all 3 levels, and a curated question bank. The AI is restricted to this material — no random web sources.",
+              },
+            ].map((item, i) => (
+              <details key={i} className="group rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/30">
+                <summary className="flex cursor-pointer items-center justify-between gap-4 text-sm font-medium">
+                  {item.q}
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
