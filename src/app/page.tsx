@@ -313,11 +313,11 @@ export default function LandingPage() {
               },
               {
                 q: "How is the AI different from ChatGPT?",
-                a: "Our AI is grounded in the complete 2026 CFA curriculum (Schweser Notes, official LOS, formula sheet, question banks). It cites specific LOS, won't hallucinate finance concepts, and stays focused on what you'll actually be tested on.",
+                a: "Our AI is grounded in the complete 2026 CFA curriculum (official LOS, modules, formula sheet, and a curated question bank). It cites specific LOS, won't hallucinate finance concepts, and stays focused on what you'll actually be tested on.",
               },
               {
                 q: "Are the mock exams realistic?",
-                a: "Yes. Questions are AI-generated against actual CFA Learning Outcome Statements with explanations after each. We mirror the official exam format including timer, free navigation, and item sets.",
+                a: "Yes. Our question bank includes the same official CFA Institute questions used by the leading prep providers, plus AI-generated practice mapped to actual Learning Outcome Statements. We mirror the official exam format — timer, free navigation, and item sets — with detailed explanations after each question.",
               },
               {
                 q: "Which levels are covered?",
@@ -333,7 +333,7 @@ export default function LandingPage() {
               },
               {
                 q: "Where does the content come from?",
-                a: "We use the official 2026 CFA Institute curriculum (LOS, modules, weights), Schweser Notes for all 3 levels, and a curated question bank. The AI is restricted to this material — no random web sources.",
+                a: "We're built on the official 2026 CFA Institute curriculum (LOS, modules, topic weights) plus the same official questions used across the major prep providers. The AI is restricted to this curated material — no random web sources, no guesses.",
               },
             ].map((item, i) => (
               <details key={i} className="group rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/30">
