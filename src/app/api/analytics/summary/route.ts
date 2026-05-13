@@ -4,12 +4,16 @@ import { adminDb } from "@/lib/firebase-admin";
 /**
  * GET /api/analytics/summary
  * Returns aggregated analytics data for the admin dashboard.
- * Query params: ?days=7 (default 7)
+ *
+ * Query params:
+ *   ?days=7              Number of days to include (default 7).
+ *   ?includeInternal=1   Include views flagged as internal/admin (default 0 = excluded).
  */
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const days = parseInt(url.searchParams.get("days") || "7", 10);
+    const includeInternal = url.searchParams.get("includeInternal") === "1";
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     const cutoffStr = cutoff.toISOString();
@@ -21,7 +25,7 @@ export async function GET(req: Request) {
       .limit(5000)
       .get();
 
-    const views = snapshot.docs.map((doc) => {
+    const allViews = snapshot.docs.map((doc) => {
       const d = doc.data();
       return {
         path: d.path || "/",
@@ -31,11 +35,18 @@ export async function GET(req: Request) {
         sessionId: d.sessionId || "",
         userId: d.userId || null,
         isNewVisitor: d.isNewVisitor || false,
+        isInternal: d.isInternal === true,
         timestamp: d.timestamp || "",
         userAgent: (d.userAgent || "").slice(0, 100),
         country: d.country || "unknown",
+        countryName: d.countryName || "",
+        continent: d.continent || "",
+        asName: d.asName || "",
       };
     });
+
+    const views = includeInternal ? allViews : allViews.filter((v) => !v.isInternal);
+    const internalCount = allViews.length - allViews.filter((v) => !v.isInternal).length;
 
     const today = new Date().toISOString().split("T")[0];
     const todayViews = views.filter((v) => v.timestamp.startsWith(today));
@@ -77,15 +88,17 @@ export async function GET(req: Request) {
     const loggedIn = views.filter((v) => v.userId).length;
     const anonymous = views.length - loggedIn;
 
-    const countryCounts: Record<string, number> = {};
+    const countryAgg: Record<string, { count: number; name: string }> = {};
     for (const v of views) {
-      const c = (v as unknown as { country?: string }).country || "unknown";
-      countryCounts[c] = (countryCounts[c] || 0) + 1;
+      const code = v.country || "unknown";
+      const name = v.countryName || code;
+      if (!countryAgg[code]) countryAgg[code] = { count: 0, name };
+      countryAgg[code].count += 1;
     }
-    const topCountries = Object.entries(countryCounts)
-      .sort((a, b) => b[1] - a[1])
+    const topCountries = Object.entries(countryAgg)
+      .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 15)
-      .map(([country, count]) => ({ country, count }));
+      .map(([code, { count, name }]) => ({ country: code, name, count }));
 
     return NextResponse.json({
       totalViews: views.length,
@@ -100,6 +113,8 @@ export async function GET(req: Request) {
       dailyChart,
       loggedIn,
       anonymous,
+      internalCount,
+      includedInternal: includeInternal,
       recentViews: views.slice(0, 50),
     });
   } catch (err) {

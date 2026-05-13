@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { getAllUsers, getAllFeedbacks, UserProfile, Feedback } from "@/lib/firestore";
+import { ADMIN_EMAILS } from "@/lib/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,8 +17,6 @@ import {
   BarChart, Bar,
 } from "recharts";
 
-const ADMIN_EMAILS = ["danielzf1818@gmail.com", "fleischmann606@gmail.com"];
-
 type UserWithUid = UserProfile & { uid: string };
 
 interface AnalyticsData {
@@ -28,12 +27,27 @@ interface AnalyticsData {
   uniqueTotal: number;
   topPages: { path: string; count: number }[];
   topReferrers: { source: string; count: number }[];
-  topCountries: { country: string; count: number }[];
+  topCountries: { country: string; name?: string; count: number }[];
   deviceCounts: Record<string, number>;
   dailyChart: { date: string; views: number }[];
   loggedIn: number;
   anonymous: number;
-  recentViews: { path: string; referrer: string; device: string; sessionId: string; userId: string | null; timestamp: string; language: string; country?: string }[];
+  internalCount: number;
+  includedInternal: boolean;
+  recentViews: {
+    path: string;
+    referrer: string;
+    device: string;
+    sessionId: string;
+    userId: string | null;
+    timestamp: string;
+    language: string;
+    country?: string;
+    countryName?: string;
+    continent?: string;
+    asName?: string;
+    isInternal?: boolean;
+  }[];
 }
 
 export default function AdminPage() {
@@ -46,6 +60,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<"overview" | "analytics" | "feedbacks" | "users">("overview");
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [analyticsDays, setAnalyticsDays] = useState(7);
+  const [includeInternal, setIncludeInternal] = useState(false);
 
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
@@ -64,11 +79,15 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!isAdmin || tab !== "analytics") return;
-    fetch(`/api/analytics/summary?days=${analyticsDays}`)
+    const params = new URLSearchParams({
+      days: String(analyticsDays),
+      includeInternal: includeInternal ? "1" : "0",
+    });
+    fetch(`/api/analytics/summary?${params.toString()}`)
       .then((r) => r.json())
       .then(setAnalytics)
       .catch(console.error);
-  }, [isAdmin, tab, analyticsDays]);
+  }, [isAdmin, tab, analyticsDays, includeInternal]);
 
   if (!isAdmin) return null;
 
@@ -135,18 +154,39 @@ export default function AdminPage() {
           {/* Analytics */}
           {tab === "analytics" && (
             <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-2">
-                {[7, 14, 30].map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setAnalyticsDays(d)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                      analyticsDays === d ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"
-                    }`}
-                  >
-                    {d} days
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  {[7, 14, 30].map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setAnalyticsDays(d)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                        analyticsDays === d ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {d} days
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setIncludeInternal((v) => !v)}
+                  className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    includeInternal
+                      ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+                      : "border-border bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Toggle to include or exclude views from admin sessions"
+                >
+                  <span
+                    className={`h-2 w-2 rounded-full ${includeInternal ? "bg-amber-400" : "bg-muted-foreground/50"}`}
+                  />
+                  {includeInternal ? "Including admin views" : "Excluding admin views"}
+                  {analytics && analytics.internalCount > 0 && (
+                    <span className="rounded bg-background/40 px-1.5 py-0.5 text-[10px] tabular-nums">
+                      {analytics.internalCount}
+                    </span>
+                  )}
+                </button>
               </div>
 
               {!analytics ? (
@@ -242,12 +282,25 @@ export default function AdminPage() {
                     <Card>
                       <CardHeader><CardTitle className="text-sm">Top Countries</CardTitle></CardHeader>
                       <CardContent className="flex flex-col gap-1">
-                        {analytics.topCountries.map((c) => (
-                          <div key={c.country} className="flex items-center justify-between rounded px-2 py-1.5 text-xs hover:bg-accent/50">
-                            <span className="font-medium">{c.country === "unknown" ? "Unknown" : c.country}</span>
-                            <span className="font-bold tabular-nums">{c.count}</span>
-                          </div>
-                        ))}
+                        {analytics.topCountries.map((c) => {
+                          const isUnknown = c.country === "unknown" || c.country === "local";
+                          const display = isUnknown
+                            ? c.country === "local" ? "Local" : "Unknown"
+                            : c.name && c.name !== c.country ? c.name : c.country;
+                          return (
+                            <div key={c.country} className="flex items-center justify-between rounded px-2 py-1.5 text-xs hover:bg-accent/50">
+                              <div className="flex min-w-0 items-center gap-2">
+                                {!isUnknown && (
+                                  <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[9px] uppercase">
+                                    {c.country}
+                                  </span>
+                                )}
+                                <span className="truncate font-medium">{display}</span>
+                              </div>
+                              <span className="font-bold tabular-nums">{c.count}</span>
+                            </div>
+                          );
+                        })}
                         {analytics.topCountries.length === 0 && (
                           <p className="text-xs text-muted-foreground py-2">No data yet</p>
                         )}
@@ -293,36 +346,57 @@ export default function AdminPage() {
                     <CardHeader><CardTitle className="text-base">Recent Visits ({analytics.recentViews.length})</CardTitle></CardHeader>
                     <CardContent>
                       <div className="overflow-x-auto">
-                        <div className="grid grid-cols-7 gap-2 border-b border-border px-2 py-2 text-[10px] font-semibold uppercase text-muted-foreground min-w-[700px]">
+                        <div className="grid grid-cols-8 gap-2 border-b border-border px-2 py-2 text-[10px] font-semibold uppercase text-muted-foreground min-w-[820px]">
                           <span>Time</span>
-                          <span>Page</span>
+                          <span className="col-span-2">Page</span>
                           <span>Referrer</span>
-                          <span>Country</span>
+                          <span>Location</span>
+                          <span>Network</span>
                           <span>Device</span>
-                          <span>Language</span>
                           <span>User</span>
                         </div>
-                        {analytics.recentViews.slice(0, 30).map((v, i) => (
-                          <div key={i} className="grid grid-cols-7 gap-2 px-2 py-1.5 text-xs hover:bg-accent/30 min-w-[700px]">
-                            <span className="text-muted-foreground">
-                              {new Date(v.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                            </span>
-                            <span className="font-mono truncate">{v.path}</span>
-                            <span className="truncate text-muted-foreground">
-                              {v.referrer ? (() => { try { return new URL(v.referrer).hostname.replace("www.", ""); } catch { return v.referrer; } })() : "direct"}
-                            </span>
-                            <span className="font-medium">{v.country || "—"}</span>
-                            <span className="capitalize">{v.device}</span>
-                            <span>{v.language}</span>
-                            <span>
-                              {v.userId ? (
-                                <Badge variant="default" className="text-[9px]">Logged</Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-[9px]">Anon</Badge>
-                              )}
-                            </span>
-                          </div>
-                        ))}
+                        {analytics.recentViews.slice(0, 30).map((v, i) => {
+                          const countryDisplay = v.country === "local"
+                            ? "Local"
+                            : v.country === "unknown" || !v.country
+                              ? "—"
+                              : v.country;
+                          return (
+                            <div
+                              key={i}
+                              className={`grid grid-cols-8 gap-2 px-2 py-1.5 text-xs min-w-[820px] ${
+                                v.isInternal ? "bg-amber-500/5" : "hover:bg-accent/30"
+                              }`}
+                            >
+                              <span className="text-muted-foreground">
+                                {new Date(v.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                              <span className="col-span-2 font-mono truncate" title={v.path}>{v.path}</span>
+                              <span className="truncate text-muted-foreground">
+                                {v.referrer ? (() => { try { return new URL(v.referrer).hostname.replace("www.", ""); } catch { return v.referrer; } })() : "direct"}
+                              </span>
+                              <span className="truncate font-medium" title={v.countryName || ""}>
+                                {countryDisplay}
+                                {v.countryName && v.country !== "local" && (
+                                  <span className="ml-1 text-muted-foreground">· {v.countryName}</span>
+                                )}
+                              </span>
+                              <span className="truncate text-muted-foreground" title={v.asName || ""}>
+                                {v.asName || "—"}
+                              </span>
+                              <span className="capitalize">{v.device}</span>
+                              <span>
+                                {v.isInternal ? (
+                                  <Badge className="bg-amber-500/20 text-amber-300 text-[9px] border-amber-500/30">Admin</Badge>
+                                ) : v.userId ? (
+                                  <Badge variant="default" className="text-[9px]">Logged</Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-[9px]">Anon</Badge>
+                                )}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
