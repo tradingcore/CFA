@@ -6,13 +6,16 @@ import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 const PUBLIC_PATHS = ["/", "/login", "/register", "/pricing"];
+const PUBLIC_PREFIXES = ["/cfa"];
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
-  const isPublic = PUBLIC_PATHS.includes(pathname);
+  const isPublic =
+    PUBLIC_PATHS.includes(pathname) ||
+    PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   useEffect(() => {
     if (loading) return;

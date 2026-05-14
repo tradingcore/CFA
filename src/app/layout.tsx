@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { getSiteUrl, SITE } from "@/lib/site";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AuthProvider } from "@/contexts/auth-context";
 import { LevelProvider } from "@/contexts/level-context";
@@ -22,8 +23,29 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trading Core | CFA Prep",
-  description: "Your AI-powered CFA study assistant",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: `${SITE.name} | CFA Prep`,
+    template: `%s | ${SITE.name}`,
+  },
+  description: SITE.description,
+  applicationName: SITE.name,
+  authors: [{ name: SITE.name }],
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    title: `${SITE.name} | CFA Prep`,
+    description: SITE.description,
+    url: getSiteUrl(),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} | CFA Prep`,
+    description: SITE.description,
+  },
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({

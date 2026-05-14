@@ -4,7 +4,7 @@ import { useLevel } from "@/contexts/level-context";
 import { useAuth } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { CFALevel } from "@/lib/cfa-topics";
-import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles, Shield, MessageSquarePlus } from "lucide-react";
+import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles, Shield, MessageSquarePlus, BookOpen } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { FeedbackModal } from "@/components/layout/feedback-modal";
 import { saveFeedback } from "@/lib/firestore";
@@ -111,6 +111,14 @@ export function Header() {
             PRO
           </span>
         )}
+        <Link
+          href="/cfa"
+          className="hidden items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent sm:flex"
+          aria-label="Blog"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          Blog
+        </Link>
         <button
           onClick={() => setFeedbackOpen(true)}
           className="hidden items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent sm:flex"

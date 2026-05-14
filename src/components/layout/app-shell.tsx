@@ -6,12 +6,15 @@ import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 
 const NO_SHELL_PATHS = ["/", "/login", "/register", "/onboarding", "/pricing", "/admin"];
+const NO_SHELL_PREFIXES = ["/cfa"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
 
-  const hideShell = NO_SHELL_PATHS.includes(pathname);
+  const hideShell =
+    NO_SHELL_PATHS.includes(pathname) ||
+    NO_SHELL_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   const showShell = user && !hideShell && !loading;
 
   if (!showShell) {
