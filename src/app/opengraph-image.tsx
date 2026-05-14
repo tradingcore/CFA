@@ -105,7 +105,7 @@ export default async function OgImage() {
             letterSpacing: 1,
           }}
         >
-          tradingcore.app — no credit card needed
+          tradingcore.com.br — no credit card needed
         </div>
       </div>
     ),

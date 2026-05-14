@@ -12,7 +12,7 @@ export function getSiteUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, "");
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://tradingcore.app";
+  return "https://www.tradingcore.com.br";
 }
 
 export function absoluteUrl(path: string): string {

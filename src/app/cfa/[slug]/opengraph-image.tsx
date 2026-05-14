@@ -122,7 +122,7 @@ export default async function OgImage(
             fontSize: 18,
           }}
         >
-          <span>tradingcore.app/cfa</span>
+          <span>tradingcore.com.br/cfa</span>
           <span style={{ color: "#10b981", fontWeight: 600 }}>
             Free to start →
           </span>
