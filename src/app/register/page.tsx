@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { Mail, Lock, UserIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
+import { PublicNav } from "@/components/layout/public-nav";
 
 export default function RegistroPage() {
   const { signUp, signInWithGoogle } = useAuth();
@@ -47,8 +48,10 @@ export default function RegistroPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-8">
+    <div className="flex min-h-screen flex-col bg-background">
+      <PublicNav />
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-3">
           <Logo size={56} rounded="rounded-2xl" />
           <h1 className="text-2xl font-bold">Create Account</h1>
@@ -156,6 +159,7 @@ export default function RegistroPage() {
             Sign In
           </Link>
         </p>
+        </div>
       </div>
     </div>
   );

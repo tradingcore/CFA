@@ -11,6 +11,7 @@ import {
   MessageCircle,
   PanelLeftClose,
   PanelLeft,
+  BookOpen,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/study", label: "Study Progress", icon: GraduationCap },
   { href: "/plan", label: "Study Plan", icon: CalendarDays },
   { href: "/chat?new=1", label: "Chat", icon: MessageCircle },
+  { href: "/cfa", label: "Blog", icon: BookOpen },
 ];
 
 export function Sidebar() {

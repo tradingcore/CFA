@@ -9,21 +9,21 @@ export function PublicNav() {
   const { user, loading } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md sm:px-12">
+    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md sm:px-12 sm:py-4">
       <Link href="/" className="flex items-center gap-2">
-        <Logo size={36} />
-        <span className="text-lg font-bold">Trading Core</span>
+        <Logo size={32} />
+        <span className="text-base font-bold sm:text-lg">Trading Core</span>
       </Link>
-      <nav className="flex items-center gap-3 text-sm">
+      <nav className="flex items-center gap-2 text-sm sm:gap-3">
         <Link
           href="/cfa"
-          className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline"
+          className="text-muted-foreground transition-colors hover:text-foreground"
         >
           Blog
         </Link>
         <Link
           href="/pricing"
-          className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline"
+          className="text-muted-foreground transition-colors hover:text-foreground"
         >
           Pricing
         </Link>
@@ -31,13 +31,13 @@ export function PublicNav() {
           <>
             <Link
               href="/login"
-              className="rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-lg px-2 py-1.5 text-muted-foreground transition-colors hover:text-foreground sm:px-3"
             >
               Sign In
             </Link>
             <Link
               href="/register"
-              className="rounded-xl bg-primary px-4 py-2 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:px-4 sm:py-2 sm:text-sm"
             >
               Start Free
             </Link>
@@ -59,9 +59,11 @@ export function PublicNav() {
             </Link>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:px-4 sm:py-2 sm:text-sm"
             >
-              Back to app <ArrowRight className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Back to app</span>
+              <span className="sm:hidden">App</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </>
         )}

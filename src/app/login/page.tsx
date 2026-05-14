@@ -7,6 +7,7 @@ import { auth } from "@/lib/firebase";
 import { Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
+import { PublicNav } from "@/components/layout/public-nav";
 
 export default function LoginPage() {
   const { signIn, signInWithGoogle } = useAuth();
@@ -72,8 +73,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-8">
+    <div className="flex min-h-screen flex-col bg-background">
+      <PublicNav />
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-3">
           <Logo size={56} rounded="rounded-2xl" />
           <h1 className="text-2xl font-bold">Trading Core</h1>
@@ -167,6 +170,7 @@ export default function LoginPage() {
           Don&apos;t have an account?{" "}
           <Link href="/register" className="font-medium text-primary hover:underline">Create Account</Link>
         </p>
+        </div>
       </div>
     </div>
   );
