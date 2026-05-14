@@ -112,9 +112,9 @@ export default async function ArticlePage(
 
   return (
     <>
-      <JsonLd data={articleJsonLd} />
-      <JsonLd data={breadcrumbJsonLd} />
-      {faqJsonLd && <JsonLd data={faqJsonLd} />}
+      <JsonLd id={`article-${fm.slug}`} data={articleJsonLd} />
+      <JsonLd id={`breadcrumb-${fm.slug}`} data={breadcrumbJsonLd} />
+      {faqJsonLd && <JsonLd id={`faq-${fm.slug}`} data={faqJsonLd} />}
 
       <ArticleHero fm={fm} readingMinutes={post.readingMinutes} />
 

@@ -32,7 +32,7 @@ export default function BlogIndexPage() {
 
   return (
     <>
-      <JsonLd data={blogJsonLd} />
+      <JsonLd id="blog-index" data={blogJsonLd} />
       <section className="border-b border-border px-6 py-16 sm:px-12 sm:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
