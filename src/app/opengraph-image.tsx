@@ -1,11 +1,24 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 export const runtime = "nodejs";
 export const alt = "Trading Core — CFA Prep";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+/**
+ * Loads the brand logo PNG from `public/logo.png` and returns a base64 data URI
+ * suitable for use in `<img src>` inside an `ImageResponse`. ImageResponse runs
+ * on the Node.js runtime here, so reading from disk is fine.
+ */
+async function logoDataUri(): Promise<string> {
+  const buf = await readFile(join(process.cwd(), "public", "logo.png"));
+  return `data:image/png;base64,${buf.toString("base64")}`;
+}
+
 export default async function OgImage() {
+  const logo = await logoDataUri();
   return new ImageResponse(
     (
       <div
@@ -31,21 +44,13 @@ export default async function OgImage() {
             marginBottom: 32,
           }}
         >
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 18,
-              background: "#10b981",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 36,
-              fontWeight: 800,
-            }}
-          >
-            T
-          </div>
+          <img
+            src={logo}
+            alt="Trading Core"
+            width={72}
+            height={72}
+            style={{ borderRadius: 18 }}
+          />
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 36, fontWeight: 700, letterSpacing: -0.5 }}>
               Trading Core

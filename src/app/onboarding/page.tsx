@@ -7,7 +7,8 @@ import { updateUserProfile } from "@/lib/firestore";
 import { CFALevel } from "@/lib/cfa-topics";
 import { DEFAULT_STUDY_DAYS, StudyDay } from "@/lib/study-availability";
 import { StudyDaysSelector } from "@/components/study/study-days-selector";
-import { TrendingUp, ArrowRight, ArrowLeft, Loader2, GraduationCap, CalendarDays, Clock } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, GraduationCap, CalendarDays, Clock } from "lucide-react";
+import { Logo } from "@/components/layout/logo";
 
 const LEVELS: { value: CFALevel; label: string; desc: string }[] = [
   { value: "I", label: "CFA Level I", desc: "Foundations — Ethics, Quant, FSA, Equity, FI, Derivatives, Alts, PM" },
@@ -49,9 +50,7 @@ export default function OnboardingPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-lg space-y-8">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-            <TrendingUp className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <Logo size={56} rounded="rounded-2xl" />
           <h1 className="text-2xl font-bold">Initial Setup</h1>
           <p className="text-sm text-muted-foreground">
             Let&apos;s personalize your experience in {3 - step} steps

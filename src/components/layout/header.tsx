@@ -4,7 +4,8 @@ import { useLevel } from "@/contexts/level-context";
 import { useAuth } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { CFALevel } from "@/lib/cfa-topics";
-import { Moon, Sun, TrendingUp, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles, Shield, MessageSquarePlus, BookOpen } from "lucide-react";
+import { Moon, Sun, ChevronDown, User, Menu, LogOut, Settings, HelpCircle, Sparkles, Shield, MessageSquarePlus, BookOpen } from "lucide-react";
+import { Logo } from "@/components/layout/logo";
 import { useSubscription } from "@/hooks/use-subscription";
 import { FeedbackModal } from "@/components/layout/feedback-modal";
 import { saveFeedback } from "@/lib/firestore";
@@ -58,9 +59,7 @@ export function Header() {
         </button>
 
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <TrendingUp className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <Logo size={36} />
           <div className="hidden flex-col sm:flex">
             <span className="text-base font-bold leading-tight tracking-tight">
               Trading Core

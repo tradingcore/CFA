@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { TrendingUp, Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
+import { Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Logo } from "@/components/layout/logo";
 
 export default function LoginPage() {
   const { signIn, signInWithGoogle } = useAuth();
@@ -74,9 +75,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-            <TrendingUp className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <Logo size={56} rounded="rounded-2xl" />
           <h1 className="text-2xl font-bold">Trading Core</h1>
           <p className="text-sm text-muted-foreground">Sign in to continue studying</p>
         </div>

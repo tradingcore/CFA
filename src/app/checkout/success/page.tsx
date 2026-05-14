@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Logo } from "@/components/layout/logo";
 import {
-  TrendingUp,
   CheckCircle2,
   Sparkles,
   ArrowRight,
@@ -253,9 +253,7 @@ function CheckoutSuccessInner() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="flex items-center justify-between px-6 py-4 sm:px-12">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <TrendingUp className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <Logo size={36} />
           <span className="text-lg font-bold">Trading Core</span>
         </div>
       </header>

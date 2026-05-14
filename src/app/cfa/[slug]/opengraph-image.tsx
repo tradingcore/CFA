@@ -1,10 +1,17 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { getPostBySlug } from "@/lib/blog";
 
 export const runtime = "nodejs";
 export const alt = "Trading Core CFA Article";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+async function logoDataUri(): Promise<string> {
+  const buf = await readFile(join(process.cwd(), "public", "logo.png"));
+  return `data:image/png;base64,${buf.toString("base64")}`;
+}
 
 export default async function OgImage(
   { params }: { params: Promise<{ slug: string }> },
@@ -14,6 +21,7 @@ export default async function OgImage(
   const title = post?.frontmatter.title ?? "Trading Core";
   const description = post?.frontmatter.description ?? "";
   const level = post?.frontmatter.level;
+  const logo = await logoDataUri();
 
   return new ImageResponse(
     (
@@ -32,21 +40,13 @@ export default async function OgImage(
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 14,
-              background: "#10b981",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 28,
-              fontWeight: 800,
-            }}
-          >
-            T
-          </div>
+          <img
+            src={logo}
+            alt="Trading Core"
+            width={56}
+            height={56}
+            style={{ borderRadius: 14 }}
+          />
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5 }}>
               Trading Core

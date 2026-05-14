@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { TrendingUp, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { Logo } from "@/components/layout/logo";
 
 export function PublicNav() {
   const { user, loading } = useAuth();
@@ -10,9 +11,7 @@ export function PublicNav() {
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md sm:px-12">
       <Link href="/" className="flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-          <TrendingUp className="h-5 w-5 text-primary-foreground" />
-        </div>
+        <Logo size={36} />
         <span className="text-lg font-bold">Trading Core</span>
       </Link>
       <nav className="flex items-center gap-3 text-sm">
@@ -83,7 +82,7 @@ export function PublicFooter() {
           <Link href="/register" className="hover:text-foreground">Start Free</Link>
         </div>
         <div className="mt-6 flex items-center justify-center gap-2">
-          <TrendingUp className="h-4 w-4 text-primary" />
+          <Logo size={18} rounded="rounded" />
           <span className="font-semibold text-foreground">Trading Core</span>
         </div>
         <p className="mt-2">

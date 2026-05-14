@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { TrendingUp, Mail, Lock, UserIcon, Loader2 } from "lucide-react";
+import { Mail, Lock, UserIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { Logo } from "@/components/layout/logo";
 
 export default function RegistroPage() {
   const { signUp, signInWithGoogle } = useAuth();
@@ -49,9 +50,7 @@ export default function RegistroPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-            <TrendingUp className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <Logo size={56} rounded="rounded-2xl" />
           <h1 className="text-2xl font-bold">Create Account</h1>
           <p className="text-sm text-muted-foreground">Start your CFA preparation</p>
         </div>
