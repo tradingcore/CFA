@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { INTERNAL_FLAG_KEY, isAdminEmail } from "@/lib/admin";
+import { trackPageView } from "@/lib/gtag";
 
 function getSessionId(): { sessionId: string; isNew: boolean } {
   const key = "tc_session_id";
@@ -56,6 +57,11 @@ export function PageTracker() {
 
     debounceRef.current = setTimeout(() => {
       lastTracked.current = pathname;
+
+      // Notify the Google tag of the SPA navigation. We disabled the auto
+      // page_view in `gtag('config', ...)` so the App Router gets exactly one
+      // event per route — fired here, not on the initial bundle load.
+      trackPageView(pathname);
 
       try {
         const { sessionId, isNew } = getSessionId();

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { absoluteUrl, getSiteUrl, SITE } from "@/lib/site";
@@ -12,6 +13,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageTracker } from "@/components/analytics/page-tracker";
+import { GOOGLE_TAG_ID, isGtagEnabled } from "@/lib/gtag";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -118,6 +120,20 @@ export default function RootLayout({
       <body className="h-full">
         <JsonLd id="organization" data={organizationJsonLd} />
         <JsonLd id="website" data={websiteJsonLd} />
+        {isGtagEnabled && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-tag-init" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GOOGLE_TAG_ID}', { send_page_view: false });`}
+            </Script>
+          </>
+        )}
         <ThemeProvider>
           <AuthProvider>
             <TooltipProvider>

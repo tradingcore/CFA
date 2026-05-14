@@ -3,9 +3,24 @@ import { stripe } from "@/lib/stripe";
 
 /**
  * POST /api/stripe/checkout
- * Creates a Stripe Checkout Session for a subscription with a 3-day trial.
+ *
+ * Creates a Stripe Checkout Session for one of the paid subscription plans
+ * (Monthly or 6-Month). The product is charged immediately — there is NO trial
+ * period configured on Stripe; the "free" experience is the daily-limited free
+ * tier (see `src/lib/usage-limits.ts`).
+ *
  * Body: { priceId: string, userId: string, userEmail: string }
- * Returns: { url: string } – the Stripe-hosted checkout URL
+ *  - priceId: Stripe price ID for the plan being purchased
+ *  - userId: Firebase UID of the buyer (also persisted in Stripe metadata so
+ *            the webhook can find the corresponding Firestore document)
+ *  - userEmail: Optional, prefilled in the Stripe Checkout form
+ *
+ * Returns: { url: string } – the Stripe-hosted checkout URL the client should
+ *                            redirect to.
+ *
+ * On success Stripe redirects to `/checkout/success?session_id=...` where the
+ * client validates the session and walks the user through a fluid "welcome to
+ * Pro" onboarding flow.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -26,7 +41,7 @@ export async function POST(req: NextRequest) {
       },
       customer_email: userEmail || undefined,
       metadata: { userId, firebaseUid: userId },
-      success_url: `${origin}/dashboard?checkout=success`,
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?checkout=cancelled`,
       allow_promotion_codes: true,
     });

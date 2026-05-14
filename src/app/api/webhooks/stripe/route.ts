@@ -47,10 +47,12 @@ export async function POST(req: NextRequest) {
 
         console.log(`[Stripe Webhook] checkout.session.completed: user=${userId}, customer=${customerId}`);
 
+        // Only persist the Stripe customer link here. The real subscription status
+        // arrives in `customer.subscription.created/updated` events; setting it
+        // prematurely (e.g. as "trialing") would lie to the UI for ~1s.
         if (userId && customerId && adminDb) {
           await adminDb.doc(`users/${userId}`).update({
             stripeCustomerId: customerId,
-            subscriptionStatus: "trialing",
           });
         }
         break;

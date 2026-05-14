@@ -35,7 +35,14 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (user && profile && !profile.onboardingCompleted && pathname !== "/onboarding") {
+    // Users who just paid land on `/checkout/success` and may not have
+    // completed onboarding yet (the funnel allows buying right after sign-up).
+    // Let them see the confirmation page first; the page itself routes them to
+    // /onboarding next when needed.
+    const onboardingExempt =
+      pathname === "/onboarding" || pathname.startsWith("/checkout/success");
+
+    if (user && profile && !profile.onboardingCompleted && !onboardingExempt) {
       router.replace("/onboarding");
       return;
     }

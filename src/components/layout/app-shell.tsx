@@ -6,7 +6,7 @@ import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 
 const NO_SHELL_PATHS = ["/", "/login", "/register", "/onboarding", "/pricing", "/admin"];
-const NO_SHELL_PREFIXES = ["/cfa"];
+const NO_SHELL_PREFIXES = ["/cfa", "/checkout/success"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
