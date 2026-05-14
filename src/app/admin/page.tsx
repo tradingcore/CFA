@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { getAllUsers, getAllFeedbacks, UserProfile, Feedback } from "@/lib/firestore";
@@ -8,9 +8,17 @@ import { ADMIN_EMAILS } from "@/lib/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
   Users, MessageCircle, Star, CreditCard, Activity,
   ChevronDown, ChevronRight, ArrowLeft, Eye, Globe,
   Smartphone, Monitor, Tablet, BarChart3, TrendingUp,
+  Filter, X,
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -67,6 +75,182 @@ interface AnalyticsData {
   }[];
 }
 
+type RecentView = AnalyticsData["recentViews"][number];
+
+type FilterMode = "include" | "exclude";
+
+interface ColumnFilter {
+  mode: FilterMode;
+  values: string[];
+}
+
+const FILTER_KEYS = ["page", "visitor", "country", "ip", "org", "device", "status"] as const;
+type FilterKey = (typeof FILTER_KEYS)[number];
+type Filters = Record<FilterKey, ColumnFilter>;
+
+const EMPTY_FILTERS: Filters = FILTER_KEYS.reduce((acc, k) => {
+  acc[k] = { mode: "include", values: [] };
+  return acc;
+}, {} as Filters);
+
+/**
+ * Returns the comparable string value of a recent-view row for a given filter
+ * column. Used both to populate the filter dropdown options and to evaluate
+ * whether a row passes the active filters.
+ *
+ * Inputs:
+ * - `v`: a row from `analytics.recentViews`.
+ * - `key`: the column being filtered (`page`, `visitor`, `country`, `ip`,
+ *   `org`, `device`, or `status`).
+ *
+ * Output: a non-empty string (uses `"—"` or `"(anonymous)"` placeholders so
+ * empty/null values can still be filtered explicitly).
+ */
+function getRowFilterValue(v: RecentView, key: FilterKey): string {
+  switch (key) {
+    case "page":
+      return v.path || "—";
+    case "visitor":
+      return v.email || (v.userId ? "(logged)" : "(anonymous)");
+    case "country":
+      return v.country || "—";
+    case "ip":
+      return v.ip || "—";
+    case "org":
+      return v.org || "—";
+    case "device":
+      return v.device || "—";
+    case "status":
+      return v.isInternal ? "admin" : v.userId ? "logged" : "anonymous";
+  }
+}
+
+interface ColumnFilterButtonProps {
+  label: string;
+  options: { value: string; count: number }[];
+  filter: ColumnFilter;
+  onChange: (next: ColumnFilter) => void;
+  align?: "start" | "center" | "end";
+}
+
+/**
+ * Small inline button that opens a dropdown allowing the admin to include or
+ * exclude specific values from a column.
+ *
+ * Inputs:
+ * - `label`: short title shown in the trigger and dropdown header.
+ * - `options`: `{ value, count }` pairs computed from the visible dataset.
+ * - `filter`: current `{ mode, values }` state for this column.
+ * - `onChange`: callback fired with the next filter state on every change.
+ * - `align`: dropdown alignment relative to the trigger.
+ *
+ * Output: JSX. No side effects beyond calling `onChange`.
+ */
+function ColumnFilterButton({
+  label,
+  options,
+  filter,
+  onChange,
+  align = "start",
+}: ColumnFilterButtonProps) {
+  const activeCount = filter.values.length;
+  const sortedOptions = useMemo(
+    () => [...options].sort((a, b) => b.count - a.count || a.value.localeCompare(b.value)),
+    [options],
+  );
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+          activeCount > 0
+            ? filter.mode === "include"
+              ? "bg-primary/15 text-primary hover:bg-primary/25"
+              : "bg-destructive/15 text-destructive hover:bg-destructive/25"
+            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+        }`}
+        title={
+          activeCount > 0
+            ? `${filter.mode === "include" ? "Showing only" : "Hiding"} ${activeCount} ${label.toLowerCase()} value${activeCount === 1 ? "" : "s"}`
+            : `Filter ${label.toLowerCase()}`
+        }
+      >
+        <Filter className="h-3 w-3" />
+        <span className="truncate">{label}</span>
+        {activeCount > 0 && (
+          <span className="rounded bg-background/40 px-1 text-[9px] tabular-nums">
+            {filter.mode === "exclude" ? "≠" : ""}
+            {activeCount}
+          </span>
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={align} className="w-[280px] !min-w-[280px] max-h-[420px]">
+        <div className="flex items-center justify-between gap-2 px-1.5 py-1">
+          <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+            Filter {label}
+          </span>
+          {activeCount > 0 && (
+            <button
+              onClick={() => onChange({ ...filter, values: [] })}
+              className="text-[10px] text-muted-foreground hover:text-foreground"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        <div className="flex gap-1 px-1 pb-1">
+          <button
+            onClick={() => onChange({ ...filter, mode: "include" })}
+            className={`flex-1 rounded px-2 py-1 text-[10px] font-medium transition-colors ${
+              filter.mode === "include"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-accent"
+            }`}
+          >
+            Include
+          </button>
+          <button
+            onClick={() => onChange({ ...filter, mode: "exclude" })}
+            className={`flex-1 rounded px-2 py-1 text-[10px] font-medium transition-colors ${
+              filter.mode === "exclude"
+                ? "bg-destructive text-destructive-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-accent"
+            }`}
+          >
+            Exclude
+          </button>
+        </div>
+        <DropdownMenuSeparator />
+        {sortedOptions.length === 0 ? (
+          <div className="px-2 py-3 text-center text-xs text-muted-foreground">
+            No data
+          </div>
+        ) : (
+          sortedOptions.map((o) => (
+            <DropdownMenuCheckboxItem
+              key={o.value}
+              checked={filter.values.includes(o.value)}
+              onCheckedChange={(checked) => {
+                const next = checked
+                  ? [...filter.values, o.value]
+                  : filter.values.filter((v) => v !== o.value);
+                onChange({ ...filter, values: next });
+              }}
+            >
+              <span className="truncate text-xs flex-1" title={o.value}>
+                {o.value}
+              </span>
+              <span className="mr-5 text-[10px] tabular-nums text-muted-foreground">
+                {o.count}
+              </span>
+            </DropdownMenuCheckboxItem>
+          ))
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export default function AdminPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -78,6 +262,7 @@ export default function AdminPage() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [analyticsDays, setAnalyticsDays] = useState(7);
   const [includeInternal, setIncludeInternal] = useState(false);
+  const [recentFilters, setRecentFilters] = useState<Filters>(EMPTY_FILTERS);
 
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
@@ -105,6 +290,49 @@ export default function AdminPage() {
       .then(setAnalytics)
       .catch(console.error);
   }, [isAdmin, tab, analyticsDays, includeInternal]);
+
+  /**
+   * Distinct values + frequency per filterable column, computed from the
+   * current `recentViews` payload. Empty strings are preserved as the
+   * placeholder values returned by `getRowFilterValue`.
+   */
+  const recentFilterOptions = useMemo(() => {
+    const result: Record<FilterKey, Map<string, number>> = FILTER_KEYS.reduce(
+      (acc, k) => {
+        acc[k] = new Map<string, number>();
+        return acc;
+      },
+      {} as Record<FilterKey, Map<string, number>>,
+    );
+    for (const v of analytics?.recentViews ?? []) {
+      for (const k of FILTER_KEYS) {
+        const val = getRowFilterValue(v, k);
+        result[k].set(val, (result[k].get(val) ?? 0) + 1);
+      }
+    }
+    return FILTER_KEYS.reduce((acc, k) => {
+      acc[k] = Array.from(result[k].entries()).map(([value, count]) => ({ value, count }));
+      return acc;
+    }, {} as Record<FilterKey, { value: string; count: number }[]>);
+  }, [analytics?.recentViews]);
+
+  const filteredRecentViews = useMemo(() => {
+    const views = analytics?.recentViews ?? [];
+    return views.filter((v) =>
+      FILTER_KEYS.every((k) => {
+        const f = recentFilters[k];
+        if (f.values.length === 0) return true;
+        const value = getRowFilterValue(v, k);
+        const match = f.values.includes(value);
+        return f.mode === "include" ? match : !match;
+      }),
+    );
+  }, [analytics?.recentViews, recentFilters]);
+
+  const activeFilterCount = FILTER_KEYS.reduce(
+    (sum, k) => sum + recentFilters[k].values.length,
+    0,
+  );
 
   if (!isAdmin) return null;
 
@@ -440,9 +668,89 @@ export default function AdminPage() {
 
                   {/* Recent views table */}
                   <Card>
-                    <CardHeader><CardTitle className="text-base">Recent Visits ({analytics.recentViews.length})</CardTitle></CardHeader>
+                    <CardHeader>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <CardTitle className="text-base">
+                          Recent Visits
+                          <span className="ml-2 text-xs font-normal text-muted-foreground">
+                            {activeFilterCount > 0
+                              ? `${filteredRecentViews.length} of ${analytics.recentViews.length}`
+                              : analytics.recentViews.length}
+                          </span>
+                        </CardTitle>
+                        {activeFilterCount > 0 && (
+                          <button
+                            onClick={() => setRecentFilters(EMPTY_FILTERS)}
+                            className="flex items-center gap-1 rounded-md border border-border bg-secondary px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
+                          >
+                            <X className="h-3 w-3" />
+                            Clear all filters ({activeFilterCount})
+                          </button>
+                        )}
+                      </div>
+                    </CardHeader>
                     <CardContent>
                       <div className="overflow-x-auto">
+                        {/* Filter row */}
+                        <div className="grid grid-cols-12 gap-2 border-b border-border/60 px-2 py-1.5 min-w-[1000px]">
+                          <span />
+                          <div className="col-span-2">
+                            <ColumnFilterButton
+                              label="Page"
+                              options={recentFilterOptions.page}
+                              filter={recentFilters.page}
+                              onChange={(f) => setRecentFilters((s) => ({ ...s, page: f }))}
+                            />
+                          </div>
+                          <div className="col-span-3">
+                            <ColumnFilterButton
+                              label="Visitor"
+                              options={recentFilterOptions.visitor}
+                              filter={recentFilters.visitor}
+                              onChange={(f) => setRecentFilters((s) => ({ ...s, visitor: f }))}
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <ColumnFilterButton
+                              label="Country"
+                              options={recentFilterOptions.country}
+                              filter={recentFilters.country}
+                              onChange={(f) => setRecentFilters((s) => ({ ...s, country: f }))}
+                            />
+                          </div>
+                          <div className="col-span-2 flex flex-wrap gap-1">
+                            <ColumnFilterButton
+                              label="IP"
+                              options={recentFilterOptions.ip}
+                              filter={recentFilters.ip}
+                              onChange={(f) => setRecentFilters((s) => ({ ...s, ip: f }))}
+                            />
+                            <ColumnFilterButton
+                              label="Org"
+                              options={recentFilterOptions.org}
+                              filter={recentFilters.org}
+                              onChange={(f) => setRecentFilters((s) => ({ ...s, org: f }))}
+                            />
+                          </div>
+                          <div>
+                            <ColumnFilterButton
+                              label="Device"
+                              options={recentFilterOptions.device}
+                              filter={recentFilters.device}
+                              onChange={(f) => setRecentFilters((s) => ({ ...s, device: f }))}
+                              align="end"
+                            />
+                          </div>
+                          <div>
+                            <ColumnFilterButton
+                              label="Status"
+                              options={recentFilterOptions.status}
+                              filter={recentFilters.status}
+                              onChange={(f) => setRecentFilters((s) => ({ ...s, status: f }))}
+                              align="end"
+                            />
+                          </div>
+                        </div>
                         <div className="grid grid-cols-12 gap-2 border-b border-border px-2 py-2 text-[10px] font-semibold uppercase text-muted-foreground min-w-[1000px]">
                           <span>Time</span>
                           <span className="col-span-2">Page</span>
@@ -452,7 +760,12 @@ export default function AdminPage() {
                           <span>Device</span>
                           <span>Status</span>
                         </div>
-                        {analytics.recentViews.slice(0, 30).map((v, i) => {
+                        {filteredRecentViews.length === 0 && (
+                          <p className="px-2 py-6 text-center text-xs text-muted-foreground">
+                            No visits match the current filters.
+                          </p>
+                        )}
+                        {filteredRecentViews.map((v, i) => {
                           const countryDisplay = v.country === "local"
                             ? "Local"
                             : v.country === "unknown" || !v.country
