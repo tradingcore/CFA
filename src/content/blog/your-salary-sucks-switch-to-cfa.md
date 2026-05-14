@@ -13,10 +13,10 @@ related:
   - "cfa-exam-cost-2026"
 
 quickAnswer: |
-  - Median CFA charterholder in the US: **$300K total comp**, **$180K base** ([CFA Institute, 2024](https://www.cfainstitute.org/insights/compensation-study-2024)).
+  - Median CFA charterholder in the US: **\$300K total comp**, **\$180K base** ([CFA Institute, 2024](https://www.cfainstitute.org/insights/compensation-study-2024)).
   - CFA charter alone — stripping out seniority — adds **+59%** vs a Level I candidate ([300hours, 2026](https://300hours.com/cfa-salary-increase/)).
-  - Cost: **$3K–$5K**. Three years. One calculator.
-  - You probably make less than $150K. The gap is real, the gap is structural, and most of it is just *which industry you sit in*.
+  - Cost: **\$3K–\$5K**. Three years. One calculator.
+  - You probably make less than \$150K. The gap is real, the gap is structural, and most of it is just *which industry you sit in*.
 
 faq:
   - q: "Is $300K actually realistic, or is that the top of the range?"
@@ -37,13 +37,13 @@ faq:
     a: "Switzerland, US, and Australia top the median base salary list. But the *premium* (CFA vs non-CFA in the same role) is biggest in markets with fewer charterholders — Middle East, India, Brazil, China — where it can run 40–60%."
 ---
 
-The median CFA charterholder in the US makes **$300,000** a year.
+The median CFA charterholder in the US makes **\$300,000** a year.
 
 Look at your paycheck. We good? Cool, you can close this tab.
 
 Still here? Right.
 
-That $300K is **average total comp** for a US charterholder per the [CFA Institute 2024 Compensation Study](https://www.cfainstitute.org/insights/compensation-study-2024) — 17,000+ members surveyed across 132 markets. Median base alone is **$180K**. The rest is bonus and equity.
+That \$300K is **average total comp** for a US charterholder per the [CFA Institute 2024 Compensation Study](https://www.cfainstitute.org/insights/compensation-study-2024) — 17,000+ members surveyed across 132 markets. Median base alone is **\$180K**. The rest is bonus and equity.
 
 Your "I'm doing great in my career" salary, whatever it is, is almost certainly less than that. And the reason isn't that you work less hard. It's that **you're in the wrong industry for your skills**.
 
@@ -70,17 +70,17 @@ From the [CFA Societies 2018 Compensation Survey](https://cfachicago.org/wp-cont
 
 | Job | Total comp |
 |---|---|
-| Chief Investment Officer | **$394K** |
-| Equity Portfolio Manager | **$252K** |
-| Director of Investments | **$235K** |
-| FI Portfolio Manager | **$213K** |
-| Buy-side Equity Analyst | **$190K** |
-| Risk Manager | **$173K** |
-| Sell-side Equity Analyst | **$133K** |
+| Chief Investment Officer | **\$394K** |
+| Equity Portfolio Manager | **\$252K** |
+| Director of Investments | **\$235K** |
+| FI Portfolio Manager | **\$213K** |
+| Buy-side Equity Analyst | **\$190K** |
+| Risk Manager | **\$173K** |
+| Sell-side Equity Analyst | **\$133K** |
 
-That last line — sell-side analyst, the **entry-level** investment job — is **$133K**.
+That last line — sell-side analyst, the **entry-level** investment job — is **\$133K**.
 
-What's the median for a senior corporate FP&A analyst with the same 5 years of experience? Glassdoor says ~$95K–$115K. Same brain, same hours, same bachelor's degree. **35% less.**
+What's the median for a senior corporate FP&A analyst with the same 5 years of experience? Glassdoor says ~\$95K–\$115K. Same brain, same hours, same bachelor's degree. **35% less.**
 
 The only difference is which floor of the building you sit on.
 
@@ -88,32 +88,32 @@ The only difference is which floor of the building you sit on.
 
 Top countries by **median base** for charterholders:
 
-- Switzerland — $120K
-- US — $100K
-- Australia — $93K
-- Germany — $88K
-- Hong Kong — $81K
+- Switzerland — \$120K
+- US — \$100K
+- Australia — \$93K
+- Germany — \$88K
+- Hong Kong — \$81K
 
 Top US cities:
 
-- San Francisco — $126K
-- NYC (Manhattan) — $120K
-- Boston — $116K
-- Chicago — $108K
+- San Francisco — \$126K
+- NYC (Manhattan) — \$120K
+- Boston — \$116K
+- Chicago — \$108K
 
-These are **base only.** Add 30–60% for bonus and equity. That's how you get from "$120K base" to "$300K all-in."
+These are **base only.** Add 30–60% for bonus and equity. That's how you get from "\$120K base" to "\$300K all-in."
 
 ## The math everyone avoids
 
 Cost of the charter:
 
-- $3K–$5K in fees
-- ~1,000 hours of study (50/hr after-tax = $50K opportunity cost)
+- \$3K–\$5K in fees
+- ~1,000 hours of study (50/hr after-tax = \$50K opportunity cost)
 - 3 years
 
-All-in: **~$55K** spread over three years.
+All-in: **~\$55K** spread over three years.
 
-Conservative return: **$50K/year** salary lift. Stay in finance until 60. That's $1.5M undiscounted, ~$770K NPV at 5%.
+Conservative return: **\$50K/year** salary lift. Stay in finance until 60. That's \$1.5M undiscounted, ~\$770K NPV at 5%.
 
 **14× present-value ROI.** Cut every assumption in half — half the lift, half the years, double the cost — and it's still **6–7×**.
 
@@ -137,7 +137,7 @@ The headline says "switch to CFA" because that's the part that gets clicks. The 
 
 > **Most people optimize their career inside the path they're already on. Almost no one stops and asks if the entire path is the wrong one.**
 
-The CFA Level I is the **cheapest test** of that question. **One year, $1,200, 300 hours.** Take it. If you hate the material, you've spent a year and $1,200 — you got off cheap. If you love it, you just found a 30-year track that pays 30–60% more than whatever you're doing now.
+The CFA Level I is the **cheapest test** of that question. **One year, \$1,200, 300 hours.** Take it. If you hate the material, you've spent a year and \$1,200 — you got off cheap. If you love it, you just found a 30-year track that pays 30–60% more than whatever you're doing now.
 
 The asymmetry is the whole game. "Quit your job" is theatrical. **Stop assuming your current path is the right one** is what actually matters.
 
@@ -155,7 +155,7 @@ If you're still arguing with this post in your head, you already have your answe
 
 1. **Buy a CFA practice set. Do 25 questions.** If they're interesting, that's most of the signal you need.
 2. **Read the [CFA charter mechanics](/cfa/what-is-the-cfa-charter)** so you know what you're signing up for.
-3. **Run the numbers for you.** Current comp + tenure × 30 years vs. the $300K trajectory. The gap is the answer.
+3. **Run the numbers for you.** Current comp + tenure × 30 years vs. the \$300K trajectory. The gap is the answer.
 4. **[Get a free study plan from Trading Core](/register).** Personalized to your level, exam date, weekly hours. Under a minute. No credit card.
 
 10–15% of starters become charterholders. The ones who finish almost universally describe it as the best ROI decision they ever made. The ones who don't almost universally describe it as a year they want back.

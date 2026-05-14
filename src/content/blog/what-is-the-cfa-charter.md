@@ -96,15 +96,15 @@ A realistic 2026 estimate for the **full charter journey** (one attempt per leve
 
 | Item | Cost (USD) |
 |---|---|
-| One-time enrollment fee | ~$350 |
-| Level I early/standard registration | $940–$1,290 |
-| Level II early/standard registration | $940–$1,290 |
-| Level III early/standard registration | $940–$1,290 |
-| Prep materials (3 levels) | $0–$3,000 |
-| Membership (annual, after charter) | ~$300/year |
-| **Total to first charter** | **~$3,200–$5,500** |
+| One-time enrollment fee | ~\$350 |
+| Level I early/standard registration | \$940–\$1,290 |
+| Level II early/standard registration | \$940–\$1,290 |
+| Level III early/standard registration | \$940–\$1,290 |
+| Prep materials (3 levels) | \$0–\$3,000 |
+| Membership (annual, after charter) | ~\$300/year |
+| **Total to first charter** | **~\$3,200–\$5,500** |
 
-Add re-takes if necessary (a single retake can add $1,000+). For a deeper breakdown, see our [CFA exam cost guide for 2026](/cfa/cfa-exam-cost-2026).
+Add re-takes if necessary (a single retake can add \$1,000+). For a deeper breakdown, see our [CFA exam cost guide for 2026](/cfa/cfa-exam-cost-2026).
 
 ## Who is the CFA actually for?
 

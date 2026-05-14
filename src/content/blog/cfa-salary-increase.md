@@ -59,10 +59,10 @@ These are illustrative ranges from publicly available 2024–2025 data, normaliz
 
 | Status | Base | Bonus | Total comp |
 |---|---|---|---|
-| No CFA, no progress | $110K–$140K | 20–40% | $130K–$200K |
-| CFA Level I passed | $115K–$150K | 20–40% | $135K–$210K |
-| CFA Level II passed | $130K–$170K | 25–50% | $160K–$255K |
-| CFA charterholder | $150K–$200K | 30–60% | $190K–$320K |
+| No CFA, no progress | \$110K–\$140K | 20–40% | \$130K–\$200K |
+| CFA Level I passed | \$115K–\$150K | 20–40% | \$135K–\$210K |
+| CFA Level II passed | \$130K–\$170K | 25–50% | \$160K–\$255K |
+| CFA charterholder | \$150K–\$200K | 30–60% | \$190K–\$320K |
 
 The gap widens further at the senior PM level (10+ years), where charterholders are over-represented in roles with carry, performance fees, or revenue-share comp structures.
 
@@ -95,23 +95,23 @@ Where the credential is rarer or where local regulators specifically reference C
 
 ## ROI math: CFA vs. alternatives
 
-Let's compute conservative lifetime ROI for a 26-year-old considering the CFA. Assumptions: charter completed by age 30, career spans to age 60, modest 25% lifetime salary premium attributable to the charter, $50K average lift on $200K base.
+Let's compute conservative lifetime ROI for a 26-year-old considering the CFA. Assumptions: charter completed by age 30, career spans to age 60, modest 25% lifetime salary premium attributable to the charter, \$50K average lift on \$200K base.
 
-- **Annual lift**: $50,000
+- **Annual lift**: \$50,000
 - **Years of impact**: 30
-- **Undiscounted lifetime lift**: $1,500,000
-- **NPV at 5% real discount**: ~$770,000
-- **All-in cost** of charter (fees + materials + ~1,000 hours opportunity cost at $50/hr): **~$55,000**
+- **Undiscounted lifetime lift**: \$1,500,000
+- **NPV at 5% real discount**: ~\$770,000
+- **All-in cost** of charter (fees + materials + ~1,000 hours opportunity cost at \$50/hr): **~\$55,000**
 - **Lifetime ROI**: ~14× on present-value basis
 
 Even cutting every assumption in half, you still see **7×+ lifetime ROI**. Now compare to an M7 MBA:
 
 | Item | CFA | Top-tier MBA |
 |---|---|---|
-| Direct cost | ~$5K | ~$220K (tuition + fees) |
-| Foregone income (2 years) | $0 | ~$300K |
-| Total cost | ~$5K + ~1,000 hours | ~$520K |
-| Lifetime salary premium | $1.0M–$2M | $1.5M–$3M |
+| Direct cost | ~\$5K | ~\$220K (tuition + fees) |
+| Foregone income (2 years) | \$0 | ~\$300K |
+| Total cost | ~\$5K + ~1,000 hours | ~\$520K |
+| Lifetime salary premium | \$1.0M–\$2M | \$1.5M–\$3M |
 | ROI | 200–400× | 3–6× |
 
 The MBA wins on **absolute lifetime earnings** in many cases, but the CFA dominates on **return per dollar spent**. They're answering different questions.
@@ -121,7 +121,7 @@ The MBA wins on **absolute lifetime earnings** in many cases, but the CFA domina
 Some employers have formal CFA policies. Common patterns:
 
 - **Reimbursement of exam fees** after passing each level.
-- **Per-level cash bonus** (commonly $500–$2,000 per level at large asset managers and banks).
+- **Per-level cash bonus** (commonly \$500–\$2,000 per level at large asset managers and banks).
 - **Promotion gating** — explicit policies that "PM track" requires charter (very common at long-only asset managers).
 - **Title designations** that move comp band (e.g., from Senior Associate to VP).
 

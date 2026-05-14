@@ -179,7 +179,7 @@ You don't need to buy everything. A working stack:
 | Mocks | LES mocks + provider mocks (aim for 5–7 unique full mocks) |
 | AI tutor | Trading Core for instant explanations and personalized practice |
 
-Estimated cost range: **$0–$1,200 for Level I prep materials** (see the [full cost breakdown](/cfa/cfa-exam-cost-2026)).
+Estimated cost range: **\$0–\$1,200 for Level I prep materials** (see the [full cost breakdown](/cfa/cfa-exam-cost-2026)).
 
 ## The 5 rules that move pass rates
 
@@ -202,6 +202,6 @@ Cramming in the last 48 hours measurably hurts performance. The exam rewards res
 
 - Drill into [study techniques that actually work](/cfa/how-to-study-for-cfa-level-1) (active recall, spaced repetition, mock review)
 - Get the [Level I Fixed Income cheat sheet](/cfa/cfa-level-1-fixed-income-cheat-sheet)
-- See the [full cost breakdown](/cfa/cfa-exam-cost-2026) so the next $1,290 isn't wasted on a retake
+- See the [full cost breakdown](/cfa/cfa-exam-cost-2026) so the next \$1,290 isn't wasted on a retake
 
 If you want this plan generated automatically — calibrated to **your** exam date, weekly availability, and current weak topics — [Trading Core](/register) does it free, no card. The plan adapts as you progress and tells you exactly which LOS to drill next.
