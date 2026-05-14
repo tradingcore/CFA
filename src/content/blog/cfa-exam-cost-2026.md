@@ -2,7 +2,7 @@
 title: "CFA Exam Cost 2026: The Full Breakdown (Fees + Materials + Hidden Costs)"
 description: "Complete 2026 cost breakdown for the CFA Program — registration fees by deadline, materials, retake costs, and the realistic total to charter."
 slug: "cfa-exam-cost-2026"
-publishedAt: "2026-05-10"
+publishedAt: "2026-04-15"
 author: "Trading Core"
 level: "All"
 tags: ["cfa", "cost", "fees", "exam"]

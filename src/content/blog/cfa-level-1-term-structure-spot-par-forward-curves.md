@@ -2,7 +2,7 @@
 title: "Term Structure of Interest Rates: Spot, Par, and Forward Curves (CFA Level I)"
 description: "Spot rates, par rates, and forward rates explained from scratch — definitions, formulas, bootstrapping, and worked examples for CFA Level I Fixed Income."
 slug: "cfa-level-1-term-structure-spot-par-forward-curves"
-publishedAt: "2026-05-07"
+publishedAt: "2026-05-13"
 author: "Trading Core"
 level: "I"
 tags: ["cfa", "level 1", "fixed income", "term structure", "spot curve", "forward rates"]

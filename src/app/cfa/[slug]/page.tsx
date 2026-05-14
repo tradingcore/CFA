@@ -80,7 +80,7 @@ export default async function ArticlePage(
     publisher: {
       "@type": "Organization",
       name: SITE.name,
-      logo: { "@type": "ImageObject", url: `${base}/icon.png` },
+      logo: { "@type": "ImageObject", url: `${base}/icon` },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     image: [absoluteUrl(fm.ogImage ?? `/cfa/${fm.slug}/opengraph-image`)],

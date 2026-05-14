@@ -2,7 +2,7 @@
 title: "What Is the CFA Charter? A Complete 2026 Guide"
 description: "The CFA charter explained — what it is, who it's for, what it costs, how long it takes, and whether it's worth it in 2026."
 slug: "what-is-the-cfa-charter"
-publishedAt: "2026-05-13"
+publishedAt: "2026-03-25"
 author: "Trading Core"
 level: "All"
 tags: ["cfa", "charter", "career", "overview"]

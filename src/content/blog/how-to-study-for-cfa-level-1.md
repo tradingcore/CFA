@@ -2,7 +2,7 @@
 title: "How to Study for CFA Level I: Techniques That Actually Work"
 description: "The study techniques that distinguish passers from the 60% who fail — active recall, spaced repetition, mock review, and the trap of passive reading."
 slug: "how-to-study-for-cfa-level-1"
-publishedAt: "2026-05-08"
+publishedAt: "2026-04-29"
 author: "Trading Core"
 level: "I"
 tags: ["cfa", "level 1", "study techniques", "active recall"]

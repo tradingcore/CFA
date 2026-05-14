@@ -2,7 +2,7 @@
 title: "CFA Career Opportunities: Where the Charter Actually Helps in 2026"
 description: "The realistic guide to CFA career paths — which jobs actually value the charter, where it doesn't matter, and how to position yourself by level."
 slug: "cfa-career-opportunities"
-publishedAt: "2026-05-12"
+publishedAt: "2026-04-01"
 author: "Trading Core"
 level: "All"
 tags: ["cfa", "career", "jobs", "industry"]

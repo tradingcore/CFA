@@ -2,7 +2,7 @@
 title: "Best Way to Prepare for CFA Level I in 2026 (Realistic Plan)"
 description: "A step-by-step plan to pass CFA Level I in 2026 — based on the new curriculum, working candidates' constraints, and what actually moves pass rates."
 slug: "best-way-to-prepare-for-cfa-level-1"
-publishedAt: "2026-05-09"
+publishedAt: "2026-04-22"
 author: "Trading Core"
 level: "I"
 tags: ["cfa", "level 1", "study plan", "preparation"]

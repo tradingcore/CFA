@@ -2,7 +2,7 @@
 title: "How Much Does the CFA Charter Increase Your Salary? (2026 Data)"
 description: "Realistic salary impact of passing each CFA level — by role, by region, and by years of experience. Plus the ROI math vs. an MBA."
 slug: "cfa-salary-increase"
-publishedAt: "2026-05-11"
+publishedAt: "2026-04-08"
 author: "Trading Core"
 level: "All"
 tags: ["cfa", "salary", "career", "roi"]
