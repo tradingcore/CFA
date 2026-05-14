@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PublicNav, PublicFooter } from "@/components/layout/public-nav";
 
 export const metadata: Metadata = {
   title: "CFA Prep Pricing — Start Free, Upgrade When You're Ready",
@@ -24,5 +25,11 @@ export default function PricingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <PublicNav />
+      <div className="flex-1">{children}</div>
+      <PublicFooter />
+    </div>
+  );
 }

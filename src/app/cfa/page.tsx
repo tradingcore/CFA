@@ -1,8 +1,16 @@
 import Link from "next/link";
-import { ArrowRight, Clock, BookOpen } from "lucide-react";
+import { ArrowRight, Clock, BookOpen, ChevronRight } from "lucide-react";
 import { getAllPosts } from "@/lib/blog";
 import { JsonLd } from "@/components/seo/json-ld";
 import { absoluteUrl, getSiteUrl, SITE } from "@/lib/site";
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export default function BlogIndexPage() {
   const posts = getAllPosts();
@@ -68,30 +76,57 @@ export default function BlogIndexPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="divide-y divide-border">
               {posts.map((p) => (
                 <Link
                   key={p.slug}
                   href={`/cfa/${p.slug}`}
-                  className="group flex flex-col gap-3 rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/40 hover:shadow-lg"
+                  className="group flex items-start gap-6 py-7 transition-colors first:pt-0 last:pb-0 sm:gap-8"
                 >
-                  {p.level && (
-                    <span className="self-start rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                      Level {p.level}
-                    </span>
-                  )}
-                  <h2 className="text-lg font-semibold leading-snug group-hover:text-primary">
-                    {p.title}
-                  </h2>
-                  <p className="line-clamp-3 text-sm text-muted-foreground">
-                    {p.description}
-                  </p>
-                  <div className="mt-auto flex items-center justify-between pt-2 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {p.readingMinutes} min read
-                    </span>
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <div className="hidden w-36 shrink-0 pt-1.5 sm:block">
+                    <time className="text-sm text-muted-foreground">
+                      {formatDate(p.publishedAt)}
+                    </time>
+                    {p.level && (
+                      <span className="mt-2 inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                        Level {p.level}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <time className="mb-1 block text-xs text-muted-foreground sm:hidden">
+                      {formatDate(p.publishedAt)}
+                    </time>
+                    <h2 className="text-xl font-bold leading-snug group-hover:text-primary sm:text-2xl">
+                      {p.title}
+                    </h2>
+                    <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
+                      {p.description}
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {p.readingMinutes} min read
+                      </span>
+                      {p.level && (
+                        <span className="sm:hidden rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Level {p.level}
+                        </span>
+                      )}
+                      {p.tags?.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="hidden shrink-0 self-center sm:block">
+                    <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                   </div>
                 </Link>
               ))}

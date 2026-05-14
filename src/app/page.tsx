@@ -1,8 +1,7 @@
-"use client";
-
-import { TrendingUp, Brain, Target, BarChart3, MessageCircle, CalendarDays, CheckCircle2, ArrowRight, BookOpen, Zap, Database, Shield } from "lucide-react";
+import { Brain, Target, BarChart3, MessageCircle, CalendarDays, CheckCircle2, ArrowRight, BookOpen, Zap, Database, Shield } from "lucide-react";
 import Link from "next/link";
 import { ActiveUsersBadge } from "@/components/layout/active-users-badge";
+import { PublicNav, PublicFooter } from "@/components/layout/public-nav";
 
 const FEATURES = [
   {
@@ -58,41 +57,7 @@ const DIFFERENTIALS = [
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Nav */}
-      <header className="flex items-center justify-between px-6 py-4 sm:px-12">
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <TrendingUp className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold">Trading Core</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/cfa"
-            className="hidden rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline"
-          >
-            Blog
-          </Link>
-          <Link
-            href="/pricing"
-            className="hidden rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline"
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Start Free
-          </Link>
-        </div>
-      </header>
+      <PublicNav />
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 px-6 pt-16 pb-12 text-center sm:pt-24 sm:pb-16">
@@ -380,25 +345,7 @@ export default function LandingPage() {
         </Link>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border px-6 py-10 text-center text-xs text-muted-foreground">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-4 flex flex-wrap items-center justify-center gap-4 text-sm">
-            <Link href="/cfa" className="hover:text-foreground">Blog</Link>
-            <Link href="/pricing" className="hover:text-foreground">Pricing</Link>
-            <Link href="/login" className="hover:text-foreground">Sign In</Link>
-            <Link href="/register" className="hover:text-foreground">Start Free</Link>
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-foreground">Trading Core</span>
-          </div>
-          <p className="mt-2">&copy; {new Date().getFullYear()} Trading Core. All rights reserved.</p>
-          <p className="mt-1 text-[11px]">
-            Not affiliated with CFA Institute. CFA® is a registered trademark of CFA Institute.
-          </p>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

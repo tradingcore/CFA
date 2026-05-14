@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BlogNav, BlogFooter } from "@/components/blog/blog-nav";
+import { PublicNav, PublicFooter } from "@/components/layout/public-nav";
 
 export const metadata: Metadata = {
   title: {
@@ -20,9 +20,9 @@ export default function CfaBlogLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <BlogNav />
+      <PublicNav />
       <div className="flex-1">{children}</div>
-      <BlogFooter />
+      <PublicFooter />
     </div>
   );
 }

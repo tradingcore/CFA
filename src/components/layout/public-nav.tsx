@@ -1,7 +1,12 @@
-import Link from "next/link";
-import { TrendingUp } from "lucide-react";
+"use client";
 
-export function BlogNav() {
+import Link from "next/link";
+import { TrendingUp, ArrowRight } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+
+export function PublicNav() {
+  const { user, loading } = useAuth();
+
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md sm:px-12">
       <Link href="/" className="flex items-center gap-2">
@@ -23,24 +28,50 @@ export function BlogNav() {
         >
           Pricing
         </Link>
-        <Link
-          href="/login"
-          className="rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Sign In
-        </Link>
-        <Link
-          href="/register"
-          className="rounded-xl bg-primary px-4 py-2 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          Start Free
-        </Link>
+        {!loading && !user && (
+          <>
+            <Link
+              href="/login"
+              className="rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              className="rounded-xl bg-primary px-4 py-2 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Start Free
+            </Link>
+          </>
+        )}
+        {!loading && user && (
+          <>
+            <Link
+              href="/profile"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
+              title="My Profile"
+            >
+              {(user.displayName || user.email || "U")
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()}
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Back to app <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </>
+        )}
       </nav>
     </header>
   );
 }
 
-export function BlogFooter() {
+export function PublicFooter() {
   return (
     <footer className="border-t border-border px-6 py-10 text-center text-xs text-muted-foreground sm:px-12">
       <div className="mx-auto max-w-5xl">

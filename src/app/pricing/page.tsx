@@ -9,47 +9,59 @@ import { useRouter } from "next/navigation";
 const MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY!;
 const YEARLY_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY!;
 
-const freeFeatures = [
-  { feature: "1 mock exam per day (5 questions)", free: true },
-  { feature: "3 AI chat messages per day", free: true },
-  { feature: "Study plan generation", free: true },
-  { feature: "Study progress tracking", free: true },
-  { feature: "2 discussion messages per question", free: true },
+const FREE_FEATURES = [
+  "1 mock exam per day (5 questions)",
+  "3 AI chat messages per day",
+  "Study plan generation",
+  "Study progress tracking",
+  "2 discussion messages per question",
 ];
 
-const proFeatures = [
-  { feature: "Unlimited mock exams (Official + Training)", pro: true },
-  { feature: "Unlimited AI chat messages", pro: true },
-  { feature: "Unlimited question discussions", pro: true },
-  { feature: "AI-generated charts & visual explanations", pro: true },
-  { feature: "Full mock exam history & review", pro: true },
-  { feature: "All CFA levels (I, II, III)", pro: true },
-  { feature: "Complete 2026 curriculum coverage", pro: true },
-  { feature: "Personalized AI study plan", pro: true },
-  { feature: "Full performance analytics", pro: true },
+const PRO_FEATURES = [
+  "Unlimited mock exams (Official + Training)",
+  "Unlimited AI chat messages",
+  "Unlimited question discussions",
+  "AI-generated charts & visual explanations",
+  "Full mock exam history & review",
+  "All CFA levels (I, II, III)",
+  "Complete 2026 curriculum coverage",
+  "Personalized AI study plan",
+  "Full performance analytics",
 ];
 
 interface PlanCardProps {
   name: string;
   price: string;
   period: string;
-  priceId: string;
+  features: string[];
   badge?: string;
   savings?: string;
   isPopular?: boolean;
-  onSubscribe: (priceId: string) => void;
-  loading: boolean;
-  loadingPriceId: string | null;
+  ctaLabel: string;
+  onCta: () => void;
+  loading?: boolean;
+  highlight?: boolean;
 }
 
-function PlanCard({ name, price, period, priceId, badge, savings, isPopular, onSubscribe, loading, loadingPriceId }: PlanCardProps) {
-  const isThis = loadingPriceId === priceId;
+function PlanCard({
+  name,
+  price,
+  period,
+  features,
+  badge,
+  savings,
+  isPopular,
+  ctaLabel,
+  onCta,
+  loading,
+  highlight,
+}: PlanCardProps) {
   return (
     <div
       className={cn(
         "relative flex flex-col rounded-2xl border-2 p-6 transition-all",
         isPopular
-          ? "border-primary bg-primary/5 shadow-xl scale-[1.02]"
+          ? "border-primary bg-primary/5 shadow-xl lg:scale-[1.03]"
           : "border-border hover:border-primary/30"
       )}
     >
@@ -61,39 +73,62 @@ function PlanCard({ name, price, period, priceId, badge, savings, isPopular, onS
         </div>
       )}
 
-      <div className="flex flex-col gap-1 mb-4">
+      <div className="mb-4 flex flex-col gap-1">
         <h3 className="text-lg font-bold">{name}</h3>
-        {savings && <p className="text-xs text-emerald-500 font-semibold">{savings}</p>}
+        {savings && (
+          <p className="text-xs font-semibold text-emerald-500">{savings}</p>
+        )}
       </div>
 
-      <div className="flex items-baseline gap-1 mb-6">
-        <span className="text-4xl font-bold font-mono">{price}</span>
+      <div className="mb-6 flex items-baseline gap-1">
+        <span className="font-mono text-4xl font-bold">{price}</span>
         <span className="text-sm text-muted-foreground">/{period}</span>
       </div>
 
       <button
-        onClick={() => onSubscribe(priceId)}
+        onClick={onCta}
         disabled={loading}
         className={cn(
           "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all",
-          isPopular
+          highlight || isPopular
             ? "bg-primary text-primary-foreground hover:opacity-90"
             : "bg-secondary text-secondary-foreground hover:bg-accent"
         )}
       >
-        {isThis ? (
+        {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <>
-            Subscribe now
+            {ctaLabel}
             <ArrowRight className="h-4 w-4" />
           </>
         )}
       </button>
 
-      <p className="mt-3 text-center text-[10px] text-muted-foreground">
-        Cancel anytime.
-      </p>
+      <ul className="mt-6 flex flex-col gap-2.5">
+        {features.map((f) => (
+          <li key={f} className="flex items-start gap-2.5">
+            <div
+              className={cn(
+                "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                isPopular || highlight
+                  ? "bg-emerald-500/10"
+                  : "bg-muted"
+              )}
+            >
+              <Check
+                className={cn(
+                  "h-3 w-3",
+                  isPopular || highlight
+                    ? "text-emerald-500"
+                    : "text-muted-foreground"
+                )}
+              />
+            </div>
+            <span className="text-sm">{f}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -139,8 +174,12 @@ export default function PricingPage() {
     }
   };
 
+  const handleFreeCta = () => {
+    router.push(user ? "/dashboard" : "/register");
+  };
+
   return (
-    <div className="mx-auto flex max-w-4xl flex-col items-center gap-10 py-12 px-4">
+    <div className="mx-auto flex max-w-5xl flex-col items-center gap-10 px-4 py-12">
       <div className="flex flex-col items-center gap-4 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
           <Sparkles className="h-7 w-7 text-primary" />
@@ -149,67 +188,42 @@ export default function PricingPage() {
           Choose your plan
         </h1>
         <p className="max-w-lg text-base text-muted-foreground">
-          Full access to every feature on the platform. Cancel anytime.
+          Start free — no credit card required. Upgrade when you&apos;re ready.
         </p>
       </div>
 
-      <div className="grid w-full max-w-2xl grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-3">
+        <PlanCard
+          name="Free"
+          price="$0"
+          period="forever"
+          features={FREE_FEATURES}
+          ctaLabel="Start free"
+          onCta={handleFreeCta}
+          highlight
+        />
         <PlanCard
           name="Monthly"
           price="$50"
           period="month"
-          priceId={MONTHLY_PRICE_ID}
-          onSubscribe={handleSubscribe}
-          loading={loading}
-          loadingPriceId={loadingPriceId}
+          features={PRO_FEATURES}
+          ctaLabel="Start now"
+          onCta={() => handleSubscribe(MONTHLY_PRICE_ID)}
+          loading={loading && loadingPriceId === MONTHLY_PRICE_ID}
+          highlight
         />
         <PlanCard
           name="6-Month"
           price="$250"
           period="6 months"
-          priceId={YEARLY_PRICE_ID}
+          features={PRO_FEATURES}
           badge="Most popular"
           savings="Save $50 vs monthly (17% off)"
           isPopular
-          onSubscribe={handleSubscribe}
-          loading={loading}
-          loadingPriceId={loadingPriceId}
+          ctaLabel="Start now"
+          onCta={() => handleSubscribe(YEARLY_PRICE_ID)}
+          loading={loading && loadingPriceId === YEARLY_PRICE_ID}
         />
-      </div>
-
-      <div className="w-full max-w-2xl">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-          <div>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Free plan
-            </h2>
-            <div className="flex flex-col gap-2">
-              {freeFeatures.map((f) => (
-                <div key={f.feature} className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
-                    <Check className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">{f.feature}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
-              Pro plan
-            </h2>
-            <div className="flex flex-col gap-2">
-              {proFeatures.map((f) => (
-                <div key={f.feature} className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
-                    <Check className="h-3 w-3 text-emerald-500" />
-                  </div>
-                  <span className="text-sm">{f.feature}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
