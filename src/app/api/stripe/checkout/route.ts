@@ -32,9 +32,13 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
 
+    // We deliberately omit `payment_method_types` so Stripe shows whatever
+    // methods are enabled on the dashboard and supported for the price's
+    // currency. For BRL prices this keeps the door open to Boleto / future
+    // PIX-for-subscription support without a code change. For USD it stays
+    // card-only because that's what we have enabled.
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
         metadata: { userId, firebaseUid: userId },

@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Check, Shield, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-
-const MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY!;
-const YEARLY_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY!;
+import {
+  Currency,
+  getPricingTable,
+  getStoredCurrency,
+  isCurrencyAvailable,
+  pickCurrencyFromCountry,
+  setStoredCurrency,
+} from "@/lib/pricing";
 
 const FREE_FEATURES = [
   "1 mock exam per day (5 questions)",
@@ -41,6 +46,7 @@ interface PlanCardProps {
   onCta: () => void;
   loading?: boolean;
   highlight?: boolean;
+  disabled?: boolean;
 }
 
 function PlanCard({
@@ -55,6 +61,7 @@ function PlanCard({
   onCta,
   loading,
   highlight,
+  disabled,
 }: PlanCardProps) {
   return (
     <div
@@ -87,9 +94,9 @@ function PlanCard({
 
       <button
         onClick={onCta}
-        disabled={loading}
+        disabled={loading || disabled}
         className={cn(
-          "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all",
+          "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all disabled:opacity-50",
           highlight || isPopular
             ? "bg-primary text-primary-foreground hover:opacity-90"
             : "bg-secondary text-secondary-foreground hover:bg-accent"
@@ -139,7 +146,55 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(false);
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
 
+  const [currency, setCurrency] = useState<Currency>("USD");
+  const [currencyResolved, setCurrencyResolved] = useState(false);
+
+  // Resolve currency once on mount: stored preference > geo detection > USD.
+  useEffect(() => {
+    let cancelled = false;
+    const stored = getStoredCurrency();
+    if (stored) {
+      setCurrency(stored);
+      setCurrencyResolved(true);
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch("/api/geo");
+        const data = (await res.json()) as { country?: string };
+        const detected = pickCurrencyFromCountry(data.country ?? null);
+        // Defensive: only switch to BRL if BRL is configured. Otherwise stick
+        // with USD so the UI never advertises a plan it can't sell.
+        if (cancelled) return;
+        if (detected === "BRL" && !isCurrencyAvailable("BRL")) {
+          setCurrency("USD");
+        } else {
+          setCurrency(detected);
+        }
+      } catch {
+        if (!cancelled) setCurrency("USD");
+      } finally {
+        if (!cancelled) setCurrencyResolved(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleCurrencyChange = (next: Currency) => {
+    setCurrency(next);
+    setStoredCurrency(next);
+  };
+
+  const table = getPricingTable(currency);
+  const brlAvailable = isCurrencyAvailable("BRL");
+
   const handleSubscribe = async (priceId: string) => {
+    if (!priceId) {
+      console.error("Missing Stripe priceId for", currency);
+      return;
+    }
     if (!user) {
       router.push("/register");
       return;
@@ -178,6 +233,8 @@ export default function PricingPage() {
     router.push(user ? "/dashboard" : "/register");
   };
 
+  const freeDisplay = currency === "BRL" ? "R$ 0" : "$0";
+
   return (
     <div className="mx-auto flex max-w-5xl flex-col items-center gap-10 px-4 py-12">
       <div className="flex flex-col items-center gap-4 text-center">
@@ -192,10 +249,48 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-3">
+      {/* Currency toggle — only when both currencies are configured */}
+      {brlAvailable && (
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-muted-foreground">Currency</span>
+          <div className="flex items-center rounded-full border border-border bg-card p-0.5">
+            <button
+              type="button"
+              onClick={() => handleCurrencyChange("USD")}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-xs font-semibold transition-colors",
+                currency === "USD"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              USD
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCurrencyChange("BRL")}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-xs font-semibold transition-colors",
+                currency === "BRL"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              BRL
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={cn(
+          "grid w-full grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-3 transition-opacity",
+          currencyResolved ? "opacity-100" : "opacity-0"
+        )}
+      >
         <PlanCard
           name="Free"
-          price="$0"
+          price={freeDisplay}
           period="forever"
           features={FREE_FEATURES}
           ctaLabel="Start free"
@@ -204,31 +299,38 @@ export default function PricingPage() {
         />
         <PlanCard
           name="Monthly"
-          price="$50"
-          period="month"
+          price={table.monthly.display}
+          period={table.monthly.period}
           features={PRO_FEATURES}
           ctaLabel="Start now"
-          onCta={() => handleSubscribe(MONTHLY_PRICE_ID)}
-          loading={loading && loadingPriceId === MONTHLY_PRICE_ID}
+          onCta={() => handleSubscribe(table.monthly.priceId)}
+          loading={loading && loadingPriceId === table.monthly.priceId}
+          disabled={!table.monthly.priceId}
           highlight
         />
         <PlanCard
           name="6-Month"
-          price="$250"
-          period="6 months"
+          price={table.semiannual.display}
+          period={table.semiannual.period}
           features={PRO_FEATURES}
           badge="Most popular"
-          savings="Save $50 vs monthly (17% off)"
+          savings={table.semiannual.savings}
           isPopular
           ctaLabel="Start now"
-          onCta={() => handleSubscribe(YEARLY_PRICE_ID)}
-          loading={loading && loadingPriceId === YEARLY_PRICE_ID}
+          onCta={() => handleSubscribe(table.semiannual.priceId)}
+          loading={loading && loadingPriceId === table.semiannual.priceId}
+          disabled={!table.semiannual.priceId}
         />
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Shield className="h-4 w-4" />
-        <span>Secure payment via Stripe. Cancel anytime.</span>
+      <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Shield className="h-4 w-4" />
+          <span>Secure payment via Stripe. Cancel anytime.</span>
+        </div>
+        {currency === "BRL" && (
+          <span>Cobrança em reais — funciona com qualquer cartão brasileiro.</span>
+        )}
       </div>
     </div>
   );
