@@ -7,7 +7,7 @@ author: "Trading Core"
 level: "All"
 tags: ["cfa", "career", "jobs", "industry"]
 related:
-  - "quit-your-job-take-the-cfa"
+  - "your-salary-sucks-switch-to-cfa"
   - "what-is-the-cfa-charter"
   - "cfa-salary-increase"
   - "best-way-to-prepare-for-cfa-level-1"

@@ -7,7 +7,7 @@ author: "Trading Core"
 level: "All"
 tags: ["cfa", "salary", "career", "roi"]
 related:
-  - "quit-your-job-take-the-cfa"
+  - "your-salary-sucks-switch-to-cfa"
   - "cfa-career-opportunities"
   - "what-is-the-cfa-charter"
   - "cfa-exam-cost-2026"
