@@ -2,28 +2,33 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * Trading Core brand mark — used as the icon component throughout the app
- * (header, auth pages, OG-style cards, etc.). Wraps the PNG logo in a black
- * tile so it always reads consistently in both light and dark themes
- * (the artwork itself is designed for a dark background).
+ * Trading Core brand mark.
  *
- * Inputs
- * @param size  Outer tile size in pixels. Default 36.
- * @param rounded  Tailwind rounding class for the tile. Default `rounded-lg`.
- * @param className  Extra classes to merge into the tile.
+ * Two variants:
+ *  - `icon` (default): square tile with just the green integral symbol on a
+ *    black background. Used in headers, sidebars, avatars, OG cards.
+ *  - `wordmark`: wide brand mark (integral + "TradingCore" wordmark) on a
+ *    black background. Used as the standalone header logo where you don't
+ *    also want a separate text label next to it.
  *
- * Output
- *   A square `<div>` containing the optimized Next.js `<Image>` of the brand.
+ * @param size       Outer height in pixels. Default 36.
+ * @param rounded    Tailwind rounding class. Default `rounded-lg`.
+ * @param variant    `"icon"` (square, default) or `"wordmark"` (~2:1 wide).
+ * @param className  Extra classes to merge.
  */
 export function Logo({
   size = 36,
   rounded = "rounded-lg",
+  variant = "icon",
   className,
 }: {
   size?: number;
   rounded?: string;
+  variant?: "icon" | "wordmark";
   className?: string;
 }) {
+  const isWordmark = variant === "wordmark";
+  const width = isWordmark ? Math.round(size * (1024 / 503)) : size;
   return (
     <div
       className={cn(
@@ -31,15 +36,15 @@ export function Logo({
         rounded,
         className,
       )}
-      style={{ width: size, height: size }}
+      style={{ width, height: size }}
     >
       <Image
-        src="/logo.png"
+        src={isWordmark ? "/logo-wordmark.png" : "/logo.png"}
         alt="Trading Core"
-        width={size}
+        width={width}
         height={size}
         priority
-        className="h-full w-full object-cover"
+        className="h-full w-full object-contain"
       />
     </div>
   );
