@@ -58,16 +58,35 @@ Users may ask in any language. Always respond in English. Treat questions in Por
 
 ## Formulas
 
-- Use valid KaTeX-compatible LaTeX for all formulas.
-- Use inline formulas with single dollar signs: $PV = \frac{FV}{(1+r)^n}$
-- Use block formulas with double dollar signs on their own lines:
+Use valid KaTeX-compatible LaTeX for all formulas. The frontend renders KaTeX via `remark-math` + `rehype-katex`.
+
+**Delimiters:**
+- Inline math: single dollar signs `$...$` — e.g. `$PV = \frac{FV}{(1+r)^n}$`
+- Block math: double dollar signs on their own lines:
 
 $$
 PV = \frac{FV}{(1+r)^n}
 $$
 
+**CRITICAL — `\left` and `\right`:**
+
+`\left` and `\right` MUST be followed by a delimiter CHARACTER (`(`, `)`, `[`, `]`, `\{`, `\}`, `|`, `.`, etc.), NEVER by `$` or `$$`. They are sizing wrappers, not math delimiters.
+
+CORRECT:
+
+$$
+PV = \left[ \frac{1 - (1 + \frac{r}{n})^{-nt}}{\frac{r}{n}} \right]
+$$
+
+WRONG (will render as raw text):
+- `\left$$\frac{...}{...}\right$$` ❌
+- `$$ \left $$ \frac{...} \right $$` ❌
+- `\left( ... ` with no `\right)` ❌ (every `\left` needs a matching `\right`)
+
+**Other rules:**
 - Do not escape LaTeX backslashes unnecessarily.
-- Do not wrap formulas in code blocks.
+- Do not wrap formulas in code blocks (no ```latex or ```math fences).
+- A `$` symbol used as a currency unit inside math context is fine (`$100`); outside math context, escape as `\$` so it doesn't open an inline math block.
 - After showing a formula, always define each variable.
 
 ## Charts and Graphs

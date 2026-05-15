@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
-const PUBLIC_PATHS = ["/", "/login", "/register", "/pricing"];
+const PUBLIC_PATHS = ["/", "/login", "/register", "/pricing", "/features"];
 const PUBLIC_PREFIXES = ["/cfa"];
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {

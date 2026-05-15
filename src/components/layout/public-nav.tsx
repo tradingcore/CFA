@@ -1,9 +1,112 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  LayoutDashboard,
+  FileQuestion,
+  GraduationCap,
+  CalendarDays,
+  MessageCircle,
+} from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { Logo } from "@/components/layout/logo";
+
+const FEATURE_ITEMS: Array<{
+  href: string;
+  label: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+}> = [
+  {
+    href: "/features#dashboard",
+    label: "Dashboard",
+    description: "Streak, readiness, weekly accuracy",
+    icon: LayoutDashboard,
+  },
+  {
+    href: "/features#mock-exam",
+    label: "Mock Exam",
+    description: "Official + Training mode",
+    icon: FileQuestion,
+  },
+  {
+    href: "/features#study-progress",
+    label: "Study Progress",
+    description: "LOS-level mastery tracking",
+    icon: GraduationCap,
+  },
+  {
+    href: "/features#study-plan",
+    label: "Study Plan",
+    description: "Personalized day-by-day schedule",
+    icon: CalendarDays,
+  },
+  {
+    href: "/features#chat",
+    label: "AI Tutor",
+    description: "Grounded in the official curriculum",
+    icon: MessageCircle,
+  },
+];
+
+function FeaturesDropdown() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link
+        href="/features"
+        className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+        onClick={() => setOpen(false)}
+      >
+        Features
+        <ChevronDown
+          className={`h-3.5 w-3.5 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </Link>
+      {open && (
+        <div className="absolute right-0 top-full z-50 hidden pt-2 sm:block">
+          <div className="w-80 rounded-xl border border-border bg-popover p-2 shadow-2xl ring-1 ring-foreground/5">
+            {FEATURE_ITEMS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-accent"
+                  onClick={() => setOpen(false)}
+                >
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-foreground">
+                      {item.label}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {item.description}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+            <div className="mt-1 border-t border-border px-3 pb-1 pt-2 text-[11px] text-muted-foreground">
+              Click <span className="font-medium text-foreground">Features</span> for the full overview
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function PublicNav() {
   const { user, loading } = useAuth();
@@ -15,6 +118,7 @@ export function PublicNav() {
         <span className="text-base font-bold sm:text-lg">Trading Core</span>
       </Link>
       <nav className="flex items-center gap-2 text-sm sm:gap-3">
+        <FeaturesDropdown />
         <Link
           href="/cfa"
           className="text-muted-foreground transition-colors hover:text-foreground"
@@ -78,6 +182,7 @@ export function PublicFooter() {
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
           <Link href="/" className="hover:text-foreground">Home</Link>
+          <Link href="/features" className="hover:text-foreground">Features</Link>
           <Link href="/cfa" className="hover:text-foreground">Blog</Link>
           <Link href="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link href="/login" className="hover:text-foreground">Sign In</Link>
