@@ -2,33 +2,22 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * Trading Core brand mark.
+ * Trading Core brand mark — the green ∫TC monogram on a black tile.
+ * Used in headers, sidebars, auth pages, OG cards.
  *
- * Two variants:
- *  - `icon` (default): square tile with just the green integral symbol on a
- *    black background. Used in headers, sidebars, avatars, OG cards.
- *  - `wordmark`: wide brand mark (integral + "TradingCore" wordmark) on a
- *    black background. Used as the standalone header logo where you don't
- *    also want a separate text label next to it.
- *
- * @param size       Outer height in pixels. Default 36.
- * @param rounded    Tailwind rounding class. Default `rounded-lg`.
- * @param variant    `"icon"` (square, default) or `"wordmark"` (~2:1 wide).
+ * @param size       Outer tile size in pixels. Default 36.
+ * @param rounded    Tailwind rounding class for the tile. Default `rounded-lg`.
  * @param className  Extra classes to merge.
  */
 export function Logo({
   size = 36,
   rounded = "rounded-lg",
-  variant = "icon",
   className,
 }: {
   size?: number;
   rounded?: string;
-  variant?: "icon" | "wordmark";
   className?: string;
 }) {
-  const isWordmark = variant === "wordmark";
-  const width = isWordmark ? Math.round(size * (1024 / 503)) : size;
   return (
     <div
       className={cn(
@@ -36,15 +25,15 @@ export function Logo({
         rounded,
         className,
       )}
-      style={{ width, height: size }}
+      style={{ width: size, height: size }}
     >
       <Image
-        src={isWordmark ? "/logo-wordmark.png" : "/logo.png"}
+        src="/logo.png"
         alt="Trading Core"
-        width={width}
+        width={size}
         height={size}
         priority
-        className="h-full w-full object-contain"
+        className="h-full w-full object-cover"
       />
     </div>
   );

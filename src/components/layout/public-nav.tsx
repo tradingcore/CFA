@@ -10,8 +10,9 @@ export function PublicNav() {
 
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md sm:px-12 sm:py-4">
-      <Link href="/" className="flex items-center" aria-label="Trading Core home">
-        <Logo size={36} variant="wordmark" rounded="rounded-md" />
+      <Link href="/" className="flex items-center gap-2">
+        <Logo size={32} />
+        <span className="text-base font-bold sm:text-lg">Trading Core</span>
       </Link>
       <nav className="flex items-center gap-2 text-sm sm:gap-3">
         <Link
@@ -82,8 +83,9 @@ export function PublicFooter() {
           <Link href="/login" className="hover:text-foreground">Sign In</Link>
           <Link href="/register" className="hover:text-foreground">Start Free</Link>
         </div>
-        <div className="mt-6 flex items-center justify-center">
-          <Logo size={28} variant="wordmark" rounded="rounded" />
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <Logo size={20} rounded="rounded" />
+          <span className="font-semibold text-foreground">Trading Core</span>
         </div>
         <p className="mt-2">
           &copy; {new Date().getFullYear()} Trading Core. All rights reserved.
